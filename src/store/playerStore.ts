@@ -1,27 +1,177 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import type { Album, Track } from "@/data/catalog";
 
-export type Track = {
-  id: string;
-  title: string;
-  artist: string;
-  url: string;
-  artwork?: string;
-};
+export type RepeatMode = "off" | "all" | "one";
 
 type PlayerState = {
-  current: Track | null;
+  currentTrack: Track | null;
+  currentAlbum: Album | null;
   queue: Track[];
   isPlaying: boolean;
-  setCurrent: (t: Track | null) => void;
-  setQueue: (q: Track[]) => void;
-  setPlaying: (p: boolean) => void;
+  volume: number;
+  currentTime: number;
+  duration: number;
+  shuffle: boolean;
+  repeat: RepeatMode;
+  seekRequestId: number;
+
+  playTrack: (track: Track, album?: Album | null) => void;
+  playAlbum: (album: Album) => void;
+  togglePlay: () => void;
+  setPlaying: (playing: boolean) => void;
+  nextTrack: () => void;
+  previousTrack: () => void;
+  setVolume: (v: number) => void;
+  seekTo: (seconds: number) => void;
+  setCurrentTime: (seconds: number) => void;
+  setDuration: (seconds: number) => void;
+  toggleShuffle: () => void;
+  toggleRepeat: () => void;
+  shuffleQueue: () => void;
+  addToQueue: (track: Track) => void;
+  setQueue: (queue: Track[], currentTrack?: Track | null) => void;
 };
 
-export const usePlayerStore = create<PlayerState>((set) => ({
-  current: null,
-  queue: [],
-  isPlaying: false,
-  setCurrent: (current) => set({ current }),
-  setQueue: (queue) => set({ queue }),
-  setPlaying: (isPlaying) => set({ isPlaying }),
-}));
+const shuffleArray = <T,>(arr: T[]): T[] => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+const indexOfTrack = (queue: Track[], track: Track | null) =>
+  track ? queue.findIndex((t) => t.id === track.id) : -1;
+
+export const usePlayerStore = create<PlayerState>()(
+  persist(
+    (set, get) => ({
+      currentTrack: null,
+      currentAlbum: null,
+      queue: [],
+      isPlaying: false,
+      volume: 0.7,
+      currentTime: 0,
+      duration: 0,
+      shuffle: false,
+      repeat: "off",
+      seekRequestId: 0,
+
+      playTrack: (track, album = null) => {
+        const { queue } = get();
+        const inQueue = queue.some((t) => t.id === track.id);
+        set({
+          currentTrack: track,
+          currentAlbum: album,
+          queue: inQueue ? queue : [track, ...queue],
+          isPlaying: true,
+          currentTime: 0,
+          duration: 0,
+        });
+      },
+
+      playAlbum: (album) => {
+        if (!album.tracks.length) return;
+        const ordered = get().shuffle ? shuffleArray(album.tracks) : album.tracks;
+        set({
+          currentAlbum: album,
+          queue: ordered,
+          currentTrack: ordered[0],
+          isPlaying: true,
+          currentTime: 0,
+          duration: 0,
+        });
+      },
+
+      togglePlay: () => set({ isPlaying: !get().isPlaying }),
+
+      setPlaying: (isPlaying) => set({ isPlaying }),
+
+      nextTrack: () => {
+        const { queue, currentTrack, repeat } = get();
+        if (!queue.length) return;
+        if (repeat === "one" && currentTrack) {
+          set({ currentTime: 0, seekRequestId: get().seekRequestId + 1, isPlaying: true });
+          return;
+        }
+        const idx = indexOfTrack(queue, currentTrack);
+        const next = idx + 1;
+        if (next >= queue.length) {
+          if (repeat === "all") {
+            set({ currentTrack: queue[0], currentTime: 0, isPlaying: true });
+          } else {
+            set({ isPlaying: false, currentTime: 0 });
+          }
+          return;
+        }
+        set({ currentTrack: queue[next], currentTime: 0, isPlaying: true });
+      },
+
+      previousTrack: () => {
+        const { queue, currentTrack, currentTime } = get();
+        if (!queue.length) return;
+        if (currentTime > 3) {
+          set({ currentTime: 0, seekRequestId: get().seekRequestId + 1 });
+          return;
+        }
+        const idx = indexOfTrack(queue, currentTrack);
+        const prev = idx <= 0 ? queue.length - 1 : idx - 1;
+        set({ currentTrack: queue[prev], currentTime: 0, isPlaying: true });
+      },
+
+      setVolume: (v) => set({ volume: Math.min(1, Math.max(0, v)) }),
+
+      seekTo: (seconds) =>
+        set({ currentTime: seconds, seekRequestId: get().seekRequestId + 1 }),
+
+      setCurrentTime: (currentTime) => set({ currentTime }),
+
+      setDuration: (duration) => set({ duration }),
+
+      toggleShuffle: () => {
+        const { shuffle, queue, currentTrack } = get();
+        const next = !shuffle;
+        if (next && queue.length > 1) {
+          const idx = indexOfTrack(queue, currentTrack);
+          const head = idx >= 0 ? [queue[idx]] : [];
+          const rest = queue.filter((_, i) => i !== idx);
+          set({ shuffle: next, queue: [...head, ...shuffleArray(rest)] });
+        } else {
+          set({ shuffle: next });
+        }
+      },
+
+      toggleRepeat: () => {
+        const order: RepeatMode[] = ["off", "all", "one"];
+        const idx = order.indexOf(get().repeat);
+        set({ repeat: order[(idx + 1) % order.length] });
+      },
+
+      shuffleQueue: () => {
+        const { queue, currentTrack } = get();
+        if (queue.length < 2) return;
+        const idx = indexOfTrack(queue, currentTrack);
+        const head = idx >= 0 ? [queue[idx]] : [];
+        const rest = queue.filter((_, i) => i !== idx);
+        set({ queue: [...head, ...shuffleArray(rest)] });
+      },
+
+      addToQueue: (track) => set({ queue: [...get().queue, track] }),
+
+      setQueue: (queue, currentTrack) => {
+        if (currentTrack !== undefined) {
+          set({ queue, currentTrack });
+        } else {
+          set({ queue });
+        }
+      },
+    }),
+    {
+      name: "ntp-player",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ volume: state.volume, shuffle: state.shuffle }),
+    },
+  ),
+);
