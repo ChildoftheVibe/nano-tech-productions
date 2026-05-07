@@ -62,7 +62,7 @@ export function PlayerBar() {
 
   return (
     <footer
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-center px-4 text-white"
+      className="flex flex-shrink-0 items-center px-4 text-white"
       style={{
         height: 90,
         background: "#181818",

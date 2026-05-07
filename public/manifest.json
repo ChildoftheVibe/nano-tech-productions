@@ -1,0 +1,12 @@
+{
+  "name": "NTP Vault | Nano Tech Productions",
+  "short_name": "NTP Vault",
+  "description": "The Nano Tech Productions music platform.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#393838",
+  "theme_color": "#3DD6C8",
+  "icons": []
+}
