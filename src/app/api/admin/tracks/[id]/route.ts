@@ -27,23 +27,14 @@ function pickTrackInput(body: unknown): TrackInput {
   return out;
 }
 
-export async function GET() {
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
 
-  const { data, error } = await supabaseAdmin
-    .from("tracks")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) return Response.json({ error: error.message }, { status: 500 });
-  return Response.json({ tracks: data });
-}
-
-export async function POST(request: Request) {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
-
+  const { id } = await params;
   let body: unknown;
   try {
     body = await request.json();
@@ -52,16 +43,27 @@ export async function POST(request: Request) {
   }
 
   const input = pickTrackInput(body);
-  if (!input.title) {
-    return Response.json({ error: "title is required" }, { status: 400 });
-  }
 
   const { data, error } = await supabaseAdmin
     .from("tracks")
-    .insert(input)
+    .update(input)
+    .eq("id", id)
     .select("*")
     .single();
 
   if (error) return Response.json({ error: error.message }, { status: 400 });
-  return Response.json({ track: data }, { status: 201 });
+  return Response.json({ track: data });
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
+  const { id } = await params;
+  const { error } = await supabaseAdmin.from("tracks").delete().eq("id", id);
+  if (error) return Response.json({ error: error.message }, { status: 400 });
+  return Response.json({ ok: true });
 }

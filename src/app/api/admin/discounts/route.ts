@@ -1,27 +1,22 @@
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
-import type { AlbumInput } from "@/lib/db-types";
+import type { DiscountInput } from "@/lib/db-types";
 
-const ALBUM_FIELDS = [
-  "slug",
-  "title",
-  "description",
-  "release_date",
-  "cover_image",
-  "background_color",
-  "accent_color",
-  "spotify_url",
-  "apple_music_url",
-  "youtube_url",
-  "amazon_url",
-  "is_published",
+const DISCOUNT_FIELDS = [
+  "code",
+  "discount_percent",
+  "applies_to",
+  "album_id",
+  "expires_at",
+  "max_uses",
+  "is_active",
 ] as const;
 
-function pickAlbumInput(body: unknown): AlbumInput {
+function pickDiscountInput(body: unknown): DiscountInput {
   if (!body || typeof body !== "object") return {};
   const src = body as Record<string, unknown>;
-  const out: AlbumInput = {};
-  for (const key of ALBUM_FIELDS) {
+  const out: DiscountInput = {};
+  for (const key of DISCOUNT_FIELDS) {
     if (key in src) {
       const val = src[key];
       (out as Record<string, unknown>)[key] = val === "" ? null : val;
@@ -35,12 +30,12 @@ export async function GET() {
   if (unauthorized) return unauthorized;
 
   const { data, error } = await supabaseAdmin
-    .from("albums")
+    .from("discount_codes")
     .select("*")
     .order("created_at", { ascending: false });
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
-  return Response.json({ albums: data });
+  return Response.json({ discounts: data });
 }
 
 export async function POST(request: Request) {
@@ -54,20 +49,20 @@ export async function POST(request: Request) {
     return Response.json({ error: "invalid_body" }, { status: 400 });
   }
 
-  const input = pickAlbumInput(body);
-  if (!input.slug || !input.title) {
+  const input = pickDiscountInput(body);
+  if (!input.code || !input.discount_percent || !input.applies_to || !input.expires_at) {
     return Response.json(
-      { error: "slug and title are required" },
+      { error: "code, discount_percent, applies_to, expires_at are required" },
       { status: 400 },
     );
   }
 
   const { data, error } = await supabaseAdmin
-    .from("albums")
+    .from("discount_codes")
     .insert(input)
     .select("*")
     .single();
 
   if (error) return Response.json({ error: error.message }, { status: 400 });
-  return Response.json({ album: data }, { status: 201 });
+  return Response.json({ discount: data }, { status: 201 });
 }

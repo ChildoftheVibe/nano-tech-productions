@@ -1,0 +1,56 @@
+export type Album = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  release_date: string | null;
+  cover_image: string | null;
+  background_color: string;
+  accent_color: string;
+  spotify_url: string | null;
+  apple_music_url: string | null;
+  youtube_url: string | null;
+  amazon_url: string | null;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AlbumInput = Partial<
+  Omit<Album, "id" | "created_at" | "updated_at">
+>;
+
+export type Track = {
+  id: string;
+  album_id: string | null;
+  title: string;
+  track_number: number | null;
+  duration: string | null;
+  price: number;
+  audio_url: string | null;
+  is_downloadable: boolean;
+  is_published: boolean;
+  features: string[] | null;
+  created_at: string;
+};
+
+export type TrackInput = Partial<Omit<Track, "id" | "created_at">>;
+
+export type DiscountAppliesTo = "single" | "album" | "all";
+
+export type DiscountCode = {
+  id: string;
+  code: string;
+  discount_percent: number;
+  applies_to: DiscountAppliesTo;
+  album_id: string | null;
+  expires_at: string;
+  max_uses: number | null;
+  current_uses: number;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type DiscountInput = Partial<
+  Omit<DiscountCode, "id" | "current_uses" | "created_at">
+>;

@@ -30,23 +30,14 @@ function pickAlbumInput(body: unknown): AlbumInput {
   return out;
 }
 
-export async function GET() {
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
 
-  const { data, error } = await supabaseAdmin
-    .from("albums")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) return Response.json({ error: error.message }, { status: 500 });
-  return Response.json({ albums: data });
-}
-
-export async function POST(request: Request) {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
-
+  const { id } = await params;
   let body: unknown;
   try {
     body = await request.json();
@@ -54,20 +45,28 @@ export async function POST(request: Request) {
     return Response.json({ error: "invalid_body" }, { status: 400 });
   }
 
-  const input = pickAlbumInput(body);
-  if (!input.slug || !input.title) {
-    return Response.json(
-      { error: "slug and title are required" },
-      { status: 400 },
-    );
-  }
+  const input = { ...pickAlbumInput(body), updated_at: new Date().toISOString() };
 
   const { data, error } = await supabaseAdmin
     .from("albums")
-    .insert(input)
+    .update(input)
+    .eq("id", id)
     .select("*")
     .single();
 
   if (error) return Response.json({ error: error.message }, { status: 400 });
-  return Response.json({ album: data }, { status: 201 });
+  return Response.json({ album: data });
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
+  const { id } = await params;
+  const { error } = await supabaseAdmin.from("albums").delete().eq("id", id);
+  if (error) return Response.json({ error: error.message }, { status: 400 });
+  return Response.json({ ok: true });
 }
