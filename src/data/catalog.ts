@@ -1,12 +1,252 @@
-import type { Track } from "@/store/playerStore";
-
 export type Album = {
   id: string;
+  slug: string;
   title: string;
-  artist: string;
-  cover?: string;
-  priceCents: number;
+  description: string;
+  releaseDate: string;
+  coverImage: string;
+  bgColor: string;
+  accentColor: string;
+  spotifyUrl: string;
   tracks: Track[];
 };
 
-export const catalog: Album[] = [];
+export type Track = {
+  id: string;
+  albumId: string;
+  title: string;
+  trackNumber: number;
+  duration: string;
+  price: number;
+  features?: string[];
+  audioUrl?: string;
+};
+
+export const albums: Album[] = [
+  {
+    id: "nt-green",
+    slug: "nano-tech-green",
+    title: "Nano Tech Green",
+    description: "Where it all began. The foundation of the Nano Tech sound.",
+    releaseDate: "2020-09-04",
+    coverImage: "/assets/green/cover.webp",
+    bgColor: "#052e16",
+    accentColor: "#4ade80",
+    spotifyUrl: "https://open.spotify.com/album/1OjMZ7RAz44T1nJ0xiGJrY",
+    tracks: [
+      { id: "ntg-1", albumId: "nt-green", title: "Fall off the Edge", trackNumber: 1, duration: "3:00", price: 1.0 },
+      { id: "ntg-2", albumId: "nt-green", title: "Go and Get the Fanto", trackNumber: 2, duration: "3:00", price: 1.0 },
+      { id: "ntg-3", albumId: "nt-green", title: "Magical Stardust", trackNumber: 3, duration: "3:00", price: 1.0 },
+      { id: "ntg-4", albumId: "nt-green", title: "Jumping out the Gym", trackNumber: 4, duration: "3:00", price: 1.0 },
+      { id: "ntg-5", albumId: "nt-green", title: "Mr. Rogers (How You Like It)", trackNumber: 5, duration: "3:00", price: 1.0 },
+      { id: "ntg-6", albumId: "nt-green", title: "Just Came for the Vibe", trackNumber: 6, duration: "3:00", price: 1.0 },
+      { id: "ntg-7", albumId: "nt-green", title: "Unscripted", trackNumber: 7, duration: "3:00", price: 1.0 },
+    ],
+  },
+  {
+    id: "art-nt",
+    slug: "art-of-nano-tech",
+    title: "Art of Nano Tech",
+    description: "Jhodge exploring and developing the sounds of Nano Tech Vibe Vol. 3.",
+    releaseDate: "2020-08-21",
+    coverImage: "/assets/art/cover.webp",
+    bgColor: "#1c0a00",
+    accentColor: "#fbbf24",
+    spotifyUrl: "https://open.spotify.com/album/3fTPeicSbU7cnQCbaZxTRp",
+    tracks: [
+      { id: "ant-1", albumId: "art-nt", title: "Trap Zi", trackNumber: 1, duration: "3:00", price: 1.0 },
+      { id: "ant-2", albumId: "art-nt", title: "Let Me Take You on a Trip", trackNumber: 2, duration: "3:00", price: 1.0 },
+      { id: "ant-3", albumId: "art-nt", title: "Take off Your Blindfold", trackNumber: 3, duration: "3:00", price: 1.0 },
+      { id: "ant-4", albumId: "art-nt", title: "Dinner Time", trackNumber: 4, duration: "3:00", price: 1.0 },
+      { id: "ant-5", albumId: "art-nt", title: "Calculus", trackNumber: 5, duration: "3:00", price: 1.0 },
+      { id: "ant-6", albumId: "art-nt", title: "Tickle My Gift", trackNumber: 6, duration: "3:00", price: 1.0 },
+      { id: "ant-7", albumId: "art-nt", title: "Same Mistakes", trackNumber: 7, duration: "3:00", price: 1.0 },
+      { id: "ant-8", albumId: "art-nt", title: "Art of Nano Tech", trackNumber: 8, duration: "3:00", price: 1.0 },
+    ],
+  },
+  {
+    id: "nt-noir",
+    slug: "nano-tech-noir",
+    title: "Nano Tech Noir",
+    description:
+      "It is not enough to gain knowledge. One must also apply it. Funk / Chicago House / Disco / Late 90s Underground Hip-Hop / Roots Reggae.",
+    releaseDate: "2022-06-03",
+    coverImage: "/assets/noir/cover.webp",
+    bgColor: "#0a0a0a",
+    accentColor: "#525252",
+    spotifyUrl: "",
+    tracks: [
+      { id: "ntn-1", albumId: "nt-noir", title: "So Much to Unpack", trackNumber: 1, duration: "3:00", price: 1.0 },
+      { id: "ntn-2", albumId: "nt-noir", title: "Shake it Out", trackNumber: 2, duration: "3:00", price: 1.0 },
+      { id: "ntn-3", albumId: "nt-noir", title: "Ether Shower", trackNumber: 3, duration: "3:00", price: 1.0 },
+      { id: "ntn-4", albumId: "nt-noir", title: "Nano Tech Noir", trackNumber: 4, duration: "3:00", price: 1.0 },
+      { id: "ntn-5", albumId: "nt-noir", title: "Peace With God", trackNumber: 5, duration: "3:00", price: 1.0 },
+      { id: "ntn-6", albumId: "nt-noir", title: "One Life Left", trackNumber: 6, duration: "3:00", price: 1.0 },
+      { id: "ntn-7", albumId: "nt-noir", title: "Save the Citizen", trackNumber: 7, duration: "3:00", price: 1.0 },
+      { id: "ntn-8", albumId: "nt-noir", title: "So Broke I Can't Afford to Work", trackNumber: 8, duration: "3:00", price: 1.0 },
+      { id: "ntn-9", albumId: "nt-noir", title: "Back To My Roots", trackNumber: 9, duration: "3:00", price: 1.0 },
+      { id: "ntn-10", albumId: "nt-noir", title: "Behind the Scenes", trackNumber: 10, duration: "3:00", price: 1.0 },
+      { id: "ntn-11", albumId: "nt-noir", title: "You Laugh I Prey", trackNumber: 11, duration: "3:00", price: 1.0 },
+      { id: "ntn-12", albumId: "nt-noir", title: "Lost in the Metaverse", trackNumber: 12, duration: "3:00", price: 1.0 },
+      { id: "ntn-13", albumId: "nt-noir", title: "Heal Yourself", trackNumber: 13, duration: "3:00", price: 1.0 },
+      { id: "ntn-14", albumId: "nt-noir", title: "It's Over", trackNumber: 14, duration: "3:00", price: 1.0 },
+      { id: "ntn-15", albumId: "nt-noir", title: "Influences", trackNumber: 15, duration: "3:00", price: 1.0 },
+    ],
+  },
+  {
+    id: "nt-blue",
+    slug: "nano-tech-blue",
+    title: "Nano Tech Blue",
+    description:
+      "Jhodge Goes Emo! Retro futuristic sounds and new age drum kits creating an emotional rollercoaster of Exciting Sad Boy Music. This is not your regular everyday average ordinary space odyssey.",
+    releaseDate: "2023-06-30",
+    coverImage: "/assets/blue/cover.webp",
+    bgColor: "#0f172a",
+    accentColor: "#60a5fa",
+    spotifyUrl: "https://open.spotify.com/album/1PtTnoVJoxqTAcljsjCgHz",
+    tracks: [
+      { id: "ntb-1", albumId: "nt-blue", title: "Suga Pie", trackNumber: 1, duration: "3:00", price: 1.0, features: ["Child of the Vibe"] },
+      { id: "ntb-2", albumId: "nt-blue", title: "Heavens Gates", trackNumber: 2, duration: "3:00", price: 1.0 },
+      { id: "ntb-3", albumId: "nt-blue", title: "Pretty Face", trackNumber: 3, duration: "3:00", price: 1.0, features: ["Child of the Vibe"] },
+      { id: "ntb-4", albumId: "nt-blue", title: "Dreams", trackNumber: 4, duration: "3:00", price: 1.0 },
+      { id: "ntb-5", albumId: "nt-blue", title: "Can't Let the Bad Outweigh the Good", trackNumber: 5, duration: "3:00", price: 1.0, features: ["Negasi Ambesa"] },
+      { id: "ntb-6", albumId: "nt-blue", title: "Gotta Let Go", trackNumber: 6, duration: "3:00", price: 1.0 },
+      { id: "ntb-7", albumId: "nt-blue", title: "Living Life Wild", trackNumber: 7, duration: "3:00", price: 1.0 },
+      { id: "ntb-8", albumId: "nt-blue", title: "Passive Aggressive", trackNumber: 8, duration: "3:00", price: 1.0 },
+      { id: "ntb-9", albumId: "nt-blue", title: "Spiraling", trackNumber: 9, duration: "3:00", price: 1.0, features: ["Child of the Vibe"] },
+      { id: "ntb-10", albumId: "nt-blue", title: "Whatchu Tryna Prove?", trackNumber: 10, duration: "3:00", price: 1.0, features: ["Child of the Vibe"] },
+      { id: "ntb-11", albumId: "nt-blue", title: "Make Move", trackNumber: 11, duration: "3:00", price: 1.0, features: ["Child of the Vibe"] },
+      { id: "ntb-12", albumId: "nt-blue", title: "I Ain't Gone Hold You", trackNumber: 12, duration: "3:00", price: 1.0 },
+      { id: "ntb-13", albumId: "nt-blue", title: "Doin So Good", trackNumber: 13, duration: "3:00", price: 1.0 },
+      { id: "ntb-14", albumId: "nt-blue", title: "I Catch Plays", trackNumber: 14, duration: "3:00", price: 1.0, features: ["Child of the Vibe"] },
+    ],
+  },
+  {
+    id: "nt-red",
+    slug: "nano-tech-red",
+    title: "Nano Tech Red",
+    description:
+      "Jhodge enters the Red Era. Rock, Rage, Trap, Heavy Hitters. Features Negasi Ambesa and Sun Savior. Album cover features a spiked skull on a red-tinted post-apocalyptic backdrop, hand drawn by Aka.",
+    releaseDate: "2023-08-11",
+    coverImage: "/assets/red/cover.webp",
+    bgColor: "#450a0a",
+    accentColor: "#dc2626",
+    spotifyUrl: "https://open.spotify.com/album/0rVBfR6PRfCSY0qrnzVYrD",
+    tracks: [
+      { id: "ntr-1", albumId: "nt-red", title: "Home Sweet Home", trackNumber: 1, duration: "3:00", price: 1.0, features: ["Sun Savior"] },
+      { id: "ntr-2", albumId: "nt-red", title: "Break Me", trackNumber: 2, duration: "3:00", price: 1.0 },
+      { id: "ntr-3", albumId: "nt-red", title: "All Night", trackNumber: 3, duration: "3:00", price: 1.0 },
+      { id: "ntr-4", albumId: "nt-red", title: "Club Rage", trackNumber: 4, duration: "3:00", price: 1.0 },
+      { id: "ntr-5", albumId: "nt-red", title: "Make Me", trackNumber: 5, duration: "3:00", price: 1.0 },
+      { id: "ntr-6", albumId: "nt-red", title: "We Acting", trackNumber: 6, duration: "3:00", price: 1.0 },
+      { id: "ntr-7", albumId: "nt-red", title: "Ryan", trackNumber: 7, duration: "3:00", price: 1.0 },
+      { id: "ntr-8", albumId: "nt-red", title: "Can't Stand", trackNumber: 8, duration: "3:00", price: 1.0 },
+      { id: "ntr-9", albumId: "nt-red", title: "White Satin", trackNumber: 9, duration: "3:00", price: 1.0 },
+      { id: "ntr-10", albumId: "nt-red", title: "My Space", trackNumber: 10, duration: "3:00", price: 1.0, features: ["Negasi Ambesa"] },
+      { id: "ntr-11", albumId: "nt-red", title: "Roll da Dice", trackNumber: 11, duration: "3:00", price: 1.0, features: ["Child of the Vibe"] },
+      { id: "ntr-12", albumId: "nt-red", title: "Lost Time", trackNumber: 12, duration: "3:00", price: 1.0 },
+      { id: "ntr-13", albumId: "nt-red", title: "Rainforest", trackNumber: 13, duration: "3:00", price: 1.0 },
+      { id: "ntr-14", albumId: "nt-red", title: "Shame Innit", trackNumber: 14, duration: "3:00", price: 1.0 },
+      { id: "ntr-15", albumId: "nt-red", title: "Clout Chasing", trackNumber: 15, duration: "3:00", price: 1.0 },
+      { id: "ntr-16", albumId: "nt-red", title: "They Slept", trackNumber: 16, duration: "3:00", price: 1.0 },
+    ],
+  },
+  {
+    id: "nt-pearl",
+    slug: "nano-tech-pearl",
+    title: "Nano Tech Pearl",
+    description: "Pre Rock Vibe. Made at the same time as Nano Tech Red. Jhodge's Pearl Era — polishing his vocal chain and drum mix.",
+    releaseDate: "2023-07-28",
+    coverImage: "/assets/pearl/cover.webp",
+    bgColor: "#1a1a1a",
+    accentColor: "#d4d4d4",
+    spotifyUrl: "https://open.spotify.com/album/3Gm2MdADrGNkuT8fkPiIlN",
+    tracks: [
+      { id: "ntp-1", albumId: "nt-pearl", title: "Tesla Cyber Truck", trackNumber: 1, duration: "3:00", price: 1.0 },
+      { id: "ntp-2", albumId: "nt-pearl", title: "Burst Ya Bubble", trackNumber: 2, duration: "3:00", price: 1.0 },
+      { id: "ntp-3", albumId: "nt-pearl", title: "Can't Let Nobody", trackNumber: 3, duration: "3:00", price: 1.0 },
+      { id: "ntp-4", albumId: "nt-pearl", title: "Ain't Finna Wait", trackNumber: 4, duration: "3:00", price: 1.0 },
+      { id: "ntp-5", albumId: "nt-pearl", title: "Wit My Team", trackNumber: 5, duration: "3:00", price: 1.0 },
+      { id: "ntp-6", albumId: "nt-pearl", title: "That Classic", trackNumber: 6, duration: "3:00", price: 1.0 },
+      { id: "ntp-7", albumId: "nt-pearl", title: "Pearlessant", trackNumber: 7, duration: "3:00", price: 1.0 },
+      { id: "ntp-8", albumId: "nt-pearl", title: "Don't Lie To Me", trackNumber: 8, duration: "3:00", price: 1.0 },
+      { id: "ntp-9", albumId: "nt-pearl", title: "Way 2 Lit", trackNumber: 9, duration: "3:00", price: 1.0 },
+      { id: "ntp-10", albumId: "nt-pearl", title: "Nano Tech Pearl", trackNumber: 10, duration: "3:00", price: 1.0 },
+      { id: "ntp-11", albumId: "nt-pearl", title: "Fake The Flow", trackNumber: 11, duration: "3:00", price: 1.0 },
+      { id: "ntp-12", albumId: "nt-pearl", title: "Is You Real", trackNumber: 12, duration: "3:00", price: 1.0 },
+      { id: "ntp-13", albumId: "nt-pearl", title: "People Ain't Toxic", trackNumber: 13, duration: "3:00", price: 1.0 },
+    ],
+  },
+  {
+    id: "nt-black",
+    slug: "nano-tech-black",
+    title: "Nano Tech Black",
+    description:
+      "Nano Tech Black addresses personal hardships — self growth, relationships, and community. A fade to black without the retirement. Four pillars: Accountability, Communication, Self Awareness, Empathy.",
+    releaseDate: "2023-01-01",
+    coverImage: "/assets/black/cover.webp",
+    bgColor: "#000000",
+    accentColor: "#7000ff",
+    spotifyUrl: "https://open.spotify.com/album/3ioidCamVr1rli1RspzH0D",
+    tracks: [
+      { id: "ntbk-1", albumId: "nt-black", title: "Black Pudding", trackNumber: 1, duration: "3:00", price: 1.0 },
+      { id: "ntbk-2", albumId: "nt-black", title: "No T.V.", trackNumber: 2, duration: "3:00", price: 1.0 },
+      { id: "ntbk-3", albumId: "nt-black", title: "Black Bidness", trackNumber: 3, duration: "3:00", price: 1.0 },
+      { id: "ntbk-4", albumId: "nt-black", title: "Stomp the Street", trackNumber: 4, duration: "3:00", price: 1.0 },
+      { id: "ntbk-5", albumId: "nt-black", title: "The Man", trackNumber: 5, duration: "3:00", price: 1.0 },
+      { id: "ntbk-6", albumId: "nt-black", title: "Good Things Come to Those Who Wait", trackNumber: 6, duration: "3:00", price: 1.0 },
+      { id: "ntbk-7", albumId: "nt-black", title: "Who's Racing", trackNumber: 7, duration: "3:00", price: 1.0 },
+      { id: "ntbk-8", albumId: "nt-black", title: "Every Night", trackNumber: 8, duration: "3:00", price: 1.0 },
+      { id: "ntbk-9", albumId: "nt-black", title: "Black Something", trackNumber: 9, duration: "3:00", price: 1.0, features: ["Ras Attitude"] },
+      { id: "ntbk-10", albumId: "nt-black", title: "I Want to Be Inspired", trackNumber: 10, duration: "3:00", price: 1.0 },
+      { id: "ntbk-11", albumId: "nt-black", title: "All We Need Is Love", trackNumber: 11, duration: "3:00", price: 1.0 },
+      { id: "ntbk-12", albumId: "nt-black", title: "Mega Bus", trackNumber: 12, duration: "3:00", price: 1.0 },
+      { id: "ntbk-13", albumId: "nt-black", title: "Human Nature", trackNumber: 13, duration: "3:00", price: 1.0 },
+      { id: "ntbk-14", albumId: "nt-black", title: "Chicken Shack", trackNumber: 14, duration: "3:00", price: 1.0 },
+      { id: "ntbk-15", albumId: "nt-black", title: "God Knows", trackNumber: 15, duration: "3:00", price: 1.0 },
+      { id: "ntbk-16", albumId: "nt-black", title: "Had to Get Space", trackNumber: 16, duration: "3:00", price: 1.0 },
+      { id: "ntbk-17", albumId: "nt-black", title: "Repeat Mistakes", trackNumber: 17, duration: "3:00", price: 1.0 },
+      { id: "ntbk-18", albumId: "nt-black", title: "Don't Need a Shirt", trackNumber: 18, duration: "3:00", price: 1.0 },
+    ],
+  },
+  {
+    id: "nt-soul",
+    slug: "nano-tech-soul",
+    title: "Nano Tech Soul",
+    description:
+      "More than an album — it's a return to the roots, a sonic revisit of Jhodge's origin story. Every beat, lyric, and melody reflects the trials and triumphs that defined his artistic evolution.",
+    releaseDate: "2025-02-05",
+    coverImage: "/assets/soul/cover.webp",
+    bgColor: "#1c0a00",
+    accentColor: "#f97316",
+    spotifyUrl: "https://open.spotify.com/album/4NAU31bqFUx4MKHNwRQRFa",
+    tracks: [
+      { id: "nts-1", albumId: "nt-soul", title: "Story Told", trackNumber: 1, duration: "3:00", price: 1.0 },
+      { id: "nts-2", albumId: "nt-soul", title: "Nano Funk", trackNumber: 2, duration: "3:00", price: 1.0 },
+      { id: "nts-3", albumId: "nt-soul", title: "Peaks and Valleys", trackNumber: 3, duration: "3:00", price: 1.0 },
+      { id: "nts-4", albumId: "nt-soul", title: "Whatchu Want", trackNumber: 4, duration: "3:00", price: 1.0 },
+      { id: "nts-5", albumId: "nt-soul", title: "Another Origin Story", trackNumber: 5, duration: "3:00", price: 1.0 },
+      { id: "nts-6", albumId: "nt-soul", title: "No Disrespect", trackNumber: 6, duration: "3:00", price: 1.0 },
+      { id: "nts-7", albumId: "nt-soul", title: "Suga", trackNumber: 7, duration: "3:00", price: 1.0 },
+      { id: "nts-8", albumId: "nt-soul", title: "No More Free Love", trackNumber: 8, duration: "3:00", price: 1.0 },
+      { id: "nts-9", albumId: "nt-soul", title: "Middle Ground", trackNumber: 9, duration: "3:00", price: 1.0 },
+      { id: "nts-10", albumId: "nt-soul", title: "Control Divide", trackNumber: 10, duration: "3:00", price: 1.0 },
+      { id: "nts-11", albumId: "nt-soul", title: "Cold Hearted Game", trackNumber: 11, duration: "3:00", price: 1.0 },
+      { id: "nts-12", albumId: "nt-soul", title: "Calm Me Down", trackNumber: 12, duration: "3:00", price: 1.0 },
+      { id: "nts-13", albumId: "nt-soul", title: "Fire", trackNumber: 13, duration: "3:00", price: 1.0 },
+      { id: "nts-14", albumId: "nt-soul", title: "Whats The Arrangement?", trackNumber: 14, duration: "3:00", price: 1.0 },
+    ],
+  },
+  {
+    id: "nt-purple",
+    slug: "nano-tech-purple",
+    title: "Nano Tech Purple",
+    description: "Royalty. Vision. The Purple Era.",
+    releaseDate: "2025-10-29",
+    coverImage: "/assets/purple/cover.webp",
+    bgColor: "#2e1065",
+    accentColor: "#a855f7",
+    spotifyUrl: "https://open.spotify.com/album/1iLF1287vnDHLhtn90JrZ3",
+    tracks: [],
+  },
+];
