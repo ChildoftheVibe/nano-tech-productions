@@ -1,5 +1,86 @@
 "use client";
 
-export function AlbumCard({ title }: { title: string }) {
-  return <div className="rounded bg-[#282828] p-4 text-white">{title}</div>;
+import Link from "next/link";
+import { Music, Play } from "lucide-react";
+import type { Album } from "@/data/catalog";
+
+type Size = "sm" | "md" | "lg";
+
+const dimensions: Record<Size, number> = {
+  sm: 40,
+  md: 180,
+  lg: 230,
+};
+
+type Props = {
+  album: Album;
+  size?: Size;
+  href?: string;
+  showHoverPlay?: boolean;
+  onPlay?: () => void;
+};
+
+export function AlbumCard({
+  album,
+  size = "md",
+  href,
+  showHoverPlay = false,
+  onPlay,
+}: Props) {
+  const px = dimensions[size];
+  const rounded = size === "sm" ? "rounded" : "rounded-md";
+
+  const cover = (
+    <div
+      className={`group relative flex-shrink-0 overflow-hidden ${rounded}`}
+      style={{
+        width: px,
+        height: px,
+        background: album.bgColor,
+        boxShadow: size === "lg" ? "0 8px 24px rgba(0,0,0,0.5)" : undefined,
+      }}
+    >
+      {album.coverImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={album.coverImage}
+          alt={album.title}
+          className="h-full w-full object-cover"
+          onError={(e) => {
+            const el = e.currentTarget as HTMLImageElement;
+            el.style.display = "none";
+            const sib = el.nextElementSibling as HTMLElement | null;
+            if (sib) sib.style.display = "flex";
+          }}
+        />
+      ) : null}
+      <div
+        className="hidden h-full w-full items-center justify-center"
+        style={{ background: album.bgColor, color: album.accentColor }}
+      >
+        <Music size={Math.max(16, Math.floor(px / 4))} />
+      </div>
+      {showHoverPlay && onPlay ? (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onPlay();
+          }}
+          aria-label={`Play ${album.title}`}
+          className="absolute bottom-2 right-2 flex h-11 w-11 translate-y-2 items-center justify-center rounded-full opacity-0 shadow-lg transition-all group-hover:translate-y-0 group-hover:opacity-100"
+          style={{ background: "#EB41DF" }}
+        >
+          <Play size={18} fill="white" className="ml-0.5 text-white" />
+        </button>
+      ) : null}
+    </div>
+  );
+
+  if (!href) return cover;
+  return (
+    <Link href={href} className="block">
+      {cover}
+    </Link>
+  );
 }
