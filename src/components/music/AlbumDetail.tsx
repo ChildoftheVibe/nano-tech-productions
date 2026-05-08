@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { motion, type Variants } from "framer-motion";
 import { ExternalLink, Play, Shuffle, ShoppingBag } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { TrackRow } from "@/components/music/TrackRow";
@@ -15,6 +16,20 @@ import { usePageEngagement } from "@/lib/usePageEngagement";
 import type { Album } from "@/types/music";
 
 const ALBUM_PRICE = 9.99;
+
+const trackContainer: Variants = {
+  hidden: { opacity: 1 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.03 } },
+};
+
+const trackItem: Variants = {
+  hidden: { opacity: 0, x: -8 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.2, ease: "easeOut" as const },
+  },
+};
 
 export function AlbumDetail({ album }: { album: Album }) {
   const playAlbum = usePlayerStore((s) => s.playAlbum);
@@ -59,15 +74,29 @@ export function AlbumDetail({ album }: { album: Album }) {
 
   return (
     <div className="text-white">
-      <section
+      <motion.section
         className="px-6 pt-6 pb-8 md:px-8 md:pt-8 md:pb-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
         style={{
           background: `linear-gradient(180deg, ${album.bgColor} 0%, #393838 100%)`,
         }}
       >
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:gap-8">
-          <AlbumCard album={album} size="lg" />
-          <div className="min-w-0 flex-1">
+          <motion.div
+            initial={{ scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+          >
+            <AlbumCard album={album} size="lg" />
+          </motion.div>
+          <motion.div
+            className="min-w-0 flex-1"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut", delay: 0.1 }}
+          >
             <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
               Album
             </div>
@@ -76,7 +105,8 @@ export function AlbumDetail({ album }: { album: Album }) {
             </h1>
             <div className="mb-3 text-sm text-white/80">
               <span className="font-semibold text-white">Jhodge</span>
-              {year ? ` · ${year}` : ""} · {songCount} {songCount === 1 ? "song" : "songs"}
+              {year ? ` · ${year}` : ""} · {songCount}{" "}
+              {songCount === 1 ? "song" : "songs"}
             </div>
             <p
               className={`max-w-2xl text-sm text-white/80 ${
@@ -106,43 +136,49 @@ export function AlbumDetail({ album }: { album: Album }) {
                     href={l.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 rounded-full border border-white/20 bg-black/20 px-3 py-1 text-xs font-medium text-white hover:bg-black/40"
+                    className="flex items-center gap-1.5 rounded-full border border-white/20 bg-black/20 px-3 py-2 text-xs font-medium text-white hover:bg-black/40"
                   >
                     <ExternalLink size={12} />
                     {l.label}
                   </a>
                 ))}
             </div>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       <section className="flex flex-wrap items-center gap-3 px-6 pb-6 md:px-8">
-        <button
+        <motion.button
           onClick={() => playAlbum(album)}
           disabled={!album.tracks.length}
           aria-label={`Play ${album.title}`}
-          className="flex h-14 w-14 items-center justify-center rounded-full transition-transform hover:scale-105 disabled:opacity-40 disabled:hover:scale-100"
+          className="flex h-14 w-14 items-center justify-center rounded-full disabled:opacity-40"
           style={{ background: album.accentColor || "#3DD6C8" }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.96 }}
         >
           <Play size={22} fill="black" className="ml-1 text-black" />
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={handleShuffle}
           disabled={!album.tracks.length}
           aria-label="Shuffle play"
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10 disabled:opacity-40 disabled:hover:bg-transparent"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 text-white hover:bg-white/10 disabled:opacity-40"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.96 }}
         >
           <Shuffle size={18} className={shuffle ? "text-[#3DD6C8]" : ""} />
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={handleBuyAlbum}
-          className="ml-2 flex h-14 items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+          className="ml-2 flex h-14 items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white"
           style={{ background: "#EB41DF" }}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.96 }}
         >
           <ShoppingBag size={18} />
           Buy Album · ${ALBUM_PRICE.toFixed(2)}
-        </button>
+        </motion.button>
       </section>
 
       <section className="px-2 pb-10 md:px-4">
@@ -158,11 +194,18 @@ export function AlbumDetail({ album }: { album: Album }) {
             Track list coming soon.
           </div>
         ) : (
-          <div className="pt-2">
+          <motion.div
+            className="pt-2"
+            variants={trackContainer}
+            initial="hidden"
+            animate="visible"
+          >
             {album.tracks.map((track) => (
-              <TrackRow key={track.id} track={track} album={album} />
+              <motion.div key={track.id} variants={trackItem}>
+                <TrackRow track={track} album={album} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </section>
 
@@ -178,7 +221,7 @@ export function AlbumDetail({ album }: { album: Album }) {
               {featuredArtists.map((name) => (
                 <span
                   key={name}
-                  className="rounded-full border border-white/15 px-3 py-1 text-xs text-white"
+                  className="rounded-full border border-white/15 px-4 py-2 text-xs text-white"
                 >
                   {name}
                 </span>

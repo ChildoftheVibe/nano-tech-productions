@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useState } from "react";
 
 export function TopBar() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
 
   // TODO: /search route doesn't exist yet — submitting will 404 until added.
   const goSearch = () => {
@@ -26,20 +28,22 @@ export function TopBar() {
       }}
     >
       <div className="flex items-center gap-2">
-        <button
+        <motion.button
           onClick={() => router.back()}
           aria-label="Go back"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white transition-colors hover:bg-black/60"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60"
+          whileTap={{ scale: 0.88 }}
         >
           <ChevronLeft size={20} />
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={() => router.forward()}
           aria-label="Go forward"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white transition-colors hover:bg-black/60"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60"
+          whileTap={{ scale: 0.88 }}
         >
           <ChevronRight size={20} />
-        </button>
+        </motion.button>
       </div>
 
       <div className="flex items-center gap-3">
@@ -48,26 +52,46 @@ export function TopBar() {
             e.preventDefault();
             goSearch();
           }}
-          className="flex h-9 items-center gap-2 rounded-full px-4 py-2"
-          style={{ background: "#181818", border: "1px solid rgba(255,255,255,0.08)" }}
+          className="flex h-9 items-center gap-2 rounded-full px-4 py-2 transition-colors duration-150"
+          style={{
+            background: "#181818",
+            border: searchFocused
+              ? "1px solid #3DD6C8"
+              : "1px solid rgba(255,255,255,0.08)",
+          }}
         >
-          <Search size={16} className="text-[#B3B3B3]" />
+          <Search
+            size={16}
+            className={searchFocused ? "text-[#3DD6C8]" : "text-[#B3B3B3]"}
+          />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
             placeholder="Search"
             className="w-40 bg-transparent text-sm text-white placeholder-[#B3B3B3] outline-none sm:w-56"
             aria-label="Search"
           />
         </form>
-        <Link
-          href="/admin"
-          className="inline-flex h-9 items-center justify-center rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
-          style={{ background: "#EB41DF" }}
+        <motion.div
+          whileHover={{
+            scale: 1.03,
+            boxShadow: "0 0 12px rgba(235,65,223,0.4)",
+          }}
+          whileTap={{ scale: 0.96 }}
+          transition={{ duration: 0.15 }}
+          style={{ borderRadius: 9999 }}
         >
-          Admin
-        </Link>
+          <Link
+            href="/admin"
+            className="inline-flex h-9 items-center justify-center rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider text-white"
+            style={{ background: "#EB41DF" }}
+          >
+            Admin
+          </Link>
+        </motion.div>
       </div>
     </header>
   );

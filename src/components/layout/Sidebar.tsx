@@ -30,7 +30,7 @@ export function Sidebar({ initialAlbums }: Props) {
       <div className="flex-shrink-0 px-5 pt-5 pb-3">
         <Link
           href="/"
-          className="font-mono text-2xl font-bold tracking-wider text-[#3DD6C8]"
+          className="ntv-logo font-mono text-2xl font-bold tracking-wider text-[#3DD6C8]"
         >
           NTV
         </Link>
@@ -43,7 +43,7 @@ export function Sidebar({ initialAlbums }: Props) {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                 active
                   ? "bg-white/10 text-white"
                   : "text-[#B3B3B3] hover:bg-white/5 hover:text-white"
@@ -75,15 +75,18 @@ export function Sidebar({ initialAlbums }: Props) {
         ) : (
           initialAlbums.map((album) => {
             const active =
-              pathname === `/album/${album.slug}` || pathname === `/album/${album.id}`;
+              pathname === `/album/${album.slug}` ||
+              pathname === `/album/${album.id}`;
             const year = album.releaseDate?.slice(0, 4) ?? "";
             return (
               <li key={album.id}>
                 <Link
                   href={`/album/${album.slug}`}
-                  className="group flex items-center gap-3 rounded-md py-2 pr-2 transition-colors hover:bg-white/5"
+                  className="group flex items-center gap-3 rounded-md py-2 pr-2 transition-colors duration-150 hover:bg-white/[0.06]"
                   style={{
-                    borderLeft: active ? "3px solid #3DD6C8" : "3px solid transparent",
+                    borderLeft: active
+                      ? "3px solid #3DD6C8"
+                      : "3px solid transparent",
                     paddingLeft: 5,
                     background: active ? "rgba(255,255,255,0.04)" : undefined,
                   }}
@@ -110,7 +113,7 @@ export function Sidebar({ initialAlbums }: Props) {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div
-                      className={`truncate text-sm font-medium ${
+                      className={`truncate text-sm font-medium transition-colors duration-150 ${
                         active ? "text-[#3DD6C8]" : "text-white"
                       }`}
                     >

@@ -40,7 +40,7 @@ export function TrackRow({ track, album }: Props) {
 
   return (
     <div
-      className={`group grid grid-cols-[40px_1fr_120px_80px_60px] items-center gap-4 rounded-md px-4 py-2 transition-colors hover:bg-white/5 ${
+      className={`group grid grid-cols-[40px_1fr_120px_80px_60px] items-center gap-4 rounded-md px-4 py-2 transition-colors duration-150 hover:bg-white/[0.04] ${
         isActive ? "bg-white/[0.04]" : ""
       }`}
     >
@@ -53,24 +53,66 @@ export function TrackRow({ track, album }: Props) {
           isThisPlaying ? (
             <span className="flex h-4 items-end gap-0.5">
               <span
-                className="block w-1 animate-pulse rounded-sm"
-                style={{ height: "60%", background: "#3DD6C8" }}
+                className="eq-bar-1 block w-1 rounded-sm"
+                style={{
+                  height: "100%",
+                  background: "#3DD6C8",
+                  transformOrigin: "bottom",
+                }}
               />
               <span
-                className="block w-1 animate-pulse rounded-sm"
-                style={{ height: "100%", background: "#3DD6C8", animationDelay: "0.15s" }}
+                className="eq-bar-2 block w-1 rounded-sm"
+                style={{
+                  height: "100%",
+                  background: "#3DD6C8",
+                  transformOrigin: "bottom",
+                }}
               />
               <span
-                className="block w-1 animate-pulse rounded-sm"
-                style={{ height: "40%", background: "#3DD6C8", animationDelay: "0.3s" }}
+                className="eq-bar-3 block w-1 rounded-sm"
+                style={{
+                  height: "100%",
+                  background: "#3DD6C8",
+                  transformOrigin: "bottom",
+                }}
               />
             </span>
           ) : (
-            <Play size={14} fill="#3DD6C8" className="text-[#3DD6C8]" />
+            <span className="flex h-4 items-end gap-0.5">
+              <span
+                className="block w-1 rounded-sm"
+                style={{
+                  height: "60%",
+                  background: "#3DD6C8",
+                  transform: "scaleY(0.4)",
+                  transformOrigin: "bottom",
+                }}
+              />
+              <span
+                className="block w-1 rounded-sm"
+                style={{
+                  height: "100%",
+                  background: "#3DD6C8",
+                  transform: "scaleY(0.4)",
+                  transformOrigin: "bottom",
+                }}
+              />
+              <span
+                className="block w-1 rounded-sm"
+                style={{
+                  height: "80%",
+                  background: "#3DD6C8",
+                  transform: "scaleY(0.4)",
+                  transformOrigin: "bottom",
+                }}
+              />
+            </span>
           )
         ) : (
           <>
-            <span className="text-[#B3B3B3] group-hover:hidden">{track.trackNumber}</span>
+            <span className="text-[#B3B3B3] transition-opacity duration-150 group-hover:hidden">
+              {track.trackNumber}
+            </span>
             <Play
               size={14}
               fill="currentColor"
@@ -89,7 +131,7 @@ export function TrackRow({ track, album }: Props) {
           {track.title}
         </div>
         {track.features?.length ? (
-          <div className="truncate text-xs text-[#B3B3B3]">
+          <div className="truncate text-xs text-[#B3B3B3] transition-colors duration-150 group-hover:text-[#3DD6C8]">
             feat. {track.features.join(", ")}
           </div>
         ) : null}
@@ -99,7 +141,7 @@ export function TrackRow({ track, album }: Props) {
 
       <button
         onClick={handleBuy}
-        className="rounded-full border border-[#3DD6C8] px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#3DD6C8] opacity-0 transition-opacity hover:bg-[#3DD6C8]/10 group-hover:opacity-100"
+        className="rounded-full border border-[#3DD6C8] px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#3DD6C8] opacity-0 transition-opacity duration-150 hover:bg-[#3DD6C8]/10 group-hover:opacity-100"
       >
         Buy
       </button>

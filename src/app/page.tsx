@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { getAlbums, getAlbum, getFeaturedAlbums } from "@/lib/queries";
 import { HomeClient } from "@/components/home/HomeClient";
+import { HomeSkeleton } from "@/components/ui/skeletons/HomeSkeleton";
 
 const PAGE_SIZE =
   Number(process.env.NEXT_PUBLIC_ALBUMS_PER_PAGE) > 0
@@ -8,7 +10,7 @@ const PAGE_SIZE =
 
 export const revalidate = 300;
 
-export default async function HomePage() {
+async function HomeData() {
   const [featured, latest, initialCollection] = await Promise.all([
     getFeaturedAlbums(),
     getAlbum("nano-tech-purple"),
@@ -21,5 +23,13 @@ export default async function HomePage() {
       latest={latest}
       initialCollection={initialCollection}
     />
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<HomeSkeleton />}>
+      <HomeData />
+    </Suspense>
   );
 }

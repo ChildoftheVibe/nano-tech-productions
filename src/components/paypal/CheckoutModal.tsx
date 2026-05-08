@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Loader2, Lock, Music, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Loader2, Lock, Music, X } from "lucide-react";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { useCheckoutStore, type CheckoutItemRef } from "@/store/checkoutStore";
 
@@ -22,8 +23,13 @@ export function CheckoutModal() {
   const item = useCheckoutStore((s) => s.item);
   const close = useCheckoutStore((s) => s.close);
 
-  if (!isOpen || !item) return null;
-  return <CheckoutModalContent item={item} onClose={close} />;
+  return (
+    <AnimatePresence>
+      {isOpen && item ? (
+        <CheckoutModalContent item={item} onClose={close} />
+      ) : null}
+    </AnimatePresence>
+  );
 }
 
 function CheckoutModalContent({
@@ -38,10 +44,17 @@ function CheckoutModalContent({
   const [discountInput, setDiscountInput] = useState("");
   const [discountError, setDiscountError] = useState<string | null>(null);
   const [validating, setValidating] = useState(false);
+  const [totalPulse, setTotalPulse] = useState(0);
 
   const subtotal = item.price;
   const total = useMemo(
-    () => Math.max(0, Math.round((subtotal - (discount.applied ? discount.amount : 0)) * 100) / 100),
+    () =>
+      Math.max(
+        0,
+        Math.round(
+          (subtotal - (discount.applied ? discount.amount : 0)) * 100,
+        ) / 100,
+      ),
     [subtotal, discount],
   );
 
@@ -94,6 +107,7 @@ function CheckoutModalContent({
         amount: json.discountAmount,
         message: json.message,
       });
+      setTotalPulse((n) => n + 1);
     } catch {
       setDiscountError("Could not validate code.");
     } finally {
@@ -102,7 +116,15 @@ function CheckoutModalContent({
   };
 
   const orderRequestBody = () => ({
-    items: [{ id: item.id, kind: item.kind, name: item.name, price: item.price, albumId: item.albumId }],
+    items: [
+      {
+        id: item.id,
+        kind: item.kind,
+        name: item.name,
+        price: item.price,
+        albumId: item.albumId,
+      },
+    ],
     discountCode: discount.applied ? discount.code : undefined,
   });
 
@@ -110,16 +132,27 @@ function CheckoutModalContent({
   const paypalReady = !!clientId;
 
   return (
-    <div
+    <motion.div
       className="fixed inset-0 z-[100] flex items-center justify-center px-4"
       style={{ background: "rgba(0,0,0,0.8)" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
       onClick={(e) => {
         if (e.target === e.currentTarget && phase.kind !== "submitting") onClose();
       }}
     >
-      <div
+      <motion.div
         className="w-full max-w-[480px] overflow-hidden rounded-xl text-white shadow-2xl"
-        style={{ background: "#282828", border: "1px solid rgba(255,255,255,0.08)" }}
+        style={{
+          background: "#282828",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}
+        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 8 }}
+        transition={{ type: "spring", stiffness: 400, damping: 30 }}
       >
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
           <div className="flex items-center gap-2">
@@ -190,6 +223,7 @@ function CheckoutModalContent({
                       setDiscount({ applied: false });
                       setDiscountInput("");
                       setDiscountError(null);
+                      setTotalPulse((n) => n + 1);
                     }}
                     className="rounded border border-white/20 px-4 py-2 text-sm hover:bg-white/5"
                   >
@@ -212,23 +246,42 @@ function CheckoutModalContent({
 
             <div className="mb-5 space-y-1 border-t border-white/10 pt-4 text-sm">
               <Row label="Subtotal" value={fmtMoney(subtotal)} />
-              {discount.applied ? (
-                <Row
-                  label={`Discount (${discount.percent}%)`}
-                  value={`−${fmtMoney(discount.amount)}`}
-                  accent
-                />
-              ) : null}
-              <div className="mt-2 flex justify-between border-t border-white/10 pt-2 font-bold">
+              <AnimatePresence initial={false}>
+                {discount.applied ? (
+                  <motion.div
+                    key="discount-line"
+                    initial={{ opacity: 0, y: -6, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    exit={{ opacity: 0, y: -6, height: 0 }}
+                    transition={{ duration: 0.22, ease: "easeOut" }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <Row
+                      label={`Discount (${discount.percent}%)`}
+                      value={`−${fmtMoney(discount.amount)}`}
+                      accent
+                    />
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+              <motion.div
+                key={totalPulse}
+                initial={{ scale: 1 }}
+                animate={{ scale: [1, 1.06, 1] }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="mt-2 flex justify-between border-t border-white/10 pt-2 font-bold"
+              >
                 <span>Total</span>
                 <span>{fmtMoney(total)}</span>
-              </div>
+              </motion.div>
             </div>
 
             {!paypalReady ? (
               <div className="rounded border border-yellow-500/40 bg-yellow-500/10 p-3 text-xs text-yellow-200">
                 PayPal client ID is not configured. Set
-                <code className="mx-1 rounded bg-black/30 px-1">NEXT_PUBLIC_PAYPAL_CLIENT_ID</code>
+                <code className="mx-1 rounded bg-black/30 px-1">
+                  NEXT_PUBLIC_PAYPAL_CLIENT_ID
+                </code>
                 in <code>.env.local</code>.
               </div>
             ) : (
@@ -240,7 +293,13 @@ function CheckoutModalContent({
                     {phase.message}
                   </div>
                 ) : null}
-                <div className={phase.kind === "submitting" ? "pointer-events-none opacity-50" : ""}>
+                <div
+                  className={
+                    phase.kind === "submitting"
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }
+                >
                   <PayPalButtons
                     style={{ layout: "vertical", color: "gold", shape: "pill" }}
                     disabled={phase.kind === "submitting"}
@@ -266,7 +325,9 @@ function CheckoutModalContent({
                           body: JSON.stringify({
                             orderId: data.orderID,
                             items: orderRequestBody().items,
-                            discountCode: discount.applied ? discount.code : undefined,
+                            discountCode: discount.applied
+                              ? discount.code
+                              : undefined,
                           }),
                         });
                         const json = (await res.json()) as {
@@ -327,8 +388,8 @@ function CheckoutModalContent({
             </p>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -360,17 +421,45 @@ function SuccessView({
 }) {
   return (
     <div className="px-5 py-8 text-center">
-      <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center">
-        <CheckCircle2 size={56} className="animate-[ping_0.6s_ease-out_1] text-[#3DD6C8]" />
-        <CheckCircle2
-          size={56}
-          className="absolute text-[#3DD6C8]"
-          style={{ position: "absolute" }}
-        />
+      <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center">
+        <motion.svg
+          width="64"
+          height="64"
+          viewBox="0 0 64 64"
+          fill="none"
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          aria-hidden
+        >
+          <motion.circle
+            cx="32"
+            cy="32"
+            r="28"
+            stroke="#3DD6C8"
+            strokeWidth="3"
+            fill="rgba(61,214,200,0.08)"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          />
+          <motion.path
+            d="M20 33L29 42L46 24"
+            stroke="#3DD6C8"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
+          />
+        </motion.svg>
       </div>
       <h3 className="mb-1 text-2xl font-bold">Purchase Complete!</h3>
       <p className="mb-5 text-sm text-white/70">
-        Thanks for supporting NTV. {item.kind === "album" ? "Your album" : "Your track"} is yours.
+        Thanks for supporting NTV.{" "}
+        {item.kind === "album" ? "Your album" : "Your track"} is yours.
       </p>
       {phase.downloadUrls.length > 0 ? (
         <div className="mb-5 space-y-2">
@@ -383,7 +472,8 @@ function SuccessView({
               className="block rounded-full px-4 py-2 text-sm font-bold text-black"
               style={{ background: "#3DD6C8" }}
             >
-              Download {phase.downloadUrls.length > 1 ? `track ${i + 1}` : "MP3 (320kbps)"}
+              Download{" "}
+              {phase.downloadUrls.length > 1 ? `track ${i + 1}` : "MP3 (320kbps)"}
             </a>
           ))}
           <p className="text-[10px] text-white/40">

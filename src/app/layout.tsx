@@ -10,6 +10,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { CheckoutHost } from "@/components/paypal/CheckoutHost";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { AnalyticsProvider } from "@/providers/AnalyticsProvider";
 import { getAlbums } from "@/lib/queries";
 
@@ -45,7 +46,7 @@ export default async function RootLayout({
                     }}
                   >
                     <TopBar />
-                    {children}
+                    <PageTransition>{children}</PageTransition>
                     <SiteFooter />
                   </main>
                 </div>

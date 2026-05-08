@@ -83,3 +83,120 @@ main {
 .pink-glow {
   box-shadow: 0 0 20px rgba(235, 65, 223, 0.3);
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+button,
+a,
+[role="button"] {
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+:focus-visible {
+  outline: 2px solid #3dd6c8;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes equalizer-bar {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+.eq-bar-1 {
+  animation: equalizer-bar 0.8s ease infinite;
+}
+.eq-bar-2 {
+  animation: equalizer-bar 0.8s ease infinite 0.2s;
+}
+.eq-bar-3 {
+  animation: equalizer-bar 0.8s ease infinite 0.4s;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.ntv-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+input[type="range"].ntv-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+}
+input[type="range"].ntv-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background: #3dd6c8;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  cursor: pointer;
+}
+input[type="range"].ntv-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background: #3dd6c8;
+  border: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  cursor: pointer;
+}
+input[type="range"].ntv-range:hover::-webkit-slider-thumb,
+input[type="range"].ntv-range:focus-visible::-webkit-slider-thumb {
+  opacity: 1;
+}
+input[type="range"].ntv-range:hover::-moz-range-thumb,
+input[type="range"].ntv-range:focus-visible::-moz-range-thumb {
+  opacity: 1;
+}
+
+.ntv-logo {
+  transition: text-shadow 0.2s ease;
+}
+.ntv-logo:hover {
+  text-shadow:
+    0 0 12px rgba(61, 214, 200, 0.6),
+    0 0 24px rgba(61, 214, 200, 0.35);
+}
