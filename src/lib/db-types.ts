@@ -11,6 +11,7 @@ export type Album = {
   apple_music_url: string | null;
   youtube_url: string | null;
   amazon_url: string | null;
+  copyright: string | null;
   is_published: boolean;
   created_at: string;
   updated_at: string;

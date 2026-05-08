@@ -11,6 +11,7 @@ export type Album = {
   appleMusicUrl?: string;
   youtubeUrl?: string;
   amazonUrl?: string;
+  copyright?: string;
   tracks: Track[];
 };
 

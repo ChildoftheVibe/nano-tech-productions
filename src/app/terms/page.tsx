@@ -42,6 +42,11 @@ export default function TermsPage() {
 
       <Section title="License and acceptable use">
         <p className="text-sm leading-relaxed text-white/80">
+          All music and recordings are © Nano Tech Productions / Jhodge. All
+          rights reserved. Unauthorized reproduction or distribution is
+          prohibited.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-white/80">
           When you purchase a track or album, you receive a personal,
           non-exclusive, non-transferable license to use the music for private,
           non-commercial listening. You may copy the file to your own devices.

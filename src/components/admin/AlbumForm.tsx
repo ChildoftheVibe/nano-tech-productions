@@ -27,6 +27,7 @@ const TEXT_FIELDS: Array<{
   { key: "apple_music_url", label: "Apple Music URL" },
   { key: "youtube_url", label: "YouTube URL" },
   { key: "amazon_url", label: "Amazon URL" },
+  { key: "copyright", label: "Copyright" },
 ];
 
 function emptyForm(): Record<string, string | boolean> {
@@ -42,6 +43,7 @@ function emptyForm(): Record<string, string | boolean> {
     apple_music_url: "",
     youtube_url: "",
     amazon_url: "",
+    copyright: "© Nano Tech Productions. All rights reserved.",
     is_published: false,
   };
 }
@@ -59,6 +61,7 @@ function fromAlbum(a: Album): Record<string, string | boolean> {
     apple_music_url: a.apple_music_url ?? "",
     youtube_url: a.youtube_url ?? "",
     amazon_url: a.amazon_url ?? "",
+    copyright: a.copyright ?? "",
     is_published: a.is_published,
   };
 }

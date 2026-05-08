@@ -3,7 +3,7 @@ import { supabase } from "./supabase";
 import type { Album, AlbumListResult, Track } from "@/types/music";
 
 const ALBUM_COLUMNS =
-  "id, slug, title, description, release_date, cover_image, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, is_published";
+  "id, slug, title, description, release_date, cover_image, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, is_published";
 const TRACK_COLUMNS =
   "id, album_id, title, track_number, duration, price, audio_url, features, is_published";
 
@@ -20,6 +20,7 @@ type AlbumRow = {
   apple_music_url: string | null;
   youtube_url: string | null;
   amazon_url: string | null;
+  copyright: string | null;
   is_published: boolean;
   tracks?: TrackRow[];
 };
@@ -60,6 +61,7 @@ const mapAlbum = (row: AlbumRow, tracks: Track[] = []): Album => ({
   appleMusicUrl: row.apple_music_url ?? undefined,
   youtubeUrl: row.youtube_url ?? undefined,
   amazonUrl: row.amazon_url ?? undefined,
+  copyright: row.copyright ?? undefined,
   tracks,
 });
 

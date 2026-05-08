@@ -14,6 +14,7 @@ const ALBUM_FIELDS = [
   "apple_music_url",
   "youtube_url",
   "amazon_url",
+  "copyright",
   "is_published",
 ] as const;
 

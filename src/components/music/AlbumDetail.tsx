@@ -93,6 +93,10 @@ export function AlbumDetail({ album }: { album: Album }) {
                 {expanded ? "Show less" : "Show more"}
               </button>
             ) : null}
+            <p className="mt-3 text-xs text-white/60">
+              © {year || new Date().getFullYear()} Nano Tech Productions. All
+              rights reserved.
+            </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {platformLinks
                 .filter((l) => !!l.url)
@@ -182,6 +186,14 @@ export function AlbumDetail({ album }: { album: Album }) {
             </div>
           </div>
         ) : null}
+        <div className="mt-6">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#B3B3B3]">
+            Credits
+          </h3>
+          <p className="text-xs text-white/60">
+            {album.copyright ?? "© Nano Tech Productions. All rights reserved."}
+          </p>
+        </div>
         {/* TODO: production notes & gear info — not in catalog.ts yet, add when data is available. */}
       </section>
     </div>
