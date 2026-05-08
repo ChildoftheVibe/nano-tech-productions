@@ -28,6 +28,12 @@ export type Track = {
   duration: string | null;
   price: number;
   audio_url: string | null;
+  public_audio_id: string | null;
+  vault_audio_id: string | null;
+  wav_checksum: string | null;
+  wav_file_size_mb: number | null;
+  download_count: number;
+  play_count: number;
   is_downloadable: boolean;
   is_published: boolean;
   features: string[] | null;

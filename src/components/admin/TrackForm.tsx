@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Album, Track } from "@/lib/db-types";
+import { CloudinaryUploader } from "./CloudinaryUploader";
 
 type Props = {
   initial?: Track;
@@ -17,6 +18,9 @@ type FormState = {
   duration: string;
   price: string;
   audio_url: string;
+  public_audio_id: string;
+  vault_audio_id: string;
+  wav_file_size_mb: string;
   features: string;
   is_downloadable: boolean;
   is_published: boolean;
@@ -30,6 +34,9 @@ function emptyForm(): FormState {
     duration: "",
     price: "1.00",
     audio_url: "",
+    public_audio_id: "",
+    vault_audio_id: "",
+    wav_file_size_mb: "",
     features: "",
     is_downloadable: true,
     is_published: false,
@@ -44,6 +51,9 @@ function fromTrack(t: Track): FormState {
     duration: t.duration ?? "",
     price: t.price.toString(),
     audio_url: t.audio_url ?? "",
+    public_audio_id: t.public_audio_id ?? "",
+    vault_audio_id: t.vault_audio_id ?? "",
+    wav_file_size_mb: t.wav_file_size_mb?.toString() ?? "",
     features: (t.features ?? []).join(", "),
     is_downloadable: t.is_downloadable,
     is_published: t.is_published,
@@ -73,6 +83,11 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
         duration: form.duration || null,
         price: form.price ? Number(form.price) : 1,
         audio_url: form.audio_url || null,
+        public_audio_id: form.public_audio_id || null,
+        vault_audio_id: form.vault_audio_id || null,
+        wav_file_size_mb: form.wav_file_size_mb
+          ? Number(form.wav_file_size_mb)
+          : null,
         features: form.features
           ? form.features
               .split(",")
@@ -163,14 +178,40 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
         />
       </label>
 
-      <label className="block">
-        <span className="mb-1 block text-sm text-white/70">Audio URL</span>
-        <input
-          value={form.audio_url}
-          onChange={(e) => set("audio_url", e.target.value)}
-          className="w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-[#3DD6C8]"
-        />
-      </label>
+      <CloudinaryUploader
+        folder="ntp/audio/public"
+        resourceType="video"
+        accept="audio/*"
+        label="Public audio (streaming MP3/WAV)"
+        helpText="Streamed from public CDN as MP3 320kbps."
+        currentPublicId={form.public_audio_id || null}
+        onUploaded={(r) => {
+          set("public_audio_id", r.publicId);
+          set("audio_url", r.url);
+        }}
+        onClear={() => {
+          set("public_audio_id", "");
+          set("audio_url", "");
+        }}
+      />
+
+      <CloudinaryUploader
+        folder="ntp/audio/vault"
+        resourceType="video"
+        accept="audio/wav,audio/x-wav,audio/aiff"
+        label="Master WAV file"
+        helpText="Private vault — admin-only, signed access."
+        vault
+        currentPublicId={form.vault_audio_id || null}
+        onUploaded={(r) => {
+          set("vault_audio_id", r.publicId);
+          if (r.bytes) set("wav_file_size_mb", (r.bytes / 1_048_576).toFixed(2));
+        }}
+        onClear={() => {
+          set("vault_audio_id", "");
+          set("wav_file_size_mb", "");
+        }}
+      />
 
       <label className="block">
         <span className="mb-1 block text-sm text-white/70">

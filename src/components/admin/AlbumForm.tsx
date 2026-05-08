@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Album } from "@/lib/db-types";
+import { CloudinaryUploader } from "./CloudinaryUploader";
 
 type Props = {
   initial?: Album;
@@ -20,7 +21,6 @@ const TEXT_FIELDS: Array<{
   { key: "title", label: "Title", required: true },
   { key: "description", label: "Description" },
   { key: "release_date", label: "Release date", type: "date" },
-  { key: "cover_image", label: "Cover image URL" },
   { key: "background_color", label: "Background color", type: "color" },
   { key: "accent_color", label: "Accent color", type: "color" },
   { key: "spotify_url", label: "Spotify URL" },
@@ -101,6 +101,17 @@ export function AlbumForm({ initial, onSaved, onCancel }: Props) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-3 text-white">
+      <CloudinaryUploader
+        folder="ntp/images/covers"
+        resourceType="image"
+        accept="image/*"
+        label="Cover image"
+        helpText="JPG, PNG, or WebP. Stored on Cloudinary CDN."
+        currentUrl={(form.cover_image as string) || null}
+        onUploaded={(r) => set("cover_image", r.url)}
+        onClear={() => set("cover_image", "")}
+      />
+
       {TEXT_FIELDS.map((f) => (
         <label key={f.key as string} className="block">
           <span className="mb-1 block text-sm text-white/70">{f.label}</span>
