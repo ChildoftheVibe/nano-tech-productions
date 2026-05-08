@@ -1,13 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlbumForm } from "@/components/admin/AlbumForm";
 import type { Album } from "@/lib/db-types";
 
-type Props = { initialAlbums: Album[] };
+type Props = {
+  initialAlbums: Album[];
+  page: number;
+  totalPages: number;
+  totalCount: number;
+};
 
-export function AlbumsManager({ initialAlbums }: Props) {
+export function AlbumsManager({ initialAlbums, page, totalPages, totalCount }: Props) {
   const router = useRouter();
   const [mode, setMode] = useState<
     { kind: "list" } | { kind: "create" } | { kind: "edit"; album: Album }
@@ -76,37 +82,62 @@ export function AlbumsManager({ initialAlbums }: Props) {
       {initialAlbums.length === 0 ? (
         <p className="text-white/60">No albums yet.</p>
       ) : (
-        <ul className="space-y-2">
-          {initialAlbums.map((album) => (
-            <li
-              key={album.id}
-              className="flex items-center justify-between rounded border border-white/10 bg-black/20 p-4"
-            >
-              <div>
-                <div className="font-medium">{album.title}</div>
-                <div className="text-sm text-white/60">
-                  /{album.slug} ·{" "}
-                  {album.is_published ? "Published" : "Unpublished"}
+        <>
+          <ul className="space-y-2">
+            {initialAlbums.map((album) => (
+              <li
+                key={album.id}
+                className="flex items-center justify-between rounded border border-white/10 bg-black/20 p-4"
+              >
+                <div>
+                  <div className="font-medium">{album.title}</div>
+                  <div className="text-sm text-white/60">
+                    /{album.slug} ·{" "}
+                    {album.is_published ? "Published" : "Unpublished"}
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setMode({ kind: "edit", album })}
-                  className="rounded border border-white/20 px-3 py-1 text-sm hover:bg-white/5"
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setMode({ kind: "edit", album })}
+                    className="rounded border border-white/20 px-3 py-1 text-sm hover:bg-white/5"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => onDelete(album)}
+                    disabled={deletingId === album.id}
+                    className="rounded border border-red-500/40 px-3 py-1 text-sm text-red-300 hover:bg-red-500/10 disabled:opacity-50"
+                  >
+                    {deletingId === album.id ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-6 flex items-center justify-between text-sm text-white/70">
+            <span>
+              Page {page} of {totalPages} · {totalCount} total
+            </span>
+            <div className="flex gap-2">
+              {page > 1 ? (
+                <Link
+                  href={`?page=${page - 1}`}
+                  className="rounded border border-white/20 px-3 py-1 hover:bg-white/5"
                 >
-                  Edit
-                </button>
-                <button
-                  onClick={() => onDelete(album)}
-                  disabled={deletingId === album.id}
-                  className="rounded border border-red-500/40 px-3 py-1 text-sm text-red-300 hover:bg-red-500/10 disabled:opacity-50"
+                  Previous
+                </Link>
+              ) : null}
+              {page < totalPages ? (
+                <Link
+                  href={`?page=${page + 1}`}
+                  className="rounded border border-white/20 px-3 py-1 hover:bg-white/5"
                 >
-                  {deletingId === album.id ? "Deleting…" : "Delete"}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+                  Next
+                </Link>
+              ) : null}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

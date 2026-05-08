@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Music, Play } from "lucide-react";
-import type { Album } from "@/data/catalog";
+import type { Album } from "@/types/music";
 
 type Size = "sm" | "md" | "lg";
 

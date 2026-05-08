@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Library, Search, Music } from "lucide-react";
-import { albums } from "@/data/catalog";
+import type { Album } from "@/types/music";
 
 // TODO: /library and /search routes don't exist yet — add in a later phase.
 const navItems = [
@@ -12,7 +12,13 @@ const navItems = [
   { href: "/search", label: "Search", icon: Search },
 ];
 
-export function Sidebar() {
+type Props = {
+  initialAlbums: Album[];
+};
+
+// TODO: when catalog grows past 50, add IntersectionObserver-backed pagination
+// that calls /api/albums?page=N&limit=50 and appends results.
+export function Sidebar({ initialAlbums }: Props) {
   const pathname = usePathname();
 
   return (
@@ -62,57 +68,63 @@ export function Sidebar() {
       </div>
 
       <ul className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
-        {albums.map((album) => {
-          const active =
-            pathname === `/album/${album.slug}` || pathname === `/album/${album.id}`;
-          const year = album.releaseDate?.slice(0, 4) ?? "";
-          return (
-            <li key={album.id}>
-              <Link
-                href={`/album/${album.slug}`}
-                className="group flex items-center gap-3 rounded-md py-2 pr-2 transition-colors hover:bg-white/5"
-                style={{
-                  borderLeft: active ? "3px solid #3DD6C8" : "3px solid transparent",
-                  paddingLeft: 5,
-                  background: active ? "rgba(255,255,255,0.04)" : undefined,
-                }}
-              >
-                {album.coverImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={album.coverImage}
-                    alt={album.title}
-                    className="h-10 w-10 flex-shrink-0 rounded object-cover"
-                    onError={(e) => {
-                      const el = e.currentTarget as HTMLImageElement;
-                      el.style.display = "none";
-                      const sib = el.nextElementSibling as HTMLElement | null;
-                      if (sib) sib.style.display = "flex";
-                    }}
-                  />
-                ) : null}
-                <div
-                  className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded"
-                  style={{ background: album.bgColor, color: album.accentColor }}
+        {initialAlbums.length === 0 ? (
+          <li className="px-3 py-4 text-xs text-[#B3B3B3]">
+            No albums yet — run the seed script.
+          </li>
+        ) : (
+          initialAlbums.map((album) => {
+            const active =
+              pathname === `/album/${album.slug}` || pathname === `/album/${album.id}`;
+            const year = album.releaseDate?.slice(0, 4) ?? "";
+            return (
+              <li key={album.id}>
+                <Link
+                  href={`/album/${album.slug}`}
+                  className="group flex items-center gap-3 rounded-md py-2 pr-2 transition-colors hover:bg-white/5"
+                  style={{
+                    borderLeft: active ? "3px solid #3DD6C8" : "3px solid transparent",
+                    paddingLeft: 5,
+                    background: active ? "rgba(255,255,255,0.04)" : undefined,
+                  }}
                 >
-                  <Music size={16} />
-                </div>
-                <div className="min-w-0 flex-1">
+                  {album.coverImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={album.coverImage}
+                      alt={album.title}
+                      className="h-10 w-10 flex-shrink-0 rounded object-cover"
+                      onError={(e) => {
+                        const el = e.currentTarget as HTMLImageElement;
+                        el.style.display = "none";
+                        const sib = el.nextElementSibling as HTMLElement | null;
+                        if (sib) sib.style.display = "flex";
+                      }}
+                    />
+                  ) : null}
                   <div
-                    className={`truncate text-sm font-medium ${
-                      active ? "text-[#3DD6C8]" : "text-white"
-                    }`}
+                    className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded"
+                    style={{ background: album.bgColor, color: album.accentColor }}
                   >
-                    {album.title}
+                    <Music size={16} />
                   </div>
-                  <div className="truncate text-xs text-[#B3B3B3]">
-                    Album · {year}
+                  <div className="min-w-0 flex-1">
+                    <div
+                      className={`truncate text-sm font-medium ${
+                        active ? "text-[#3DD6C8]" : "text-white"
+                      }`}
+                    >
+                      {album.title}
+                    </div>
+                    <div className="truncate text-xs text-[#B3B3B3]">
+                      Album · {year}
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </li>
-          );
-        })}
+                </Link>
+              </li>
+            );
+          })
+        )}
       </ul>
 
       <div

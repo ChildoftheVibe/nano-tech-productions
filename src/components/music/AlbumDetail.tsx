@@ -5,18 +5,11 @@ import { ExternalLink, Play, Shuffle, ShoppingBag } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { TrackRow } from "@/components/music/TrackRow";
 import { usePlayerStore } from "@/store/playerStore";
-import type { Album } from "@/data/catalog";
+import type { Album } from "@/types/music";
 
 const ALBUM_PRICE = 9.99;
 
-type ExtendedAlbum = Album & {
-  appleMusicUrl?: string;
-  youtubeUrl?: string;
-  amazonUrl?: string;
-};
-
 export function AlbumDetail({ album }: { album: Album }) {
-  const ext = album as ExtendedAlbum;
   const playAlbum = usePlayerStore((s) => s.playAlbum);
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
   const shuffle = usePlayerStore((s) => s.shuffle);
@@ -41,9 +34,9 @@ export function AlbumDetail({ album }: { album: Album }) {
 
   const platformLinks: Array<{ label: string; url?: string }> = [
     { label: "Spotify", url: album.spotifyUrl || undefined },
-    { label: "Apple Music", url: ext.appleMusicUrl },
-    { label: "YouTube", url: ext.youtubeUrl },
-    { label: "Amazon", url: ext.amazonUrl },
+    { label: "Apple Music", url: album.appleMusicUrl },
+    { label: "YouTube", url: album.youtubeUrl },
+    { label: "Amazon", url: album.amazonUrl },
   ];
 
   return (

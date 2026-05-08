@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { Album, Track } from "@/data/catalog";
+import type { Album, Track } from "@/types/music";
 
 export type RepeatMode = "off" | "all" | "one";
 

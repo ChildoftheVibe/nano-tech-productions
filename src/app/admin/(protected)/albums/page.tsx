@@ -4,11 +4,28 @@ import { AlbumsManager } from "./AlbumsManager";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminAlbumsPage() {
-  const { data, error } = await supabaseAdmin
+const ADMIN_PAGE_SIZE = 25;
+
+type SearchParams = Promise<{ page?: string }>;
+
+export default async function AdminAlbumsPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const { page: pageStr } = await searchParams;
+  const page = Math.max(1, Number(pageStr ?? "1") || 1);
+  const start = (page - 1) * ADMIN_PAGE_SIZE;
+  const end = start + ADMIN_PAGE_SIZE - 1;
+
+  const { data, count, error } = await supabaseAdmin
     .from("albums")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(start, end);
+
+  const total = count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE));
 
   return (
     <main className="p-8">
@@ -16,7 +33,12 @@ export default async function AdminAlbumsPage() {
       {error ? (
         <p className="text-red-400">Failed to load: {error.message}</p>
       ) : (
-        <AlbumsManager initialAlbums={(data ?? []) as Album[]} />
+        <AlbumsManager
+          initialAlbums={(data ?? []) as Album[]}
+          page={page}
+          totalPages={totalPages}
+          totalCount={total}
+        />
       )}
     </main>
   );

@@ -14,7 +14,7 @@ export default function AdminLoginPage() {
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/admin/login", {
+      const res = await fetch("/api/admin/auth/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ password }),

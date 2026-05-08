@@ -2,7 +2,7 @@
 
 import { Play } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
-import type { Album, Track } from "@/data/catalog";
+import type { Album, Track } from "@/types/music";
 
 type Props = {
   track: Track;
@@ -23,6 +23,12 @@ export function TrackRow({ track, album }: Props) {
       togglePlay();
     } else {
       playTrack(track, album);
+      void fetch("/api/tracks/played", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackId: track.id }),
+        keepalive: true,
+      }).catch(() => {});
     }
   };
 

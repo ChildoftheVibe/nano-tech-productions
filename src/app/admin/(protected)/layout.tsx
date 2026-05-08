@@ -25,8 +25,11 @@ export default async function ProtectedAdminLayout({
           <Link href="/admin/discounts" className="hover:text-[#3DD6C8]">
             Discounts
           </Link>
+          <Link href="/admin/vault" className="hover:text-[#EB41DF]">
+            Vault
+          </Link>
         </nav>
-        <form action="/api/admin/logout" method="post">
+        <form action="/api/admin/auth/logout" method="post">
           <button
             type="submit"
             className="text-sm text-white/70 hover:text-white"
