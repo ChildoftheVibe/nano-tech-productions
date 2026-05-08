@@ -69,6 +69,10 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
+  // Empty turbopack config silences Next 16's "Turbopack with webpack config"
+  // notice that fires because @serwist/next contributes a webpack config even
+  // when its plugin is disabled in dev.
+  turbopack: {},
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
