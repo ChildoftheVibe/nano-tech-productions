@@ -90,3 +90,72 @@ export function getAdminWavDownloadUrl(publicId: string): string {
 export function getStreamingUrl(publicId: string): string {
   return getPublicStreamingUrl(publicId);
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// Phase 9 spec helpers. Thin wrappers over the existing API so callers can
+// use the simpler names while we keep backwards compatibility.
+// ─────────────────────────────────────────────────────────────────────
+
+const COVERS_FOLDER = "ntp/images/covers";
+
+type CoverSize = "thumb" | "card" | "hero" | number;
+
+/**
+ * Optimized WebP album cover URL. Pass a named size or an explicit pixel width.
+ * Cloudinary's f_auto/q_auto/c_fill negotiates WebP/AVIF when supported.
+ */
+export function getAlbumCover(publicId: string, size: CoverSize = "card"): string {
+  if (!publicId) return "";
+  if (/^https?:\/\//.test(publicId)) return publicId;
+  const widths: Record<Exclude<CoverSize, number>, number> = {
+    thumb: 80,
+    card: 400,
+    hero: 1200,
+  };
+  const w = typeof size === "number" ? size : widths[size];
+  const transform = `f_auto,q_auto,c_fill,w_${w},h_${w}`;
+  const idWithFolder = publicId.includes("/")
+    ? publicId
+    : `${COVERS_FOLDER}/${publicId}`;
+  return `https://res.cloudinary.com/${cloudName}/image/upload/${transform}/${idWithFolder}`;
+}
+
+/**
+ * Public streaming audio URL. Alias for getPublicStreamingUrl with a name that
+ * matches the phase 9 spec.
+ */
+export function getAudioUrl(publicId: string): string {
+  return getPublicStreamingUrl(publicId);
+}
+
+/**
+ * Server-side upload helper for the admin. Use this from API routes — it
+ * relies on the configured api_secret. The Cloudinary SDK accepts either a
+ * remote URL string, a local file path, or a base64 data URI.
+ *
+ * For browser-driven uploads keep using the signed-upload flow in
+ * /api/admin/cloudinary-sign + components/admin/CloudinaryUploader.
+ */
+export async function uploadToCloudinary(
+  source: string,
+  folder: "ntp/images/covers" | "ntp/audio/public" | "ntp/audio/vault",
+  options: {
+    resourceType?: "image" | "video" | "raw";
+    type?: "upload" | "authenticated";
+  } = {},
+): Promise<{ publicId: string; url: string; bytes: number; format?: string }> {
+  if (!cloudName || !apiSecret) {
+    throw new Error("cloudinary_not_configured");
+  }
+  const result = await cloudinary.uploader.upload(source, {
+    folder,
+    resource_type: options.resourceType ?? "auto",
+    type: options.type ?? "upload",
+  });
+  return {
+    publicId: result.public_id,
+    url: result.secure_url,
+    bytes: result.bytes,
+    format: result.format,
+  };
+}

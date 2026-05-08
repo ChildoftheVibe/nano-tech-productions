@@ -53,7 +53,7 @@ async function checkRateLimit(
   }
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const ip = clientIp(req);
 
@@ -108,7 +108,7 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
     // Real verification (DB lookup) happens in the admin layout / route. The
-    // middleware is the cheap presence check; deep verify is fail-closed there.
+    // proxy is the cheap presence check; deep verify is fail-closed there.
   }
 
   return NextResponse.next();

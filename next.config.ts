@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import withSerwistInit from "@serwist/next";
 
 // Content-Security-Policy. Tight by default; loosened only where vendors require it.
 //
@@ -58,7 +59,21 @@ const adminNoIndexHeaders = [
   { key: "X-Robots-Tag", value: "noindex, nofollow" },
 ];
 
+const withSerwist = withSerwistInit({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  // Disable in dev — service workers + Next dev hot-reload play poorly.
+  disable: process.env.NODE_ENV === "development",
+  cacheOnNavigation: true,
+  reloadOnOnline: true,
+});
+
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
+    ],
+  },
   async headers() {
     return [
       { source: "/:path*", headers: baseSecurityHeaders },
@@ -68,4 +83,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);
