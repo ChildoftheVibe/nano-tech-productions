@@ -14,10 +14,59 @@ export const config = {
 
 const ADMIN_COOKIE = "ntv_admin_session";
 
-function clientIp(req: NextRequest): string {
+type ClientContext = {
+  ip: string;
+  country: string | null;
+  cfRay: string | null;
+};
+
+function clientContext(req: NextRequest): ClientContext {
+  // Cloudflare sets CF-Connecting-IP with the true visitor IP. When the request
+  // arrives directly at the origin (bypassing CF), this header will be absent
+  // and we fall back to XFF/x-real-ip so dev and break-glass paths still work.
+  const cfIp = req.headers.get("cf-connecting-ip");
+  if (cfIp) {
+    return {
+      ip: cfIp,
+      country: req.headers.get("cf-ipcountry"),
+      cfRay: req.headers.get("cf-ray"),
+    };
+  }
   const xff = req.headers.get("x-forwarded-for");
-  if (xff) return xff.split(",")[0].trim();
-  return req.headers.get("x-real-ip") ?? "unknown";
+  const ip = xff
+    ? xff.split(",")[0].trim()
+    : req.headers.get("x-real-ip") ?? "unknown";
+  return { ip, country: null, cfRay: null };
+}
+
+async function logDirectServerAccess(req: NextRequest, ctx: ClientContext) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return;
+  try {
+    await fetch(`${url}/rest/v1/audit_log`, {
+      method: "POST",
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({
+        event_type: "direct_server_access_attempt",
+        performed_by: ctx.ip,
+        ip_address: ctx.ip,
+        user_agent: req.headers.get("user-agent") ?? null,
+        metadata: {
+          path: req.nextUrl.pathname,
+          host: req.headers.get("host") ?? null,
+          country: ctx.country,
+        },
+      }),
+    });
+  } catch {
+    // Best-effort. Never fail a request because audit logging fell over.
+  }
 }
 
 async function checkRateLimit(
@@ -55,7 +104,17 @@ async function checkRateLimit(
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const ip = clientIp(req);
+  const ctx = clientContext(req);
+  const ip = ctx.ip;
+
+  // In production, every request should arrive via Cloudflare and carry CF-Ray.
+  // A missing CF-Ray means someone hit the origin IP directly — log it so we
+  // can spot scanning/recon. We don't block (would break health checks) but
+  // we want a paper trail.
+  if (!ctx.cfRay && process.env.NODE_ENV === "production") {
+    // Don't await — this is fire-and-forget telemetry.
+    void logDirectServerAccess(req, ctx);
+  }
 
   // Per-IP rate limiting on /api routes.
   if (pathname.startsWith("/api/")) {
@@ -111,5 +170,10 @@ export async function proxy(req: NextRequest) {
     // proxy is the cheap presence check; deep verify is fail-closed there.
   }
 
-  return NextResponse.next();
+  // Forward the resolved client IP and country to downstream handlers so they
+  // don't have to re-parse Cloudflare headers themselves.
+  const res = NextResponse.next();
+  res.headers.set("x-client-ip", ip);
+  if (ctx.country) res.headers.set("x-client-country", ctx.country);
+  return res;
 }

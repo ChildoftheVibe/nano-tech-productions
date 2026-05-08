@@ -30,6 +30,10 @@ export async function logAuditEvent(event: AuditEvent): Promise<void> {
 }
 
 export function clientIpFromHeaders(headers: Headers): string {
+  // Cloudflare sets CF-Connecting-IP with the true visitor IP. The proxy also
+  // mirrors it onto x-client-ip for handlers that get the resolved value.
+  const cfIp = headers.get("cf-connecting-ip") ?? headers.get("x-client-ip");
+  if (cfIp) return cfIp;
   const xff = headers.get("x-forwarded-for");
   if (xff) return xff.split(",")[0].trim();
   return headers.get("x-real-ip") ?? "unknown";
