@@ -5,6 +5,7 @@ import { PlayerProvider } from "@/context/PlayerContext";
 import { PlayerBar } from "@/components/layout/PlayerBar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
+import { CheckoutHost } from "@/components/paypal/CheckoutHost";
 import { getAlbums } from "@/lib/queries";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -42,6 +43,7 @@ export default async function RootLayout({
             </div>
             <PlayerBar />
           </div>
+          <CheckoutHost />
         </PlayerProvider>
       </body>
     </html>

@@ -5,6 +5,7 @@ import { ExternalLink, Play, Shuffle, ShoppingBag } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { TrackRow } from "@/components/music/TrackRow";
 import { usePlayerStore } from "@/store/playerStore";
+import { useCheckoutStore, albumCheckoutItem } from "@/store/checkoutStore";
 import type { Album } from "@/types/music";
 
 const ALBUM_PRICE = 9.99;
@@ -13,14 +14,14 @@ export function AlbumDetail({ album }: { album: Album }) {
   const playAlbum = usePlayerStore((s) => s.playAlbum);
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
   const shuffle = usePlayerStore((s) => s.shuffle);
+  const openCheckout = useCheckoutStore((s) => s.open);
   const [expanded, setExpanded] = useState(false);
 
   const year = album.releaseDate?.slice(0, 4) ?? "";
   const songCount = album.tracks.length;
 
   const handleBuyAlbum = () => {
-    // TODO: open album checkout modal (later phase).
-    alert(`Buy "${album.title}" for $${ALBUM_PRICE.toFixed(2)} — checkout coming in a later phase.`);
+    openCheckout(albumCheckoutItem(album, ALBUM_PRICE));
   };
 
   const handleShuffle = () => {

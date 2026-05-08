@@ -2,6 +2,7 @@
 
 import { Play } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
+import { useCheckoutStore, trackCheckoutItem } from "@/store/checkoutStore";
 import type { Album, Track } from "@/types/music";
 
 type Props = {
@@ -32,9 +33,9 @@ export function TrackRow({ track, album }: Props) {
     }
   };
 
+  const openCheckout = useCheckoutStore((s) => s.open);
   const handleBuy = () => {
-    // TODO: open single-track checkout modal (later phase).
-    alert(`Buy "${track.title}" — checkout coming in a later phase.`);
+    openCheckout(trackCheckoutItem(track, album));
   };
 
   return (
