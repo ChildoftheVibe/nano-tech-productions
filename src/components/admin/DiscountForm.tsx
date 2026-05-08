@@ -1,11 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { Sparkles } from "lucide-react";
 import type {
   Album,
   DiscountAppliesTo,
   DiscountCode,
 } from "@/lib/db-types";
+
+function generateCode(length = 8): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // omit ambiguous chars
+  const arr = new Uint32Array(length);
+  if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
+    crypto.getRandomValues(arr);
+  } else {
+    for (let i = 0; i < length; i++) arr[i] = Math.floor(Math.random() * 0xffffffff);
+  }
+  let out = "";
+  for (let i = 0; i < length; i++) out += chars[arr[i] % chars.length];
+  return out;
+}
 
 type Props = {
   initial?: DiscountCode;
@@ -105,13 +119,23 @@ export function DiscountForm({ initial, albums, onSaved, onCancel }: Props) {
     <form onSubmit={onSubmit} className="space-y-3 text-white">
       <label className="block">
         <span className="mb-1 block text-sm text-white/70">Code</span>
-        <input
-          required
-          value={form.code}
-          onChange={(e) => set("code", e.target.value)}
-          placeholder="SUMMER25"
-          className="w-full rounded border border-white/20 bg-transparent px-3 py-2 uppercase outline-none focus:border-[#3DD6C8]"
-        />
+        <div className="flex gap-2">
+          <input
+            required
+            value={form.code}
+            onChange={(e) => set("code", e.target.value)}
+            placeholder="SUMMER25"
+            className="w-full rounded border border-white/20 bg-transparent px-3 py-2 uppercase outline-none focus:border-[#3DD6C8]"
+          />
+          <button
+            type="button"
+            onClick={() => set("code", generateCode())}
+            className="flex items-center gap-1 rounded border border-white/20 px-3 py-2 text-sm text-white/80 hover:border-[#3DD6C8] hover:text-[#3DD6C8]"
+            title="Auto-generate code"
+          >
+            <Sparkles size={14} /> Generate
+          </button>
+        </div>
       </label>
 
       <label className="block">

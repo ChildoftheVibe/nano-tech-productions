@@ -5,6 +5,7 @@ import { useState, useSyncExternalStore } from "react";
 import { Pause, Play } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { usePlayerStore } from "@/store/playerStore";
+import { usePageEngagement } from "@/lib/usePageEngagement";
 import type { Album, AlbumListResult } from "@/types/music";
 
 const PAGE_SIZE =
@@ -33,6 +34,8 @@ export function HomeClient({ featured, latest, initialCollection }: Props) {
     getClientGreeting,
     getServerGreeting,
   );
+
+  usePageEngagement("/");
 
   const playAlbum = usePlayerStore((s) => s.playAlbum);
   const togglePlay = usePlayerStore((s) => s.togglePlay);

@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import type { Album } from "@/lib/db-types";
-import { AlbumsManager } from "./AlbumsManager";
+import { AlbumsManager, type AlbumWithTrackCount } from "./AlbumsManager";
 
 export const dynamic = "force-dynamic";
 
@@ -20,12 +20,18 @@ export default async function AdminAlbumsPage({
 
   const { data, count, error } = await supabaseAdmin
     .from("albums")
-    .select("*", { count: "exact" })
+    .select("*, tracks(id)", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(start, end);
 
   const total = count ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE));
+
+  type Row = Album & { tracks?: Array<{ id: string }> | null };
+  const rows: AlbumWithTrackCount[] = ((data ?? []) as Row[]).map((r) => {
+    const { tracks, ...album } = r;
+    return { ...(album as Album), track_count: tracks?.length ?? 0 };
+  });
 
   return (
     <main className="p-8">
@@ -34,7 +40,7 @@ export default async function AdminAlbumsPage({
         <p className="text-red-400">Failed to load: {error.message}</p>
       ) : (
         <AlbumsManager
-          initialAlbums={(data ?? []) as Album[]}
+          initialAlbums={rows}
           page={page}
           totalPages={totalPages}
           totalCount={total}

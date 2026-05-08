@@ -1,0 +1,55 @@
+import { requireAdmin } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
+  const { id } = await params;
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "invalid_body" }, { status: 400 });
+  }
+
+  const update: { is_active?: boolean; position?: number } = {};
+  if (body && typeof body === "object") {
+    const src = body as Record<string, unknown>;
+    if (typeof src.is_active === "boolean") update.is_active = src.is_active;
+    if (typeof src.position === "number") update.position = src.position;
+  }
+
+  if (Object.keys(update).length === 0) {
+    return Response.json({ error: "no_fields" }, { status: 400 });
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("playlist")
+    .update(update)
+    .eq("id", id)
+    .select("id, track_id, position, is_active")
+    .single();
+
+  if (error) return Response.json({ error: error.message }, { status: 400 });
+  return Response.json({ entry: data });
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
+  const { id } = await params;
+  const { error } = await supabaseAdmin.from("playlist").delete().eq("id", id);
+  if (error) return Response.json({ error: error.message }, { status: 400 });
+  return Response.json({ ok: true });
+}

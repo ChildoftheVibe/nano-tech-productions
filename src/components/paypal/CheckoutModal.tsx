@@ -282,6 +282,18 @@ function CheckoutModalContent({
                           });
                           return;
                         }
+                        try {
+                          const { trackPurchaseComplete } = await import(
+                            "@/lib/analytics"
+                          );
+                          trackPurchaseComplete(
+                            data.orderID,
+                            orderRequestBody().items,
+                            total,
+                          );
+                        } catch {
+                          // analytics best-effort
+                        }
                         setPhase({
                           kind: "success",
                           downloadUrls: json.downloadUrls ?? [],

@@ -1,10 +1,38 @@
 import type { NextConfig } from "next";
 
+// Content-Security-Policy. Tight by default; loosened only where vendors require it.
+//
+//  - PostHog:     us.i.posthog.com (events) + us-assets.i.posthog.com (recorder/static)
+//  - PayPal:      *.paypal.com (SDK + iframe checkout)
+//  - Cloudinary:  res.cloudinary.com (images + audio CDN)
+//  - Vercel:      vitals.vercel-insights.com + va.vercel-scripts.com
+//  - World map:   cdn.jsdelivr.net (TopoJSON for the admin analytics map)
+//
+// 'unsafe-inline' on script-src is required by the Next.js inline runtime that
+// hydrates RSC boundaries; nonces would be cleaner but require per-request work.
+const csp = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "form-action 'self' https://www.paypal.com https://www.sandbox.paypal.com",
+  "img-src 'self' data: blob: https://res.cloudinary.com https://*.paypal.com https://us-assets.i.posthog.com",
+  "media-src 'self' blob: https://res.cloudinary.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.paypal.com https://us-assets.i.posthog.com https://va.vercel-scripts.com",
+  "connect-src 'self' https://*.paypal.com https://us.i.posthog.com https://us-assets.i.posthog.com https://vitals.vercel-insights.com https://*.supabase.co wss://*.supabase.co https://api.cloudinary.com https://cdn.jsdelivr.net",
+  "frame-src https://*.paypal.com",
+  "worker-src 'self' blob:",
+  "upgrade-insecure-requests",
+].join("; ");
+
 const baseSecurityHeaders = [
   {
     key: "Strict-Transport-Security",
     value: "max-age=63072000; includeSubDomains; preload",
   },
+  { key: "Content-Security-Policy", value: csp },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-XSS-Protection", value: "1; mode=block" },
@@ -14,9 +42,10 @@ const baseSecurityHeaders = [
     value:
       'camera=(), microphone=(), geolocation=(), payment=(self "https://www.paypal.com")',
   },
-  { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
-  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
-  { key: "Cross-Origin-Resource-Policy", value: "same-site" },
+  // Note: COEP/COOP relaxed from `require-corp`/`same-origin` to allow PayPal &
+  // PostHog cross-origin embeds. Tighten again if those go away.
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+  { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
 ];
 
 const apiNoStoreHeaders = [

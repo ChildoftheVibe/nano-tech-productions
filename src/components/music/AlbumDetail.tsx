@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ExternalLink, Play, Shuffle, ShoppingBag } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { TrackRow } from "@/components/music/TrackRow";
 import { usePlayerStore } from "@/store/playerStore";
 import { useCheckoutStore, albumCheckoutItem } from "@/store/checkoutStore";
+import {
+  trackAlbumView,
+  trackAlbumViewEnd,
+  trackPurchaseIntent,
+} from "@/lib/analytics";
+import { usePageEngagement } from "@/lib/usePageEngagement";
 import type { Album } from "@/types/music";
 
 const ALBUM_PRICE = 9.99;
@@ -20,7 +26,18 @@ export function AlbumDetail({ album }: { album: Album }) {
   const year = album.releaseDate?.slice(0, 4) ?? "";
   const songCount = album.tracks.length;
 
+  useEffect(() => {
+    trackAlbumView(album);
+  }, [album]);
+
+  const onUnmount = useCallback(
+    (ms: number) => trackAlbumViewEnd(album.id, ms),
+    [album.id],
+  );
+  usePageEngagement(`/album/${album.slug}`, onUnmount);
+
   const handleBuyAlbum = () => {
+    trackPurchaseIntent(null, album.id, `/album/${album.slug}`);
     openCheckout(albumCheckoutItem(album, ALBUM_PRICE));
   };
 

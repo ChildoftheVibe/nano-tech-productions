@@ -3,6 +3,14 @@
 import { createContext, useContext, useEffect, useRef } from "react";
 import { usePlayerStore } from "@/store/playerStore";
 import { syncAudioCache, clearAudioCache } from "@/lib/audioCache";
+import {
+  trackPlayStart,
+  trackPlayProgress,
+  trackSkip,
+  trackPlayComplete,
+  trackPause,
+  trackSeek,
+} from "@/lib/analytics";
 import type { Track } from "@/types/music";
 
 type PlayerContextValue = {
@@ -12,6 +20,7 @@ type PlayerContextValue = {
 const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 const REFETCH_WHEN_REMAINING = 5;
+const PROGRESS_TICK_SECONDS = 10;
 
 const shuffle = <T,>(arr: T[]): T[] => {
   const a = [...arr];
@@ -37,15 +46,42 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const refetchingRef = useRef(false);
 
+  // Track-level analytics state (refs so they don't trigger renders).
+  const lastTrackIdRef = useRef<string | null>(null);
+  const lastReportedProgressRef = useRef<number>(-1);
+  const completedRef = useRef(false);
+  const playFiredRef = useRef(false);
+  const pauseAtRef = useRef<number>(0);
+  const seekFromRef = useRef<number | null>(null);
+
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const volume = usePlayerStore((s) => s.volume);
   const seekRequestId = usePlayerStore((s) => s.seekRequestId);
   const queue = usePlayerStore((s) => s.queue);
+  const currentAlbum = usePlayerStore((s) => s.currentAlbum);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
+
+    // Track changed → fire skip-if-incomplete on the previous track,
+    // then reset progress trackers for the new track.
+    const previousTrackId = lastTrackIdRef.current;
+    if (previousTrackId && previousTrackId !== (currentTrack?.id ?? null)) {
+      const prev = queue.find((t) => t.id === previousTrackId);
+      const dur = audio.duration;
+      const at = audio.currentTime;
+      if (prev && !completedRef.current && Number.isFinite(dur) && dur > 0 && at < dur - 0.5) {
+        trackSkip(prev, at, dur);
+      }
+    }
+
+    lastTrackIdRef.current = currentTrack?.id ?? null;
+    lastReportedProgressRef.current = -1;
+    completedRef.current = false;
+    playFiredRef.current = false;
+
     if (currentTrack?.audioUrl) {
       if (audio.src !== currentTrack.audioUrl) {
         audio.src = currentTrack.audioUrl;
@@ -55,7 +91,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       audio.removeAttribute("src");
       audio.load();
     }
-  }, [currentTrack]);
+  }, [currentTrack, queue]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -69,37 +105,85 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isPlaying, currentTrack]);
 
+  // Fire play_start once per track-play activation.
+  useEffect(() => {
+    if (!isPlaying || !currentTrack) return;
+    if (playFiredRef.current) return;
+    playFiredRef.current = true;
+    const idx = queue.findIndex((t) => t.id === currentTrack.id);
+    trackPlayStart(currentTrack, currentAlbum, idx >= 0 ? idx : 0);
+  }, [isPlaying, currentTrack, currentAlbum, queue]);
+
   useEffect(() => {
     const audio = audioRef.current;
     if (audio) audio.volume = volume;
   }, [volume]);
 
+  // Seek tracking: when the store bumps seekRequestId, capture from→to.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || seekRequestId === 0) return;
     const target = usePlayerStore.getState().currentTime;
-    if (Number.isFinite(target)) audio.currentTime = target;
-  }, [seekRequestId]);
+    const from = audio.currentTime;
+    if (Number.isFinite(target)) {
+      seekFromRef.current = from;
+      audio.currentTime = target;
+      if (currentTrack) trackSeek(currentTrack, from, target);
+    }
+  }, [seekRequestId, currentTrack]);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    const onTime = () => usePlayerStore.getState().setCurrentTime(audio.currentTime);
+
+    const onTime = () => {
+      const t = audio.currentTime;
+      const d = audio.duration;
+      usePlayerStore.getState().setCurrentTime(t);
+      if (!currentTrack || !Number.isFinite(d) || d <= 0) return;
+
+      // Fire progress every PROGRESS_TICK_SECONDS only.
+      const bucket = Math.floor(t / PROGRESS_TICK_SECONDS);
+      if (bucket > lastReportedProgressRef.current) {
+        lastReportedProgressRef.current = bucket;
+        if (bucket > 0) trackPlayProgress(currentTrack, t, d);
+      }
+    };
+
     const onDuration = () =>
-      usePlayerStore.getState().setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
-    const onEnded = () => usePlayerStore.getState().nextTrack();
+      usePlayerStore
+        .getState()
+        .setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+
+    const onEnded = () => {
+      if (currentTrack && Number.isFinite(audio.duration)) {
+        completedRef.current = true;
+        trackPlayComplete(currentTrack, audio.duration);
+      }
+      usePlayerStore.getState().nextTrack();
+    };
+
+    const onPause = () => {
+      // Browser fires "pause" on natural end too; don't double-count.
+      if (audio.ended) return;
+      pauseAtRef.current = audio.currentTime;
+      if (currentTrack) trackPause(currentTrack, audio.currentTime);
+    };
+
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("loadedmetadata", onDuration);
     audio.addEventListener("durationchange", onDuration);
     audio.addEventListener("ended", onEnded);
+    audio.addEventListener("pause", onPause);
     return () => {
       audio.removeEventListener("timeupdate", onTime);
       audio.removeEventListener("loadedmetadata", onDuration);
       audio.removeEventListener("durationchange", onDuration);
       audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("pause", onPause);
       clearAudioCache();
     };
-  }, []);
+  }, [currentTrack]);
 
   // Initial playlist seed: only fetch if queue is empty and nothing is playing.
   useEffect(() => {

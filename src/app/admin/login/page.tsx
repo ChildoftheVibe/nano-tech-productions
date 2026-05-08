@@ -1,10 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const search = useSearchParams();
+  const redirectTo = search.get("redirect") ?? "/admin";
+
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -20,10 +23,15 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ password }),
       });
       if (!res.ok) {
-        setError("Invalid password");
+        const json = await res.json().catch(() => ({}));
+        setError(
+          json.error === "rate_limited"
+            ? "Too many attempts — try again in 15 minutes."
+            : "Invalid password",
+        );
         return;
       }
-      router.replace("/admin");
+      router.replace(redirectTo);
       router.refresh();
     } finally {
       setSubmitting(false);
@@ -31,26 +39,48 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#393838] p-8 text-white">
+    <main className="flex min-h-screen items-center justify-center bg-[#1a1919] p-8 text-white">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-sm space-y-4 rounded-lg bg-black/30 p-6"
+        className="w-full max-w-sm space-y-5 rounded-xl border border-white/10 bg-[#222121] p-8 shadow-xl"
       >
-        <h1 className="text-xl font-semibold">Admin Login</h1>
-        <input
-          type="password"
-          autoFocus
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          className="w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-[#3DD6C8]"
-        />
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-2xl font-bold tracking-wider text-[#3DD6C8]">
+              NTP
+            </span>
+            <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/50">
+              Admin
+            </span>
+          </div>
+          <p className="text-sm text-white/60">Sign in to manage the catalog.</p>
+        </div>
+
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-white/60">
+            Password
+          </span>
+          <input
+            type="password"
+            autoFocus
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            className="w-full rounded border border-white/15 bg-black/30 px-3 py-2 outline-none focus:border-[#3DD6C8]"
+          />
+        </label>
+
+        {error && (
+          <p className="rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+            {error}
+          </p>
+        )}
+
         <button
           type="submit"
-          disabled={submitting}
-          className="w-full rounded bg-[#3DD6C8] py-2 font-medium text-black disabled:opacity-50"
+          disabled={submitting || !password}
+          className="w-full rounded bg-[#3DD6C8] py-2.5 font-medium text-black transition-opacity disabled:opacity-50"
         >
           {submitting ? "Signing in…" : "Sign in"}
         </button>

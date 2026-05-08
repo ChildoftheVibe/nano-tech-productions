@@ -6,24 +6,32 @@ export const dynamic = "force-dynamic";
 
 const ADMIN_PAGE_SIZE = 50;
 
-type SearchParams = Promise<{ page?: string }>;
+type SearchParams = Promise<{ page?: string; album?: string }>;
 
 export default async function AdminTracksPage({
   searchParams,
 }: {
   searchParams: SearchParams;
 }) {
-  const { page: pageStr } = await searchParams;
+  const { page: pageStr, album: albumFilter } = await searchParams;
   const page = Math.max(1, Number(pageStr ?? "1") || 1);
   const start = (page - 1) * ADMIN_PAGE_SIZE;
   const end = start + ADMIN_PAGE_SIZE - 1;
 
+  let tracksQuery = supabaseAdmin
+    .from("tracks")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(start, end);
+
+  if (albumFilter === "none") {
+    tracksQuery = tracksQuery.is("album_id", null);
+  } else if (albumFilter && albumFilter.length > 0) {
+    tracksQuery = tracksQuery.eq("album_id", albumFilter);
+  }
+
   const [tracksRes, albumsRes] = await Promise.all([
-    supabaseAdmin
-      .from("tracks")
-      .select("*", { count: "exact" })
-      .order("created_at", { ascending: false })
-      .range(start, end),
+    tracksQuery,
     supabaseAdmin
       .from("albums")
       .select("id, title")
@@ -46,6 +54,7 @@ export default async function AdminTracksPage({
           page={page}
           totalPages={totalPages}
           totalCount={total}
+          albumFilter={albumFilter ?? ""}
         />
       )}
     </main>

@@ -22,21 +22,53 @@ function formatExpires(iso: string): string {
   return d.toLocaleString();
 }
 
+function statusOf(d: DiscountCode): "active" | "inactive" | "expired" | "exhausted" {
+  if (!d.is_active) return "inactive";
+  if (new Date(d.expires_at).getTime() <= Date.now()) return "expired";
+  if (d.max_uses !== null && d.current_uses >= d.max_uses) return "exhausted";
+  return "active";
+}
+
 export function DiscountsManager({ initialDiscounts, albums }: Props) {
   const router = useRouter();
+  const [discounts, setDiscounts] = useState<DiscountCode[]>(initialDiscounts);
   const [mode, setMode] = useState<
     | { kind: "list" }
     | { kind: "create" }
     | { kind: "edit"; discount: DiscountCode }
   >({ kind: "list" });
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
 
   const albumTitle = (id: string | null) =>
     id ? (albums.find((a) => a.id === id)?.title ?? "—") : "—";
 
+  async function onToggleActive(discount: DiscountCode) {
+    setPendingId(discount.id);
+    try {
+      const res = await fetch(`/api/admin/discounts/${discount.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ is_active: !discount.is_active }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        alert(`Update failed: ${json.error ?? res.statusText}`);
+        return;
+      }
+      setDiscounts((prev) =>
+        prev.map((d) =>
+          d.id === discount.id ? { ...d, is_active: !d.is_active } : d,
+        ),
+      );
+      router.refresh();
+    } finally {
+      setPendingId(null);
+    }
+  }
+
   async function onDelete(discount: DiscountCode) {
     if (!confirm(`Delete code "${discount.code}"?`)) return;
-    setDeletingId(discount.id);
+    setPendingId(discount.id);
     try {
       const res = await fetch(`/api/admin/discounts/${discount.id}`, {
         method: "DELETE",
@@ -48,7 +80,7 @@ export function DiscountsManager({ initialDiscounts, albums }: Props) {
       }
       router.refresh();
     } finally {
-      setDeletingId(null);
+      setPendingId(null);
     }
   }
 
@@ -91,55 +123,94 @@ export function DiscountsManager({ initialDiscounts, albums }: Props) {
         onClick={() => setMode({ kind: "create" })}
         className="mb-4 rounded bg-[#3DD6C8] px-4 py-2 font-medium text-black"
       >
-        + New discount
+        + Create code
       </button>
 
-      {initialDiscounts.length === 0 ? (
+      {discounts.length === 0 ? (
         <p className="text-white/60">No discount codes yet.</p>
       ) : (
-        <ul className="space-y-2">
-          {initialDiscounts.map((discount) => {
-            const scope =
-              discount.applies_to === "album"
-                ? `${APPLIES_TO_LABEL.album}: ${albumTitle(discount.album_id)}`
-                : APPLIES_TO_LABEL[discount.applies_to];
-            const usage = discount.max_uses
-              ? `${discount.current_uses}/${discount.max_uses} used`
-              : `${discount.current_uses} used`;
-            return (
-              <li
-                key={discount.id}
-                className="flex items-center justify-between rounded border border-white/10 bg-black/20 p-4"
-              >
-                <div>
-                  <div className="font-medium">
-                    {discount.code} · {discount.discount_percent}% off
-                  </div>
-                  <div className="text-sm text-white/60">
-                    {scope} · expires {formatExpires(discount.expires_at)} ·{" "}
-                    {usage} ·{" "}
-                    {discount.is_active ? "Active" : "Inactive"}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setMode({ kind: "edit", discount })}
-                    className="rounded border border-white/20 px-3 py-1 text-sm hover:bg-white/5"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => onDelete(discount)}
-                    disabled={deletingId === discount.id}
-                    className="rounded border border-red-500/40 px-3 py-1 text-sm text-red-300 hover:bg-red-500/10 disabled:opacity-50"
-                  >
-                    {deletingId === discount.id ? "Deleting…" : "Delete"}
-                  </button>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="overflow-x-auto rounded-lg border border-white/10 bg-[#222121]">
+          <table className="w-full text-sm">
+            <thead className="bg-black/20 text-left text-xs uppercase tracking-wider text-white/50">
+              <tr>
+                <th className="px-4 py-3">Code</th>
+                <th className="px-4 py-3">Off</th>
+                <th className="px-4 py-3">Applies to</th>
+                <th className="px-4 py-3">Expires</th>
+                <th className="px-4 py-3">Uses</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {discounts.map((discount) => {
+                const pending = pendingId === discount.id;
+                const status = statusOf(discount);
+                const scope =
+                  discount.applies_to === "album"
+                    ? `${APPLIES_TO_LABEL.album}: ${albumTitle(discount.album_id)}`
+                    : APPLIES_TO_LABEL[discount.applies_to];
+                const usage = discount.max_uses
+                  ? `${discount.current_uses}/${discount.max_uses}`
+                  : `${discount.current_uses} / ∞`;
+
+                const statusClass =
+                  status === "active"
+                    ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                    : status === "expired"
+                      ? "bg-red-500/15 text-red-300 border-red-500/30"
+                      : status === "exhausted"
+                        ? "bg-yellow-500/15 text-yellow-300 border-yellow-500/30"
+                        : "bg-white/5 text-white/50 border-white/15";
+
+                return (
+                  <tr key={discount.id} className="hover:bg-white/5">
+                    <td className="px-4 py-3 font-mono font-medium">
+                      {discount.code}
+                    </td>
+                    <td className="px-4 py-3">{discount.discount_percent}%</td>
+                    <td className="px-4 py-3 text-white/70">{scope}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-white/70">
+                      {formatExpires(discount.expires_at)}
+                    </td>
+                    <td className="px-4 py-3 text-white/70">{usage}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-block rounded-full border px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider ${statusClass}`}
+                      >
+                        {status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => setMode({ kind: "edit", discount })}
+                          className="rounded border border-white/15 px-2.5 py-1 text-xs hover:bg-white/5"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => onToggleActive(discount)}
+                          disabled={pending}
+                          className="rounded border border-white/15 px-2.5 py-1 text-xs hover:bg-white/5 disabled:opacity-50"
+                        >
+                          {discount.is_active ? "Deactivate" : "Activate"}
+                        </button>
+                        <button
+                          onClick={() => onDelete(discount)}
+                          disabled={pending}
+                          className="rounded border border-red-500/30 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/10 disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
