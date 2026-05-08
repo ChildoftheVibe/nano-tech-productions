@@ -117,7 +117,7 @@ export function PlayerBar() {
         ) : (
           <div className="flex items-center gap-3">
             <div className="flex h-[60px] w-[60px] items-center justify-center rounded bg-gradient-to-br from-[#3DD6C8] to-[#EB41DF]">
-              <span className="font-mono text-xs font-bold text-black">NTP</span>
+              <span className="font-mono text-xs font-bold text-black">NTV</span>
             </div>
             <div className="text-sm text-[#B3B3B3]">No track playing</div>
           </div>

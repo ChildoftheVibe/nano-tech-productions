@@ -12,7 +12,7 @@ export function SiteFooter() {
     <footer className="mt-16 border-t border-white/5 px-6 py-8 text-xs text-white/40 md:px-8">
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 md:flex-row md:items-center">
         <div>
-          © {new Date().getFullYear()} Nano Tech Productions. All rights
+          © {new Date().getFullYear()} Nano Tech Vibe. All rights
           reserved.
         </div>
         <nav className="flex flex-wrap gap-x-5 gap-y-2">

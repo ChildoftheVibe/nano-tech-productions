@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy · NTP Vault",
+  title: "Privacy Policy · NTV Vault",
   description:
-    "What we collect, what we don't, and how we use it at Nano Tech Productions.",
+    "What we collect, what we don't, and how we use it at Nano Tech Vibe.",
 };
 
 export default function PrivacyPage() {
@@ -18,7 +18,7 @@ export default function PrivacyPage() {
       </header>
 
       <p className="text-sm leading-relaxed text-white/80">
-        Nano Tech Productions (&quot;NTP&quot;, &quot;we&quot;) runs NTP Vault
+        Nano Tech Vibe (&quot;NTV&quot;, &quot;we&quot;) runs NTV Vault
         without user accounts. We don&apos;t ask you to sign in, and we
         don&apos;t store names, emails, or addresses unless you choose to make a
         purchase. This page explains, in plain language, what we collect when

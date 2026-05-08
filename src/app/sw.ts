@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 // Service worker entry. Compiled by @serwist/next at build time and emitted
-// to /sw.js. Runtime caching strategies are tuned to NTP's traffic shape:
+// to /sw.js. Runtime caching strategies are tuned to NTV's traffic shape:
 //
 //   • static assets (Next chunks, fonts, images, manifest) → CacheFirst
 //   • API routes (/api/...)                                 → NetworkFirst
@@ -34,7 +34,7 @@ const serwist = new Serwist({
         url.hostname === "res.cloudinary.com" &&
         url.pathname.includes("/video/upload/"),
       handler: new CacheFirst({
-        cacheName: "ntp-audio",
+        cacheName: "ntv-audio",
         plugins: [
           new ExpirationPlugin({
             maxEntries: 100,
@@ -61,7 +61,7 @@ const serwist = new Serwist({
         url.hostname === "res.cloudinary.com" &&
         url.pathname.includes("/image/upload/"),
       handler: new CacheFirst({
-        cacheName: "ntp-images",
+        cacheName: "ntv-images",
         plugins: [
           new ExpirationPlugin({
             maxEntries: 200,
@@ -82,7 +82,7 @@ const serwist = new Serwist({
         !url.pathname.startsWith("/api/download/") &&
         !url.pathname.startsWith("/api/analytics/"),
       handler: new NetworkFirst({
-        cacheName: "ntp-api",
+        cacheName: "ntv-api",
         networkTimeoutSeconds: 5,
         plugins: [
           new ExpirationPlugin({

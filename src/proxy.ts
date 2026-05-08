@@ -12,7 +12,7 @@ export const config = {
   ],
 };
 
-const ADMIN_COOKIE = "ntp_admin_session";
+const ADMIN_COOKIE = "ntv_admin_session";
 
 function clientIp(req: NextRequest): string {
   const xff = req.headers.get("x-forwarded-for");

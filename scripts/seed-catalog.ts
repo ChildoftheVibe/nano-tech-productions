@@ -1,5 +1,5 @@
 /**
- * One-time seed for the NTP catalog. Run with:
+ * One-time seed for the NTV catalog. Run with:
  *
  *   node --env-file=.env.local --experimental-strip-types scripts/seed-catalog.ts
  *

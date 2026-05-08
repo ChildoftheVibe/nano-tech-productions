@@ -17,8 +17,8 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "NTP Vault | Nano Tech Productions",
-  description: "NTP Vault — the Nano Tech Productions music platform.",
+  title: "NTV Vault | Nano Tech Vibe",
+  description: "NTV Vault — the Nano Tech Vibe music platform.",
   manifest: "/manifest.json",
 };
 

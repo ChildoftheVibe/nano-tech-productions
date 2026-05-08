@@ -32,7 +32,7 @@ export function Sidebar({ initialAlbums }: Props) {
           href="/"
           className="font-mono text-2xl font-bold tracking-wider text-[#3DD6C8]"
         >
-          NTP
+          NTV
         </Link>
       </div>
 
@@ -131,7 +131,7 @@ export function Sidebar({ initialAlbums }: Props) {
         className="flex-shrink-0 px-5 py-3 text-[11px] text-[#B3B3B3]"
         style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
       >
-        © 2025 Nano Tech Productions
+        © 2025 Nano Tech Vibe
       </div>
     </aside>
   );

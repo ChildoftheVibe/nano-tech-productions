@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms of Sale · NTP Vault",
-  description: "Terms governing digital music purchases at Nano Tech Productions.",
+  title: "Terms of Sale · NTV Vault",
+  description: "Terms governing digital music purchases at Nano Tech Vibe.",
 };
 
 export default function TermsPage() {
@@ -16,7 +16,7 @@ export default function TermsPage() {
 
       <p className="text-sm leading-relaxed text-white/80">
         These terms govern your purchase of digital music from Nano Tech
-        Productions (&quot;NTP&quot;) through NTP Vault. By completing a
+        Vibe (&quot;NTV&quot;) through NTV Vault. By completing a
         purchase, you agree to the terms below.
       </p>
 

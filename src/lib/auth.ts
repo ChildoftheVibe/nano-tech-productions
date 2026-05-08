@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { supabaseAdmin } from "./supabase";
 
-export const ADMIN_COOKIE = "ntp_admin_session";
+export const ADMIN_COOKIE = "ntv_admin_session";
 const SESSION_HOURS = 8;
 
 function adminPasswordHash(): string | null {

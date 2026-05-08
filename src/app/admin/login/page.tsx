@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="font-mono text-2xl font-bold tracking-wider text-[#3DD6C8]">
-              NTP
+              NTV
             </span>
             <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/50">
               Admin

@@ -32,7 +32,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <header className="flex items-center justify-between border-b border-white/10 bg-[#222121] px-6 py-3">
         <Link href="/admin" className="flex items-center gap-2">
           <span className="font-mono text-xl font-bold tracking-wider text-[#3DD6C8]">
-            NTP
+            NTV
           </span>
           <span className="text-sm font-medium uppercase tracking-[0.2em] text-white/70">
             Admin

@@ -158,8 +158,8 @@ export async function POST(req: Request) {
       total,
       currency: "USD",
       description: discountApplied
-        ? `NTP Vault — code ${discountApplied.code}`
-        : "NTP Vault purchase",
+        ? `NTV Vault — code ${discountApplied.code}`
+        : "NTV Vault purchase",
       items: discountApplied ? undefined : lineItems,
     });
 

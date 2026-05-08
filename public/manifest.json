@@ -1,7 +1,7 @@
 {
-  "name": "Nano Tech Productions",
-  "short_name": "NTP",
-  "description": "The Official Nano Tech Productions Music Store",
+  "name": "Nano Tech Vibe",
+  "short_name": "NTV",
+  "description": "The Official Nano Tech Vibe Music Store",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

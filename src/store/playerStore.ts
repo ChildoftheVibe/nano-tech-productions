@@ -169,7 +169,7 @@ export const usePlayerStore = create<PlayerState>()(
       },
     }),
     {
-      name: "ntp-player",
+      name: "ntv-player",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ volume: state.volume, shuffle: state.shuffle }),
     },

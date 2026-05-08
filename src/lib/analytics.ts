@@ -14,9 +14,9 @@ import type { Album, Track } from "@/types/music";
 //   - NEXT_PUBLIC_POSTHOG_KEY is not set (still posts first-party events)
 // ─────────────────────────────────────────────────────────────────────
 
-const SESSION_KEY = "ntp_session_id";
-const ANON_ID_KEY = "ntp_anon_id";
-const POSTHOG_INITIALIZED = "ntp_posthog_initialized";
+const SESSION_KEY = "ntv_session_id";
+const ANON_ID_KEY = "ntv_anon_id";
+const POSTHOG_INITIALIZED = "ntv_posthog_initialized";
 
 const isBrowser = () => typeof window !== "undefined";
 
