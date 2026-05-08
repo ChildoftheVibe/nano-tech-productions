@@ -48,7 +48,7 @@ export function TopBar() {
             e.preventDefault();
             goSearch();
           }}
-          className="flex items-center gap-2 rounded-full px-3 py-1.5"
+          className="flex h-9 items-center gap-2 rounded-full px-4 py-2"
           style={{ background: "#181818", border: "1px solid rgba(255,255,255,0.08)" }}
         >
           <Search size={16} className="text-[#B3B3B3]" />
@@ -63,7 +63,7 @@ export function TopBar() {
         </form>
         <Link
           href="/admin"
-          className="rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
+          className="inline-flex h-9 items-center justify-center rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
           style={{ background: "#EB41DF" }}
         >
           Admin

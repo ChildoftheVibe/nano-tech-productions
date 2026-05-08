@@ -88,7 +88,7 @@ export function AlbumDetail({ album }: { album: Album }) {
             {album.description && album.description.length > 140 ? (
               <button
                 onClick={() => setExpanded((v) => !v)}
-                className="mt-1 text-xs font-semibold text-white/60 hover:text-white"
+                className="-ml-4 mt-1 inline-flex rounded-full px-4 py-2 text-xs font-semibold text-white/60 hover:bg-white/10 hover:text-white"
               >
                 {expanded ? "Show less" : "Show more"}
               </button>
@@ -137,10 +137,10 @@ export function AlbumDetail({ album }: { album: Album }) {
         </button>
         <button
           onClick={handleBuyAlbum}
-          className="ml-2 flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90"
+          className="ml-2 flex h-14 items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
           style={{ background: "#EB41DF" }}
         >
-          <ShoppingBag size={16} />
+          <ShoppingBag size={18} />
           Buy Album · ${ALBUM_PRICE.toFixed(2)}
         </button>
       </section>

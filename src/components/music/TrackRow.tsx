@@ -99,7 +99,7 @@ export function TrackRow({ track, album }: Props) {
 
       <button
         onClick={handleBuy}
-        className="rounded-full border border-[#3DD6C8] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#3DD6C8] opacity-0 transition-opacity hover:bg-[#3DD6C8]/10 group-hover:opacity-100"
+        className="rounded-full border border-[#3DD6C8] px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#3DD6C8] opacity-0 transition-opacity hover:bg-[#3DD6C8]/10 group-hover:opacity-100"
       >
         Buy
       </button>

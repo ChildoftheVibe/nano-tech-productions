@@ -191,7 +191,7 @@ function CheckoutModalContent({
                       setDiscountInput("");
                       setDiscountError(null);
                     }}
-                    className="rounded border border-white/20 px-3 py-2 text-sm hover:bg-white/5"
+                    className="rounded border border-white/20 px-4 py-2 text-sm hover:bg-white/5"
                   >
                     Remove
                   </button>
