@@ -103,14 +103,14 @@ export function HomeClient({ featured, latest, initialCollection }: Props) {
   };
 
   return (
-    <div className="px-6 pt-2 pb-12 md:px-8">
+    <div className="px-4 pt-2 pb-12 md:px-8">
       <motion.section
-        className="pt-2 pb-6"
+        className="pt-1 pb-4 md:pt-2 md:pb-6"
         initial={animateFirst ? { opacity: 0, y: 8 } : false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
       >
-        <h1 className="text-3xl font-bold text-white md:text-4xl">{greeting}</h1>
+        <h1 className="text-2xl font-bold text-white md:text-4xl">{greeting}</h1>
       </motion.section>
 
       <section className="pb-10">
@@ -127,9 +127,9 @@ export function HomeClient({ featured, latest, initialCollection }: Props) {
             No albums yet. Run the seed script to populate the catalog.
           </div>
         ) : (
-          <div className="-mx-6 overflow-x-auto px-6 md:-mx-8 md:px-8">
+          <div className="-mx-4 overflow-x-auto px-4 md:-mx-8 md:px-8">
             <motion.div
-              className="flex gap-4 pb-2"
+              className="flex snap-x snap-mandatory gap-4 pb-2"
               variants={containerStagger}
               initial={animateFirst ? "hidden" : false}
               animate="visible"
@@ -137,7 +137,7 @@ export function HomeClient({ featured, latest, initialCollection }: Props) {
               {featured.map((album) => (
                 <motion.div
                   key={album.id}
-                  className="w-[180px] flex-shrink-0"
+                  className="w-[180px] flex-shrink-0 snap-start"
                   variants={itemFadeUp}
                 >
                   <AlbumCard
@@ -182,19 +182,28 @@ export function HomeClient({ featured, latest, initialCollection }: Props) {
               border: "1px solid rgba(255,255,255,0.06)",
             }}
           >
-            <div className="flex flex-col gap-6 p-6 md:flex-row md:items-end md:gap-8 md:p-8">
+            <div className="flex flex-col gap-4 p-4 md:flex-row md:items-end md:gap-8 md:p-8">
               <motion.div
+                className="hidden md:block"
                 initial={animateFirst ? { scale: 0.95, opacity: 0 } : false}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
               >
                 <AlbumCard album={latest} size="lg" href={`/album/${latest.slug}`} />
               </motion.div>
+              <motion.div
+                className="md:hidden"
+                initial={animateFirst ? { scale: 0.95, opacity: 0 } : false}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <AlbumCard album={latest} size="md" href={`/album/${latest.slug}`} />
+              </motion.div>
               <div className="min-w-0 flex-1">
                 <div className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#B3B3B3]">
                   Latest Release
                 </div>
-                <h3 className="mb-2 text-3xl font-extrabold text-white md:text-5xl">
+                <h3 className="mb-2 text-2xl font-extrabold text-white md:text-5xl">
                   {latest.title}
                 </h3>
                 <div className="mb-3 text-sm text-[#B3B3B3]">
@@ -248,7 +257,7 @@ export function HomeClient({ featured, latest, initialCollection }: Props) {
           </span>
         </motion.div>
         <motion.div
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid grid-cols-2 gap-3 md:grid-cols-2 md:gap-5 lg:grid-cols-3"
           variants={containerStagger}
           initial={animateFirst ? "hidden" : false}
           animate="visible"
@@ -257,20 +266,39 @@ export function HomeClient({ featured, latest, initialCollection }: Props) {
             <motion.div key={album.id} variants={itemFadeUp}>
               <Link
                 href={`/album/${album.slug}`}
-                className="group flex gap-4 rounded-md p-3 transition-colors hover:bg-white/5"
+                className="group flex flex-col gap-2 rounded-md p-2 transition-colors hover:bg-white/5 md:flex-row md:gap-4 md:p-3"
               >
-                <AlbumCard
-                  album={album}
-                  size="md"
-                  showHoverPlay
-                  onPlay={() => playAlbum(album)}
-                />
-                <div className="min-w-0 flex-1 pt-2">
-                  <div className="truncate font-semibold text-white">{album.title}</div>
+                {/* Mobile: square responsive cover */}
+                <div
+                  className="aspect-square w-full overflow-hidden rounded-md md:hidden"
+                  style={{ background: album.bgColor }}
+                >
+                  {album.coverImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={album.coverImage}
+                      alt={album.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </div>
+                {/* Desktop: AlbumCard with hover play */}
+                <div className="hidden md:block">
+                  <AlbumCard
+                    album={album}
+                    size="md"
+                    showHoverPlay
+                    onPlay={() => playAlbum(album)}
+                  />
+                </div>
+                <div className="min-w-0 flex-1 md:pt-2">
+                  <div className="truncate text-sm font-semibold text-white md:text-base">
+                    {album.title}
+                  </div>
                   <div className="text-xs text-[#B3B3B3]">
                     {album.releaseDate?.slice(0, 4)} · {album.tracks.length} songs
                   </div>
-                  <p className="mt-2 line-clamp-3 text-xs text-white/60">
+                  <p className="mt-2 hidden line-clamp-3 text-xs text-white/60 md:block">
                     {album.description}
                   </p>
                 </div>

@@ -15,6 +15,7 @@ type PlayerState = {
   shuffle: boolean;
   repeat: RepeatMode;
   seekRequestId: number;
+  fullScreenOpen: boolean;
 
   playTrack: (track: Track, album?: Album | null) => void;
   playAlbum: (album: Album) => void;
@@ -31,6 +32,8 @@ type PlayerState = {
   shuffleQueue: () => void;
   addToQueue: (track: Track) => void;
   setQueue: (queue: Track[], currentTrack?: Track | null) => void;
+  openFullScreen: () => void;
+  closeFullScreen: () => void;
 };
 
 const shuffleArray = <T,>(arr: T[]): T[] => {
@@ -58,6 +61,7 @@ export const usePlayerStore = create<PlayerState>()(
       shuffle: false,
       repeat: "off",
       seekRequestId: 0,
+      fullScreenOpen: false,
 
       playTrack: (track, album = null) => {
         const { queue } = get();
@@ -167,6 +171,9 @@ export const usePlayerStore = create<PlayerState>()(
           set({ queue });
         }
       },
+
+      openFullScreen: () => set({ fullScreenOpen: true }),
+      closeFullScreen: () => set({ fullScreenOpen: false }),
     }),
     {
       name: "ntv-player",
