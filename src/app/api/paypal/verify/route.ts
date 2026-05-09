@@ -11,6 +11,12 @@ import {
   type DiscountCheckItem,
 } from "@/lib/discounts";
 import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
+import { sendAdminNewOrderAlert, sendOrderConfirmation } from "@/lib/email";
+import type {
+  EmailDownload,
+  EmailItem,
+  EmailStreaming,
+} from "@/components/email/OrderConfirmation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -116,7 +122,9 @@ export async function POST(req: Request) {
     albumIds.length
       ? supabaseAdmin
           .from("albums")
-          .select("id, title, is_published")
+          .select(
+            "id, title, is_published, spotify_url, apple_music_url, youtube_url, amazon_url",
+          )
           .in("id", albumIds)
       : Promise.resolve({ data: [], error: null }),
     albumIds.length
@@ -301,6 +309,7 @@ export async function POST(req: Request) {
   // Mint a download token per purchased track. Tokens default to 2-hour expiry
   // and gen_random_bytes server-side via DEFAULT.
   let downloadUrls: string[] = [];
+  const emailDownloads: EmailDownload[] = [];
   if (purchasedTrackIds.length) {
     const tokenRows = purchasedTrackIds.map((tid) => ({
       order_id: orderRowId,
@@ -310,7 +319,7 @@ export async function POST(req: Request) {
     const { data: tokens, error: tokErr } = await supabaseAdmin
       .from("download_tokens")
       .insert(tokenRows)
-      .select("token");
+      .select("token, track_id");
     if (tokErr) {
       // Order is captured & saved; fail soft on token minting so customer can re-fetch.
       await logAuditEvent({
@@ -324,6 +333,13 @@ export async function POST(req: Request) {
       downloadUrls = (tokens ?? []).map(
         (t) => `${origin}/api/download/${t.token}`,
       );
+      for (const t of tokens ?? []) {
+        const track = trackById.get(t.track_id as string);
+        emailDownloads.push({
+          trackName: track?.title ?? "Track",
+          url: `${origin}/api/download/${t.token}`,
+        });
+      }
     }
   }
 
@@ -343,6 +359,101 @@ export async function POST(req: Request) {
       tracks: purchasedTrackIds.length,
     },
   });
+
+  // Build email payloads from server-validated data.
+  const emailItems: EmailItem[] = items.map((i) => {
+    if (i.kind === "track") {
+      const row = trackById.get(i.id);
+      return {
+        name: row?.title ?? i.name,
+        kind: "track" as const,
+        price: row ? Number(row.price) : 0,
+      };
+    }
+    const row = albumById.get(i.id);
+    return {
+      name: row?.title ?? i.name,
+      kind: "album" as const,
+      price: ALBUM_PRICE,
+    };
+  });
+
+  const emailStreaming: EmailStreaming[] = items
+    .filter((i) => i.kind === "album")
+    .map((i) => {
+      const row = albumById.get(i.id) as
+        | {
+            title: string;
+            spotify_url: string | null;
+            apple_music_url: string | null;
+            youtube_url: string | null;
+            amazon_url: string | null;
+          }
+        | undefined;
+      return {
+        albumName: row?.title ?? i.name,
+        spotify: row?.spotify_url ?? null,
+        appleMusic: row?.apple_music_url ?? null,
+        youtube: row?.youtube_url ?? null,
+        amazon: row?.amazon_url ?? null,
+      };
+    })
+    .filter(
+      (s) => s.spotify || s.appleMusic || s.youtube || s.amazon,
+    );
+
+  // Fire customer + admin emails. Don't block the response on send outcomes.
+  const orderNumber = orderRowId ?? body.orderId;
+  const [customerSend, adminSend] = await Promise.all([
+    customerEmail
+      ? sendOrderConfirmation({
+          to: customerEmail,
+          orderNumber,
+          items: emailItems,
+          subtotal,
+          discount: discountAmount,
+          total,
+          downloads: emailDownloads,
+          streaming: emailStreaming,
+        })
+      : Promise.resolve({ sent: false as const, reason: "no_customer_email" }),
+    sendAdminNewOrderAlert({
+      orderNumber,
+      total,
+      items: emailItems,
+      customerEmail,
+    }),
+  ]);
+
+  await Promise.all([
+    logAuditEvent({
+      eventType: customerSend.sent
+        ? "email_order_confirmation_sent"
+        : "email_order_confirmation_failed",
+      performedBy: customerEmail ?? ip,
+      ipAddress: ip,
+      entityType: "order",
+      entityId: orderRowId ?? undefined,
+      metadata: {
+        recipient: customerEmail,
+        ...(customerSend.sent
+          ? { resend_id: customerSend.id }
+          : { reason: customerSend.reason }),
+      },
+    }),
+    logAuditEvent({
+      eventType: adminSend.sent
+        ? "email_admin_alert_sent"
+        : "email_admin_alert_failed",
+      performedBy: "system",
+      ipAddress: ip,
+      entityType: "order",
+      entityId: orderRowId ?? undefined,
+      metadata: adminSend.sent
+        ? { resend_id: adminSend.id }
+        : { reason: adminSend.reason },
+    }),
+  ]);
 
   return NextResponse.json(
     { verified: true, downloadUrls },
