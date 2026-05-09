@@ -23,12 +23,19 @@ export type UploadResult = {
 };
 
 type Props = {
-  folder: "ntp/images/covers" | "ntp/audio/public" | "ntp/audio/vault";
+  folder: string;
   resourceType: ResourceType;
   accept: string;
   label: string;
   helpText?: string;
   vault?: boolean;
+  disabled?: boolean;
+  disabledReason?: string;
+  /** Prefix removed from the returned public_id before calling onUploaded.
+   *  Defaults to `folder`. Set to a parent of `folder` (e.g. `ntp/audio/public`
+   *  when `folder` is `ntp/audio/public/<slug>`) to preserve the slug in the
+   *  saved id so server-side URL helpers can reconstruct the full path. */
+  stripPrefix?: string;
   currentPublicId?: string | null;
   currentUrl?: string | null;
   onUploaded: (result: UploadResult) => void;
@@ -42,6 +49,9 @@ export function CloudinaryUploader({
   label,
   helpText,
   vault = false,
+  disabled = false,
+  disabledReason,
+  stripPrefix,
   currentPublicId,
   currentUrl,
   onUploaded,
@@ -91,9 +101,9 @@ export function CloudinaryUploader({
               bytes?: number;
               format?: string;
             };
-            // Strip the folder prefix so we save just the publicId tail.
-            const tail = json.public_id.startsWith(`${sign.folder}/`)
-              ? json.public_id.slice(sign.folder.length + 1)
+            const prefix = stripPrefix ?? sign.folder;
+            const tail = json.public_id.startsWith(`${prefix}/`)
+              ? json.public_id.slice(prefix.length + 1)
               : json.public_id;
             onUploaded({
               publicId: tail,
@@ -150,8 +160,8 @@ export function CloudinaryUploader({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          disabled={progress !== null}
-          className="flex items-center gap-2 rounded border border-white/20 bg-black/30 px-3 py-2 text-sm hover:bg-white/5 disabled:opacity-50"
+          disabled={progress !== null || disabled}
+          className="flex items-center gap-2 rounded border border-white/20 bg-black/30 px-3 py-2 text-sm hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Upload size={14} />
           {progress !== null ? `Uploading… ${progress}%` : hasFile ? "Replace" : "Choose file"}
@@ -175,7 +185,9 @@ export function CloudinaryUploader({
         }}
       />
 
-      {helpText && progress === null && !error ? (
+      {disabled && disabledReason ? (
+        <p className="text-[11px] text-amber-300/80">{disabledReason}</p>
+      ) : helpText && progress === null && !error ? (
         <p className="text-[11px] text-white/40">{helpText}</p>
       ) : null}
       {error ? (

@@ -11,11 +11,18 @@ const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
 const apiKey = process.env.CLOUDINARY_API_KEY ?? "";
 const apiSecret = process.env.CLOUDINARY_API_SECRET ?? "";
 
-const ALLOWED_FOLDERS = new Set([
-  "ntp/images/covers",
-  "ntp/audio/public",
-  "ntp/audio/vault",
-]);
+const SLUG_RE = /^[a-z0-9_-]+$/;
+
+function isAllowedFolder(folder: string): boolean {
+  if (folder === "ntp/images/covers") return true;
+  for (const base of ["ntp/audio/public/", "ntp/audio/vault/"] as const) {
+    if (folder.startsWith(base)) {
+      const slug = folder.slice(base.length);
+      return SLUG_RE.test(slug);
+    }
+  }
+  return false;
+}
 
 export async function POST(req: Request) {
   if (!(await isAdmin())) {
@@ -37,7 +44,7 @@ export async function POST(req: Request) {
   }
 
   const folder = body.folder ?? "";
-  if (!ALLOWED_FOLDERS.has(folder)) {
+  if (!isAllowedFolder(folder)) {
     return NextResponse.json(
       { error: "folder_not_allowed" },
       { status: 400, headers: noStore },
@@ -51,9 +58,7 @@ export async function POST(req: Request) {
 
   const timestamp = Math.floor(Date.now() / 1000);
 
-  // Vault uploads use authenticated delivery so the file isn't browseable on
-  // the public CDN; everything else uploads with default 'upload' type.
-  const isVault = folder === "ntp/audio/vault";
+  const isVault = folder.startsWith("ntp/audio/vault");
   const paramsToSign: Record<string, string | number> = {
     folder,
     timestamp,

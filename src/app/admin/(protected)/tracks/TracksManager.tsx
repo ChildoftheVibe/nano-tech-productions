@@ -8,7 +8,7 @@ import type { Album, Track } from "@/lib/db-types";
 
 type Props = {
   initialTracks: Track[];
-  albums: Pick<Album, "id" | "title">[];
+  albums: Pick<Album, "id" | "title" | "slug">[];
   page: number;
   totalPages: number;
   totalCount: number;

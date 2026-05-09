@@ -34,7 +34,7 @@ export default async function AdminTracksPage({
     tracksQuery,
     supabaseAdmin
       .from("albums")
-      .select("id, title")
+      .select("id, title, slug")
       .order("title", { ascending: true }),
   ]);
 
@@ -50,7 +50,7 @@ export default async function AdminTracksPage({
       ) : (
         <TracksManager
           initialTracks={(tracksRes.data ?? []) as Track[]}
-          albums={(albumsRes.data ?? []) as Pick<Album, "id" | "title">[]}
+          albums={(albumsRes.data ?? []) as Pick<Album, "id" | "title" | "slug">[]}
           page={page}
           totalPages={totalPages}
           totalCount={total}

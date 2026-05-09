@@ -6,7 +6,7 @@ import { CloudinaryUploader } from "./CloudinaryUploader";
 
 type Props = {
   initial?: Track;
-  albums: Pick<Album, "id" | "title">[];
+  albums: Pick<Album, "id" | "title" | "slug">[];
   onSaved?: (track: Track) => void;
   onCancel?: () => void;
 };
@@ -70,6 +70,17 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
   }
+
+  const selectedSlug = form.album_id
+    ? (albums.find((a) => a.id === form.album_id)?.slug ?? null)
+    : "_singles";
+  const audioFolderReady = !!selectedSlug;
+  const publicAudioFolder = selectedSlug
+    ? `ntp/audio/public/${selectedSlug}`
+    : "ntp/audio/public/_singles";
+  const vaultAudioFolder = selectedSlug
+    ? `ntp/audio/vault/${selectedSlug}`
+    : "ntp/audio/vault/_singles";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -179,11 +190,14 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
       </label>
 
       <CloudinaryUploader
-        folder="ntp/audio/public"
+        folder={publicAudioFolder}
+        stripPrefix="ntp/audio/public"
         resourceType="video"
         accept="audio/*"
         label="Public audio (streaming MP3/WAV)"
-        helpText="Streamed from public CDN as MP3 320kbps."
+        helpText={`Streamed from public CDN as MP3 320kbps. Uploads to /${publicAudioFolder}.`}
+        disabled={!audioFolderReady}
+        disabledReason="Album not found — pick a valid album to enable upload."
         currentPublicId={form.public_audio_id || null}
         onUploaded={(r) => {
           set("public_audio_id", r.publicId);
@@ -196,12 +210,15 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
       />
 
       <CloudinaryUploader
-        folder="ntp/audio/vault"
+        folder={vaultAudioFolder}
+        stripPrefix="ntp/audio/vault"
         resourceType="video"
         accept="audio/wav,audio/x-wav,audio/aiff"
         label="Master WAV file"
-        helpText="Private vault — admin-only, signed access."
+        helpText={`Private vault — admin-only, signed access. Uploads to /${vaultAudioFolder}.`}
         vault
+        disabled={!audioFolderReady}
+        disabledReason="Album not found — pick a valid album to enable upload."
         currentPublicId={form.vault_audio_id || null}
         onUploaded={(r) => {
           set("vault_audio_id", r.publicId);
