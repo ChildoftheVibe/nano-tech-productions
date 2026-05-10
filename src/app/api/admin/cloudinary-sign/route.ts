@@ -14,7 +14,13 @@ const apiSecret = process.env.CLOUDINARY_API_SECRET ?? "";
 const SLUG_RE = /^[a-z0-9_-]+$/;
 
 function isAllowedFolder(folder: string): boolean {
+  // Legacy shared cover folder, kept so existing albums keep working.
   if (folder === "ntp/images/covers") return true;
+  // Per-slug cover folder: ntp/<slug>/cover
+  if (folder.startsWith("ntp/") && folder.endsWith("/cover")) {
+    const slug = folder.slice("ntp/".length, -"/cover".length);
+    return SLUG_RE.test(slug);
+  }
   for (const base of ["ntp/audio/public/", "ntp/audio/vault/"] as const) {
     if (folder.startsWith(base)) {
       const slug = folder.slice(base.length);

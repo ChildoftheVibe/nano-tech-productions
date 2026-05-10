@@ -63,6 +63,7 @@ export function getAdminWavUrl(publicId: string): string {
     sign_url: true,
     secure: true,
     expires_at: expiresAt,
+    format: "wav",
   });
 }
 
@@ -80,6 +81,7 @@ export function getAdminWavDownloadUrl(publicId: string): string {
     secure: true,
     expires_at: expiresAt,
     transformation: [{ flags: "attachment" }],
+    format: "wav",
   });
 }
 

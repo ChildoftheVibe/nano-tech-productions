@@ -17,7 +17,6 @@ const TEXT_FIELDS: Array<{
   required?: boolean;
   placeholder?: string;
 }> = [
-  { key: "slug", label: "Slug", required: true, placeholder: "my-album" },
   { key: "title", label: "Title", required: true },
   { key: "description", label: "Description" },
   { key: "release_date", label: "Release date", type: "date" },
@@ -29,6 +28,8 @@ const TEXT_FIELDS: Array<{
   { key: "amazon_url", label: "Amazon URL" },
   { key: "copyright", label: "Copyright" },
 ];
+
+const SLUG_RE = /^[a-z0-9_-]+$/;
 
 function emptyForm(): Record<string, string | boolean> {
   return {
@@ -102,14 +103,32 @@ export function AlbumForm({ initial, onSaved, onCancel }: Props) {
     }
   }
 
+  const slug = String(form.slug ?? "");
+  const slugReady = SLUG_RE.test(slug);
+  const coverFolder = slugReady ? `ntp/${slug}/cover` : "ntp/images/covers";
+
   return (
     <form onSubmit={onSubmit} className="space-y-3 text-white">
+      <label className="block">
+        <span className="mb-1 block text-sm text-white/70">Slug</span>
+        <input
+          type="text"
+          required
+          placeholder="my-album"
+          value={slug}
+          onChange={(e) => set("slug", e.target.value)}
+          className="w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-[#3DD6C8]"
+        />
+      </label>
+
       <CloudinaryUploader
-        folder="ntp/images/covers"
+        folder={coverFolder}
         resourceType="image"
         accept="image/*"
         label="Cover image"
-        helpText="JPG, PNG, or WebP. Stored on Cloudinary CDN."
+        helpText={`JPG, PNG, or WebP. Uploads to /${coverFolder}.`}
+        disabled={!slugReady}
+        disabledReason="Enter a slug first (lowercase letters, digits, _ or - only)."
         currentUrl={(form.cover_image as string) || null}
         onUploaded={(r) => set("cover_image", r.url)}
         onClear={() => set("cover_image", "")}
