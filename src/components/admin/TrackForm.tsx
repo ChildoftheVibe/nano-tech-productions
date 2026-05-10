@@ -294,6 +294,11 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
         is_downloadable: form.is_downloadable,
         is_published: form.is_published,
       };
+      console.log("[TrackForm] submit payload audio fields:", {
+        audio_url: payload.audio_url,
+        public_audio_id: payload.public_audio_id,
+        vault_audio_id: payload.vault_audio_id,
+      });
       const url = initial
         ? `/api/admin/tracks/${initial.id}`
         : "/api/admin/tracks";
@@ -392,6 +397,12 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
         disabledReason="Album not found — pick a valid album to enable upload."
         currentPublicId={form.public_audio_id || null}
         onUploaded={(r) => {
+          console.log("[TrackForm] public audio uploaded:", {
+            publicId: r.publicId,
+            url: r.url,
+            bytes: r.bytes,
+            format: r.format,
+          });
           set("public_audio_id", r.publicId);
           set("audio_url", r.url);
         }}

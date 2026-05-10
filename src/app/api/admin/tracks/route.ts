@@ -63,6 +63,12 @@ export async function POST(request: Request) {
     return Response.json({ error: "title is required" }, { status: 400 });
   }
 
+  console.log("[admin/tracks POST] input audio fields:", {
+    audio_url: input.audio_url,
+    public_audio_id: input.public_audio_id,
+    vault_audio_id: input.vault_audio_id,
+  });
+
   const { data, error } = await supabaseAdmin
     .from("tracks")
     .insert(input)
@@ -70,5 +76,13 @@ export async function POST(request: Request) {
     .single();
 
   if (error) return Response.json({ error: error.message }, { status: 400 });
+
+  console.log("[admin/tracks POST] saved audio fields:", {
+    id: data.id,
+    audio_url: data.audio_url,
+    public_audio_id: data.public_audio_id,
+    vault_audio_id: data.vault_audio_id,
+  });
+
   return Response.json({ track: data }, { status: 201 });
 }

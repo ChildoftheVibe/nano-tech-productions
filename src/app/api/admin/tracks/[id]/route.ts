@@ -51,6 +51,21 @@ export async function PATCH(
 
   const input = pickTrackInput(body);
 
+  if (
+    "audio_url" in input ||
+    "public_audio_id" in input ||
+    "vault_audio_id" in input
+  ) {
+    console.log("[admin/tracks PATCH] input audio fields:", {
+      id,
+      audio_url: "audio_url" in input ? input.audio_url : "(unchanged)",
+      public_audio_id:
+        "public_audio_id" in input ? input.public_audio_id : "(unchanged)",
+      vault_audio_id:
+        "vault_audio_id" in input ? input.vault_audio_id : "(unchanged)",
+    });
+  }
+
   const { data, error } = await supabaseAdmin
     .from("tracks")
     .update(input)
@@ -59,6 +74,20 @@ export async function PATCH(
     .single();
 
   if (error) return Response.json({ error: error.message }, { status: 400 });
+
+  if (
+    "audio_url" in input ||
+    "public_audio_id" in input ||
+    "vault_audio_id" in input
+  ) {
+    console.log("[admin/tracks PATCH] saved audio fields:", {
+      id: data.id,
+      audio_url: data.audio_url,
+      public_audio_id: data.public_audio_id,
+      vault_audio_id: data.vault_audio_id,
+    });
+  }
+
   return Response.json({ track: data });
 }
 
