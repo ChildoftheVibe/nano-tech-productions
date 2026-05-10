@@ -31,7 +31,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#1a1919] text-white">
-      <header className="flex items-center justify-between border-b border-white/10 bg-[#222121] px-6 py-3">
+      <header className="sticky top-14 z-10 flex h-14 flex-shrink-0 items-center justify-between border-b border-white/10 bg-[#222121] px-6">
         <Link href="/admin" className="flex items-center gap-2">
           <span className="font-mono text-xl font-bold tracking-wider text-[#3DD6C8]">
             NTV
@@ -69,8 +69,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </form>
       </header>
 
-      <div className="flex flex-1">
-        <aside className="hidden w-56 flex-shrink-0 border-r border-white/10 bg-[#222121] p-3 md:block">
+      <div className="flex flex-1 items-start">
+        <aside className="sticky top-28 hidden max-h-[calc(100vh-7rem)] w-56 flex-shrink-0 self-start overflow-y-auto border-r border-white/10 bg-[#222121] p-3 md:block">
           <ul className="space-y-1">
             {NAV.map(({ href, label, icon: Icon, exact, accent }) => {
               const active = exact ? pathname === href : pathname.startsWith(href);
