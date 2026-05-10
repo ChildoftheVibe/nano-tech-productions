@@ -13,9 +13,39 @@ import {
   trackPurchaseIntent,
 } from "@/lib/analytics";
 import { usePageEngagement } from "@/lib/usePageEngagement";
-import type { Album } from "@/types/music";
+import type { Album, TrackCredits } from "@/types/music";
 
 const ALBUM_PRICE = 9.99;
+
+const CREDIT_ROLE_LABELS: Array<{ key: keyof TrackCredits; label: string }> = [
+  { key: "produced_by", label: "Produced by" },
+  { key: "arranged_by", label: "Arranged by" },
+  { key: "written_by", label: "Written by" },
+  { key: "lead_vocals", label: "Lead Vocals" },
+  { key: "background_vocals", label: "Background Vocals" },
+  { key: "drums", label: "Drums" },
+  { key: "percussion", label: "Percussion" },
+  { key: "mixing_engineer", label: "Mixing Engineer" },
+  { key: "mastering_engineer", label: "Mastering Engineer" },
+  { key: "artwork", label: "Artwork" },
+  { key: "lyrics", label: "Lyrics by" },
+];
+
+const COLLAPSED_LIMIT = 8;
+
+type CreditLine = { label: string; names: string };
+
+function buildCreditEntries(credits: TrackCredits | null | undefined): CreditLine[] {
+  if (!credits) return [];
+  const out: CreditLine[] = [];
+  for (const { key, label } of CREDIT_ROLE_LABELS) {
+    const arr = credits[key];
+    if (Array.isArray(arr) && arr.length > 0) {
+      out.push({ label, names: arr.join(", ") });
+    }
+  }
+  return out;
+}
 
 const trackContainer: Variants = {
   hidden: { opacity: 1 },
@@ -64,6 +94,27 @@ export function AlbumDetail({ album }: { album: Album }) {
   const featuredArtists = Array.from(
     new Set(album.tracks.flatMap((t) => t.features ?? [])),
   );
+
+  const creditTracks = album.tracks
+    .map((t) => ({ track: t, lines: buildCreditEntries(t.credits) }))
+    .filter((g) => g.lines.length > 0);
+  const totalCreditLines = creditTracks.reduce((n, g) => n + g.lines.length, 0);
+  const hasAnyCredits = totalCreditLines > 0;
+  const [showAllCredits, setShowAllCredits] = useState(false);
+
+  const visibleCreditTracks = (() => {
+    if (!hasAnyCredits) return [];
+    if (showAllCredits || totalCreditLines <= COLLAPSED_LIMIT) return creditTracks;
+    let remaining = COLLAPSED_LIMIT;
+    const out: Array<{ track: typeof album.tracks[number]; lines: CreditLine[] }> = [];
+    for (const g of creditTracks) {
+      if (remaining <= 0) break;
+      const take = g.lines.slice(0, remaining);
+      out.push({ track: g.track, lines: take });
+      remaining -= take.length;
+    }
+    return out;
+  })();
 
   const platformLinks: Array<{ label: string; url?: string }> = [
     { label: "Spotify", url: album.spotifyUrl || undefined },
@@ -208,6 +259,40 @@ export function AlbumDetail({ album }: { album: Album }) {
           </motion.div>
         )}
       </section>
+
+      {hasAnyCredits ? (
+        <section className="border-t border-white/5 px-6 py-8 md:px-8">
+          <h2 className="mb-4 font-mono text-sm font-bold uppercase tracking-[0.25em] text-white">
+            Production Credits
+          </h2>
+          <div className="space-y-5">
+            {visibleCreditTracks.map(({ track, lines }) => (
+              <div key={track.id}>
+                <h3 className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#B3B3B3]">
+                  {track.title}
+                </h3>
+                <ul className="space-y-0.5">
+                  {lines.map((line) => (
+                    <li key={`${track.id}-${line.label}`} className="text-xs text-[#B3B3B3]">
+                      <span className="text-white/80">{line.label}:</span>{" "}
+                      <span>{line.names}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          {totalCreditLines > COLLAPSED_LIMIT ? (
+            <button
+              type="button"
+              onClick={() => setShowAllCredits((v) => !v)}
+              className="mt-4 text-xs font-semibold text-[#3DD6C8] hover:brightness-110"
+            >
+              {showAllCredits ? "Show fewer credits" : "Show all credits"}
+            </button>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="border-t border-white/5 px-6 py-8 md:px-8">
         <h2 className="mb-3 text-lg font-bold text-white">About this Album</h2>

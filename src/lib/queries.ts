@@ -1,11 +1,11 @@
 import { unstable_cache } from "next/cache";
 import { supabase } from "./supabase";
-import type { Album, AlbumListResult, Track } from "@/types/music";
+import type { Album, AlbumListResult, Track, TrackCredits } from "@/types/music";
 
 const ALBUM_COLUMNS =
   "id, slug, title, description, release_date, cover_image, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, is_published";
 const TRACK_COLUMNS =
-  "id, album_id, title, track_number, duration, price, audio_url, features, is_published";
+  "id, album_id, title, track_number, duration, price, audio_url, features, is_published, credits, lyrics, has_lyrics";
 
 type AlbumRow = {
   id: string;
@@ -35,6 +35,9 @@ type TrackRow = {
   audio_url: string | null;
   features: string[] | null;
   is_published: boolean;
+  credits: TrackCredits | null;
+  lyrics: string | null;
+  has_lyrics: boolean | null;
 };
 
 const mapTrack = (row: TrackRow): Track => ({
@@ -46,6 +49,9 @@ const mapTrack = (row: TrackRow): Track => ({
   price: Number(row.price ?? 0),
   features: row.features ?? undefined,
   audioUrl: row.audio_url ?? undefined,
+  credits: row.credits ?? {},
+  lyrics: row.lyrics,
+  has_lyrics: !!row.has_lyrics,
 });
 
 const mapAlbum = (row: AlbumRow, tracks: Track[] = []): Album => ({

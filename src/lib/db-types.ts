@@ -21,6 +21,8 @@ export type AlbumInput = Partial<
   Omit<Album, "id" | "created_at" | "updated_at">
 >;
 
+import type { TrackCredits } from "@/types/music";
+
 export type Track = {
   id: string;
   album_id: string | null;
@@ -38,6 +40,9 @@ export type Track = {
   is_downloadable: boolean;
   is_published: boolean;
   features: string[] | null;
+  credits: TrackCredits;
+  lyrics: string | null;
+  has_lyrics: boolean;
   created_at: string;
 };
 

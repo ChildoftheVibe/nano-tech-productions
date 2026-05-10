@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  BookOpen,
   Heart,
   ListMusic,
   Music,
@@ -36,6 +37,8 @@ export function PlayerBar() {
   const shuffle = usePlayerStore((s) => s.shuffle);
   const repeat = usePlayerStore((s) => s.repeat);
 
+  const lyricsOpen = usePlayerStore((s) => s.lyricsOpen);
+
   const togglePlay = usePlayerStore((s) => s.togglePlay);
   const nextTrack = usePlayerStore((s) => s.nextTrack);
   const previousTrack = usePlayerStore((s) => s.previousTrack);
@@ -44,6 +47,9 @@ export function PlayerBar() {
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
   const toggleRepeat = usePlayerStore((s) => s.toggleRepeat);
   const openFullScreen = usePlayerStore((s) => s.openFullScreen);
+  const toggleLyrics = usePlayerStore((s) => s.toggleLyrics);
+
+  const showLyricsButton = !!currentTrack?.has_lyrics;
 
   const [liked, setLiked] = useState(false);
   const [likedPulse, setLikedPulse] = useState(0);
@@ -134,6 +140,20 @@ export function PlayerBar() {
                 <Play size={18} fill="currentColor" className="ml-0.5" />
               )}
             </motion.button>
+            {showLyricsButton ? (
+              <motion.button
+                onClick={toggleLyrics}
+                aria-label="Lyrics"
+                className="flex-shrink-0 p-2"
+                style={{
+                  color: lyricsOpen ? "#3DD6C8" : "#B3B3B3",
+                  filter: lyricsOpen ? "drop-shadow(0 0 6px rgba(61,214,200,0.6))" : "none",
+                }}
+                whileTap={{ scale: 0.92 }}
+              >
+                <BookOpen size={20} />
+              </motion.button>
+            ) : null}
             <motion.button
               onClick={nextTrack}
               aria-label="Next track"
@@ -333,6 +353,21 @@ export function PlayerBar() {
         </div>
 
         <div className="flex w-[30%] items-center justify-end gap-3">
+          {showLyricsButton ? (
+            <motion.button
+              onClick={toggleLyrics}
+              aria-label="Lyrics"
+              title="Lyrics"
+              className="p-2 transition-colors"
+              style={{
+                color: lyricsOpen ? "#3DD6C8" : "#B3B3B3",
+                filter: lyricsOpen ? "drop-shadow(0 0 6px rgba(61,214,200,0.6))" : "none",
+              }}
+              whileTap={{ scale: 0.92 }}
+            >
+              <BookOpen size={18} />
+            </motion.button>
+          ) : null}
           <button
             aria-label="Queue"
             className="p-2 text-[#B3B3B3] transition-colors hover:text-white"

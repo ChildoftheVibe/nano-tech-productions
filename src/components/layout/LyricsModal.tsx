@@ -1,0 +1,183 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { AnimatePresence, motion, type PanInfo } from "framer-motion";
+import { ChevronDown } from "lucide-react";
+import { usePlayerStore } from "@/store/playerStore";
+
+const SECTION_LINE = /^\s*\[[^\]]+\]\s*$/;
+
+function renderLyrics(lyrics: string) {
+  return lyrics.split("\n").map((line, i) => {
+    if (line.trim() === "") {
+      return <div key={i} className="h-[1.6em]" aria-hidden="true" />;
+    }
+    if (SECTION_LINE.test(line)) {
+      return (
+        <p
+          key={i}
+          className="font-mono text-[#3DD6C8]"
+          style={{ fontSize: 16, lineHeight: 1.9 }}
+        >
+          {line.trim()}
+        </p>
+      );
+    }
+    return (
+      <p
+        key={i}
+        className="font-mono"
+        style={{ fontSize: 16, lineHeight: 1.9, color: "rgba(255,255,255,0.9)" }}
+      >
+        {line}
+      </p>
+    );
+  });
+}
+
+export function LyricsModal() {
+  const open = usePlayerStore((s) => s.lyricsOpen);
+  const close = usePlayerStore((s) => s.closeLyrics);
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
+  const currentAlbum = usePlayerStore((s) => s.currentAlbum);
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-close if the active track has no lyrics.
+  useEffect(() => {
+    if (open && currentTrack && !currentTrack.has_lyrics) close();
+  }, [open, currentTrack, close]);
+
+  // Lock body scroll while open.
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  // Esc key closes.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, close]);
+
+  // Reset scroll on track change.
+  useEffect(() => {
+    if (!open) return;
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [currentTrack?.id, open]);
+
+  const onDragEnd = (
+    _: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo,
+  ) => {
+    if (info.offset.y > 100 || info.velocity.y > 500) close();
+  };
+
+  const features = currentTrack?.features?.length
+    ? `Jhodge feat. ${currentTrack.features.join(", ")}`
+    : "Jhodge";
+  const subtitle = currentAlbum?.title
+    ? `${features} — ${currentAlbum.title}`
+    : features;
+
+  return (
+    <AnimatePresence>
+      {open && currentTrack ? (
+        <motion.div
+          key="lyrics-overlay"
+          className="fixed inset-0 z-[9998] bg-black/85 backdrop-blur-lg"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0, transition: { duration: 0.25, ease: "easeIn" } }}
+          onClick={close}
+          aria-modal="true"
+          role="dialog"
+          aria-label="Lyrics"
+        >
+          <motion.div
+            className="absolute inset-0 flex flex-col"
+            initial={{ y: "-100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "-100%", transition: { duration: 0.25, ease: "easeIn" } }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            drag="y"
+            dragDirectionLock
+            dragConstraints={{ top: 0, bottom: 300 }}
+            dragElastic={0.2}
+            onDragEnd={onDragEnd}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <header
+              className="flex flex-shrink-0 items-center justify-between px-4"
+              style={{ height: 56, background: "rgba(0,0,0,0.5)" }}
+            >
+              <div className="min-w-0">
+                <div className="truncate text-sm font-bold text-white">
+                  {currentTrack.title}
+                </div>
+                <div className="truncate text-xs text-[#B3B3B3]">{subtitle}</div>
+              </div>
+              <button
+                onClick={close}
+                aria-label="Close lyrics"
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+              >
+                <ChevronDown size={24} />
+              </button>
+            </header>
+
+            <div
+              ref={scrollRef}
+              className="ntv-lyrics-scroll flex-1 overflow-y-auto px-8 py-6 text-center"
+              style={{
+                paddingBottom: 120,
+                scrollBehavior: "smooth",
+                WebkitOverflowScrolling: "touch",
+                scrollbarWidth: "thin",
+                scrollbarColor: "#3DD6C8 transparent",
+              }}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={currentTrack.id}
+                  initial={{ opacity: 0.3 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {currentTrack.lyrics && currentTrack.lyrics.trim().length > 0 ? (
+                    renderLyrics(currentTrack.lyrics)
+                  ) : (
+                    <p className="font-mono text-sm text-white/50">
+                      No lyrics available for this track.
+                    </p>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            <style jsx>{`
+              .ntv-lyrics-scroll::-webkit-scrollbar {
+                width: 4px;
+              }
+              .ntv-lyrics-scroll::-webkit-scrollbar-track {
+                background: transparent;
+              }
+              .ntv-lyrics-scroll::-webkit-scrollbar-thumb {
+                background: #3dd6c8;
+                border-radius: 2px;
+              }
+            `}</style>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
+}

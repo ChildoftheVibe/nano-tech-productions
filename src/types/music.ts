@@ -15,6 +15,20 @@ export type Album = {
   tracks: Track[];
 };
 
+export type TrackCredits = {
+  produced_by?: string[];
+  arranged_by?: string[];
+  lead_vocals?: string[];
+  written_by?: string[];
+  background_vocals?: string[];
+  drums?: string[];
+  percussion?: string[];
+  mixing_engineer?: string[];
+  mastering_engineer?: string[];
+  artwork?: string[];
+  lyrics?: string[];
+};
+
 export type Track = {
   id: string;
   albumId: string;
@@ -24,6 +38,9 @@ export type Track = {
   price: number;
   features?: string[];
   audioUrl?: string;
+  credits: TrackCredits;
+  lyrics: string | null;
+  has_lyrics: boolean;
 };
 
 export type AlbumListResult = {

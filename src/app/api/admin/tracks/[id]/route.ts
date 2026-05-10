@@ -16,6 +16,9 @@ const TRACK_FIELDS = [
   "is_downloadable",
   "is_published",
   "features",
+  "credits",
+  "lyrics",
+  "has_lyrics",
 ] as const;
 
 function pickTrackInput(body: unknown): TrackInput {
