@@ -3,20 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
-import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { SearchBar } from "@/components/search/SearchBar";
 
 export function TopBar() {
   const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
-
-  // TODO: /search route doesn't exist yet — submitting will 404 until added.
-  const goSearch = () => {
-    const q = query.trim();
-    if (!q) return;
-    router.push(`/search?q=${encodeURIComponent(q)}`);
-  };
 
   return (
     <header
@@ -47,34 +38,7 @@ export function TopBar() {
       </div>
 
       <div className="flex items-center gap-3">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            goSearch();
-          }}
-          className="flex h-9 items-center gap-2 rounded-full px-4 py-2 transition-colors duration-150"
-          style={{
-            background: "#181818",
-            border: searchFocused
-              ? "1px solid #3DD6C8"
-              : "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          <Search
-            size={16}
-            className={searchFocused ? "text-[#3DD6C8]" : "text-[#B3B3B3]"}
-          />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
-            placeholder="Search"
-            className="w-40 bg-transparent text-sm text-white placeholder-[#B3B3B3] outline-none sm:w-56"
-            aria-label="Search"
-          />
-        </form>
+        <SearchBar mode="navigate" />
         <motion.div
           whileHover={{
             scale: 1.03,

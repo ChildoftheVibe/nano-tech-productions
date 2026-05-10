@@ -231,6 +231,164 @@ export const searchAlbums = unstable_cache(
   { revalidate: 60, tags: ["albums"] },
 );
 
+export type SearchTrack = Track & { albumSlug: string | null };
+
+export type SearchResult = {
+  albums: Album[];
+  tracks: SearchTrack[];
+  artists: string[];
+};
+
+const SEARCH_LIMITS = { albums: 5, tracks: 10, artists: 5 } as const;
+
+const escapeIlike = (s: string) =>
+  s.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+
+const escapeForOr = (s: string) => s.replace(/,/g, " ").replace(/\)/g, " ");
+
+export const searchContent = unstable_cache(
+  async (rawQuery: string): Promise<SearchResult> => {
+    const query = rawQuery.trim();
+    if (query.length < 2) {
+      return { albums: [], tracks: [], artists: [] };
+    }
+
+    const ilikeNeedle = `%${escapeForOr(escapeIlike(query))}%`;
+
+    // Albums: prefer full-text via search_vector, fall back to ilike when the
+    // websearch parse yields no rows (short tokens, partial matches).
+    let albumRows: AlbumRow[] = [];
+    {
+      const { data, error } = await supabase
+        .from("albums")
+        .select(ALBUM_COLUMNS)
+        .eq("is_published", true)
+        .textSearch("search_vector", query, {
+          type: "websearch",
+          config: "english",
+        })
+        .limit(SEARCH_LIMITS.albums);
+      if (error) {
+        console.error("[queries.searchContent albums.textSearch]", error.message);
+      } else if (data) {
+        albumRows = data as AlbumRow[];
+      }
+    }
+    if (albumRows.length === 0) {
+      const { data, error } = await supabase
+        .from("albums")
+        .select(ALBUM_COLUMNS)
+        .eq("is_published", true)
+        .or(`title.ilike.${ilikeNeedle},description.ilike.${ilikeNeedle}`)
+        .limit(SEARCH_LIMITS.albums);
+      if (error) {
+        console.error("[queries.searchContent albums.ilike]", error.message);
+      } else if (data) {
+        albumRows = data as AlbumRow[];
+      }
+    }
+
+    // Tracks: ilike on title only (no tracks.search_vector). Feature matches
+    // surface in the artists section, not as track results.
+    type TrackSearchRow = TrackRow & {
+      albums: { slug: string } | { slug: string }[] | null;
+    };
+    let trackRows: TrackSearchRow[] = [];
+    {
+      const { data, error } = await supabase
+        .from("tracks")
+        .select(`${TRACK_COLUMNS}, albums:album_id(slug)`)
+        .eq("is_published", true)
+        .ilike("title", ilikeNeedle)
+        .limit(SEARCH_LIMITS.tracks);
+      if (error) {
+        console.error("[queries.searchContent tracks]", error.message);
+      } else if (data) {
+        trackRows = data as unknown as TrackSearchRow[];
+      }
+    }
+
+    // Artists: distinct names from tracks.features that match the query.
+    // Pull a wider sample then filter/dedupe in memory — features is a TEXT[]
+    // and there's no clean partial-match operator across array elements.
+    const artists: string[] = [];
+    {
+      const { data, error } = await supabase
+        .from("tracks")
+        .select("features")
+        .eq("is_published", true)
+        .not("features", "is", null)
+        .limit(500);
+      if (error) {
+        console.error("[queries.searchContent artists]", error.message);
+      } else if (data) {
+        const needle = query.toLowerCase();
+        const seen = new Set<string>();
+        for (const row of data as Array<{ features: string[] | null }>) {
+          if (!row.features) continue;
+          for (const f of row.features) {
+            if (typeof f !== "string") continue;
+            const key = f.toLowerCase();
+            if (seen.has(key)) continue;
+            if (!key.includes(needle)) continue;
+            seen.add(key);
+            artists.push(f);
+            if (artists.length >= SEARCH_LIMITS.artists) break;
+          }
+          if (artists.length >= SEARCH_LIMITS.artists) break;
+        }
+      }
+    }
+
+    return {
+      albums: albumRows.map((row) => mapAlbum(row)),
+      tracks: trackRows.map((row) => {
+        const slug = Array.isArray(row.albums)
+          ? row.albums[0]?.slug ?? null
+          : row.albums?.slug ?? null;
+        return { ...mapTrack(row), albumSlug: slug };
+      }),
+      artists,
+    };
+  },
+  ["search-content"],
+  { revalidate: 60, tags: ["albums", "tracks"] },
+);
+
+// Library: albums with track-level play_count rolled up so the client can sort
+// by Most Played without a second round-trip.
+export type LibraryAlbum = Album & {
+  trackCount: number;
+  totalPlayCount: number;
+};
+
+export const getLibraryAlbums = unstable_cache(
+  async (): Promise<LibraryAlbum[]> => {
+    const { data, error } = await supabase
+      .from("albums")
+      .select(`${ALBUM_COLUMNS}, tracks(id, play_count, is_published)`)
+      .eq("is_published", true)
+      .order("release_date", { ascending: false });
+    if (error) {
+      console.error("[queries.getLibraryAlbums]", error.message);
+      return [];
+    }
+    type LibTrack = { id: string; play_count: number | null; is_published: boolean };
+    type LibRow = Omit<AlbumRow, "tracks"> & { tracks?: LibTrack[] };
+    return ((data ?? []) as LibRow[]).map((row) => {
+      const published = (row.tracks ?? []).filter((t) => t.is_published);
+      const totalPlayCount = published.reduce(
+        (sum, t) => sum + (t.play_count ?? 0),
+        0,
+      );
+      const album = mapAlbum(row as unknown as AlbumRow);
+      return { ...album, trackCount: published.length, totalPlayCount };
+    });
+  },
+  ["library-albums"],
+  { revalidate: 300, tags: ["albums", "tracks"] },
+);
+
 export const getAllAlbumSlugs = unstable_cache(
   async (): Promise<string[]> => {
     const { data, error } = await supabase
