@@ -56,7 +56,11 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
     });
   }, [tracks, inPlaylist, search]);
 
-  async function call(body: unknown): Promise<boolean> {
+  // POSTs to /api/admin/playlist and returns the parsed body on success. The
+  // shared client/server flow needs the body (e.g. addTrack uses the returned
+  // entryId to populate local state), so this returns the JSON rather than a
+  // plain boolean.
+  async function call(body: unknown): Promise<Record<string, unknown> | null> {
     setBusy(true);
     setError(null);
     try {
@@ -65,25 +69,72 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
       });
-      const json = await res.json().catch(() => ({}));
+      const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
       if (!res.ok) {
-        setError(json.error ?? "Request failed");
-        return false;
+        setError((json.error as string) ?? "Request failed");
+        return null;
       }
-      return true;
+      return json;
     } finally {
       setBusy(false);
     }
   }
 
+  // Re-pulls the current playlist from the API and resets local state. Used
+  // after bulk operations where we can't predict which rows were inserted.
+  async function refetchEntries() {
+    const res = await fetch("/api/admin/playlist", { cache: "no-store" });
+    if (!res.ok) return;
+    const { entries: rows } = (await res.json()) as {
+      entries: Array<{
+        id: string;
+        track_id: string;
+        position: number | null;
+        is_active: boolean;
+      }>;
+    };
+    setEntries(
+      rows.map((r) => ({
+        id: r.id,
+        trackId: r.track_id,
+        position: r.position,
+        isActive: r.is_active,
+      })),
+    );
+  }
+
   async function addTrack(trackId: string) {
-    const ok = await call({ action: "add", track_id: trackId });
-    if (ok) router.refresh();
+    const res = await call({ action: "add", track_id: trackId });
+    if (!res) return;
+    // Optimistically mirror the server insert in local state. router.refresh()
+    // re-runs the server component but useState(initialEntries) won't accept
+    // the new prop — local state has to be updated directly.
+    const entryId = typeof res.entryId === "string" ? res.entryId : null;
+    if (entryId) {
+      setEntries((prev) => {
+        if (prev.some((e) => e.id === entryId || e.trackId === trackId)) {
+          return prev.map((e) =>
+            e.trackId === trackId ? { ...e, isActive: true } : e,
+          );
+        }
+        const nextPos =
+          prev.reduce((m, e) => Math.max(m, e.position ?? 0), 0) + 1;
+        return [
+          ...prev,
+          { id: entryId, trackId, position: nextPos, isActive: true },
+        ];
+      });
+    }
+    router.refresh();
   }
 
   async function addAllPublished() {
-    const ok = await call({ action: "add_all_published" });
-    if (ok) router.refresh();
+    const res = await call({ action: "add_all_published" });
+    if (!res) return;
+    // Bulk insert returns counts but not the new ids — re-pull the canonical
+    // list from the server to refresh both the order and the inPlaylist set.
+    await refetchEntries();
+    router.refresh();
   }
 
   async function toggleActive(entry: PlaylistEntry) {

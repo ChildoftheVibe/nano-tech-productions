@@ -41,6 +41,8 @@ export function VaultClient({ tracks }: { tracks: VaultTrack[] }) {
   const [activeTitle, setActiveTitle] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [playerError, setPlayerError] = useState<string | null>(null);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const [logsForTrackId, setLogsForTrackId] = useState<string | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
@@ -82,10 +84,13 @@ export function VaultClient({ tracks }: { tracks: VaultTrack[] }) {
   const handlePreview = async (track: VaultTrack) => {
     if (busyId) return;
     setBusyId(track.id);
+    setPlayerError(null);
+    setAutoplayBlocked(false);
     try {
       const res = await fetch(`/api/admin/wav/${track.id}`, { cache: "no-store" });
       if (!res.ok) {
-        alert("Vault preview failed.");
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        setPlayerError(body.error ?? `Preview failed (${res.status}).`);
         return;
       }
       const { url } = (await res.json()) as { url: string };
@@ -93,9 +98,19 @@ export function VaultClient({ tracks }: { tracks: VaultTrack[] }) {
       if (!audio) return;
       audio.src = url;
       audio.load();
-      audio.play().catch(() => {});
       setActiveTrackId(track.id);
       setActiveTitle(`${track.albumTitle} — ${track.title}`);
+      // Try to autoplay. Chrome blocks play() invoked after an async fetch
+      // because the user-gesture token has lapsed; the visible <audio
+      // controls> below acts as the fallback. Surface the blocked state so the
+      // user knows to press play themselves.
+      try {
+        await audio.play();
+      } catch {
+        setAutoplayBlocked(true);
+      }
+    } catch (err) {
+      setPlayerError(err instanceof Error ? err.message : "Preview failed.");
     } finally {
       setBusyId(null);
     }
@@ -110,6 +125,8 @@ export function VaultClient({ tracks }: { tracks: VaultTrack[] }) {
     setActiveTrackId(null);
     setActiveTitle("");
     setIsPlaying(false);
+    setAutoplayBlocked(false);
+    setPlayerError(null);
   };
 
   const handleDownload = async (track: VaultTrack) => {
@@ -162,24 +179,34 @@ export function VaultClient({ tracks }: { tracks: VaultTrack[] }) {
         These are your irreplaceable master files. All access is logged.
       </div>
 
-      <div className="mb-6 flex items-center justify-between rounded border border-white/10 bg-black/30 p-4">
-        <div className="min-w-0">
-          <div className="text-xs uppercase tracking-wider text-white/60">Vault Player</div>
-          <div className="truncate text-sm font-medium">
-            {activeTitle || "Nothing loaded"}
+      <div className="mb-6 rounded border border-white/10 bg-black/30 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-xs uppercase tracking-wider text-white/60">Vault Player</div>
+            <div className="truncate text-sm font-medium">
+              {activeTitle || "Nothing loaded"}
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <audio ref={audioRef} preload="metadata" controls className="h-8" />
+            {activeTrackId ? (
+              <button
+                onClick={handleStop}
+                className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/5"
+              >
+                Stop
+              </button>
+            ) : null}
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <audio ref={audioRef} preload="none" controls className="h-8" />
-          {activeTrackId ? (
-            <button
-              onClick={handleStop}
-              className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/5"
-            >
-              Stop
-            </button>
-          ) : null}
-        </div>
+        {autoplayBlocked ? (
+          <p className="mt-2 text-xs text-[#3DD6C8]">
+            Browser blocked autoplay — press play on the controls above to start streaming.
+          </p>
+        ) : null}
+        {playerError ? (
+          <p className="mt-2 text-xs text-red-300">{playerError}</p>
+        ) : null}
       </div>
 
       {tracks.length === 0 ? (
