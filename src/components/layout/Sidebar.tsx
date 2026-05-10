@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Library, Search, Music } from "lucide-react";
+import { Home, Library, Search, Music, Users } from "lucide-react";
 import type { Album } from "@/types/music";
 
-// TODO: /library and /search routes don't exist yet — add in a later phase.
 const navItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/library", label: "Your Library", icon: Library },
   { href: "/search", label: "Search", icon: Search },
+  { href: "/artists", label: "Artists", icon: Users },
 ];
 
 type Props = {

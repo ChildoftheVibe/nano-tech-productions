@@ -5,6 +5,7 @@ import { motion, type Variants } from "framer-motion";
 import { ExternalLink, Play, Shuffle, ShoppingBag } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { TrackRow } from "@/components/music/TrackRow";
+import { MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
 import { usePlayerStore } from "@/store/playerStore";
 import { useCheckoutStore, albumCheckoutItem } from "@/store/checkoutStore";
 import {
@@ -33,7 +34,7 @@ const CREDIT_ROLE_LABELS: Array<{ key: keyof TrackCredits; label: string }> = [
 
 const COLLAPSED_LIMIT = 8;
 
-type CreditLine = { label: string; names: string };
+type CreditLine = { label: string; names: string[] };
 
 function buildCreditEntries(credits: TrackCredits | null | undefined): CreditLine[] {
   if (!credits) return [];
@@ -41,7 +42,7 @@ function buildCreditEntries(credits: TrackCredits | null | undefined): CreditLin
   for (const { key, label } of CREDIT_ROLE_LABELS) {
     const arr = credits[key];
     if (Array.isArray(arr) && arr.length > 0) {
-      out.push({ label, names: arr.join(", ") });
+      out.push({ label, names: arr.filter((s): s is string => typeof s === "string") });
     }
   }
   return out;
@@ -61,7 +62,15 @@ const trackItem: Variants = {
   },
 };
 
-export function AlbumDetail({ album }: { album: Album }) {
+type AlbumDetailProps = {
+  album: Album;
+  artistSlugsByName?: Record<string, string>;
+};
+
+export function AlbumDetail({
+  album,
+  artistSlugsByName = {},
+}: AlbumDetailProps) {
   const playAlbum = usePlayerStore((s) => s.playAlbum);
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
   const shuffle = usePlayerStore((s) => s.shuffle);
@@ -253,7 +262,11 @@ export function AlbumDetail({ album }: { album: Album }) {
           >
             {album.tracks.map((track) => (
               <motion.div key={track.id} variants={trackItem}>
-                <TrackRow track={track} album={album} />
+                <TrackRow
+                  track={track}
+                  album={album}
+                  artistSlugsByName={artistSlugsByName}
+                />
               </motion.div>
             ))}
           </motion.div>
@@ -275,7 +288,10 @@ export function AlbumDetail({ album }: { album: Album }) {
                   {lines.map((line) => (
                     <li key={`${track.id}-${line.label}`} className="text-xs text-[#B3B3B3]">
                       <span className="text-white/80">{line.label}:</span>{" "}
-                      <span>{line.names}</span>
+                      <MaybeArtistLinkList
+                        names={line.names}
+                        slugsByName={artistSlugsByName}
+                      />
                     </li>
                   ))}
                 </ul>

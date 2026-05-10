@@ -5,9 +5,10 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Pause, Play } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
+import { ArtistCard } from "@/components/artist/ArtistCard";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePageEngagement } from "@/lib/usePageEngagement";
-import type { Album, AlbumListResult } from "@/types/music";
+import type { Album, AlbumListResult, Artist } from "@/types/music";
 
 const PAGE_SIZE =
   Number(process.env.NEXT_PUBLIC_ALBUMS_PER_PAGE) > 0
@@ -53,9 +54,15 @@ type Props = {
   featured: Album[];
   latest: Album | null;
   initialCollection: AlbumListResult;
+  featuredArtists: Artist[];
 };
 
-export function HomeClient({ featured, latest, initialCollection }: Props) {
+export function HomeClient({
+  featured,
+  latest,
+  initialCollection,
+  featuredArtists,
+}: Props) {
   const greeting = useSyncExternalStore(
     subscribeNoop,
     getClientGreeting,
@@ -241,6 +248,37 @@ export function HomeClient({ featured, latest, initialCollection }: Props) {
               </div>
             </div>
           </motion.div>
+        </section>
+      ) : null}
+
+      {featuredArtists.length > 0 ? (
+        <section className="pb-10">
+          <motion.div
+            className="mb-4 flex items-baseline justify-between"
+            initial={animateFirst ? "hidden" : false}
+            animate="visible"
+            variants={sectionHeader}
+          >
+            <h2 className="text-xl font-bold text-white">Featured Artists</h2>
+          </motion.div>
+          <div className="-mx-4 overflow-x-auto px-4 md:-mx-8 md:px-8">
+            <motion.div
+              className="flex snap-x snap-mandatory gap-3 pb-2"
+              variants={containerStagger}
+              initial={animateFirst ? "hidden" : false}
+              animate="visible"
+            >
+              {featuredArtists.map((artist) => (
+                <motion.div
+                  key={artist.id}
+                  className="w-[220px] flex-shrink-0 snap-start"
+                  variants={itemFadeUp}
+                >
+                  <ArtistCard artist={artist} size="md" />
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
         </section>
       ) : null}
 

@@ -3,14 +3,16 @@
 import { Play } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
 import { useCheckoutStore, trackCheckoutItem } from "@/store/checkoutStore";
+import { MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
 import type { Album, Track } from "@/types/music";
 
 type Props = {
   track: Track;
   album: Album;
+  artistSlugsByName?: Record<string, string>;
 };
 
-export function TrackRow({ track, album }: Props) {
+export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const playTrack = usePlayerStore((s) => s.playTrack);
@@ -122,20 +124,25 @@ export function TrackRow({ track, album }: Props) {
         )}
       </button>
 
-      <button onClick={handleClick} className="min-w-0 text-left">
-        <div
-          className={`truncate text-sm font-medium ${
+      <div className="min-w-0">
+        <button
+          onClick={handleClick}
+          className={`block truncate text-left text-sm font-medium ${
             isActive ? "text-[#3DD6C8]" : "text-white"
           }`}
         >
           {track.title}
-        </div>
+        </button>
         {track.features?.length ? (
           <div className="truncate text-xs text-[#B3B3B3] transition-colors duration-150 group-hover:text-[#3DD6C8]">
-            feat. {track.features.join(", ")}
+            feat.{" "}
+            <MaybeArtistLinkList
+              names={track.features}
+              slugsByName={artistSlugsByName}
+            />
           </div>
         ) : null}
-      </button>
+      </div>
 
       <div className="hidden text-sm text-[#B3B3B3] md:block">
         ${track.price.toFixed(2)}

@@ -21,6 +21,15 @@ function isAllowedFolder(folder: string): boolean {
     const slug = folder.slice("ntp/".length, -"/cover".length);
     return SLUG_RE.test(slug);
   }
+  // Artist images: ntp/artists/<slug>/{profile,banner}. Also allow the
+  // _pending placeholder so the form can preview before a slug is finalized.
+  if (folder.startsWith("ntp/artists/")) {
+    const tail = folder.slice("ntp/artists/".length);
+    const parts = tail.split("/");
+    if (parts.length === 2 && (parts[1] === "profile" || parts[1] === "banner")) {
+      return SLUG_RE.test(parts[0]) || parts[0] === "_pending";
+    }
+  }
   for (const base of ["ntp/audio/public/", "ntp/audio/vault/"] as const) {
     if (folder.startsWith(base)) {
       const slug = folder.slice(base.length);

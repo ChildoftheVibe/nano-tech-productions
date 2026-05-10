@@ -14,7 +14,7 @@ import { SearchBar } from "./SearchBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SearchResultsSkeleton } from "@/components/ui/skeletons/SearchResultsSkeleton";
 import type { Album } from "@/types/music";
-import type { SearchResult, SearchTrack } from "@/lib/queries";
+import type { SearchArtist, SearchResult, SearchTrack } from "@/lib/queries";
 
 type SearchResponse = SearchResult & { query: string; tooShort: boolean };
 
@@ -25,7 +25,7 @@ const DEBOUNCE_MS = 300;
 type FlatItem =
   | { kind: "album"; href: string; album: Album }
   | { kind: "track"; href: string; track: SearchTrack }
-  | { kind: "artist"; href: string; name: string };
+  | { kind: "artist"; href: string; artist: SearchArtist };
 
 // External store for recent searches so components can subscribe via
 // useSyncExternalStore without setState-in-effect.
@@ -158,12 +158,11 @@ export function SearchPageClient() {
       const href = t.albumSlug ? `/album/${t.albumSlug}` : "#";
       out.push({ kind: "track", href, track: t });
     }
-    for (const name of result.artists) {
-      out.push({
-        kind: "artist",
-        href: `/search?q=${encodeURIComponent(name)}`,
-        name,
-      });
+    for (const a of result.artists) {
+      const href = a.slug
+        ? `/artist/${a.slug}`
+        : `/search?q=${encodeURIComponent(a.name)}`;
+      out.push({ kind: "artist", href, artist: a });
     }
     return out;
   }, [result]);
@@ -409,13 +408,19 @@ export function SearchPageClient() {
               count={result.artists.length}
             >
               <ul className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                {result.artists.map((name, i) => {
+                {result.artists.map((artist, i) => {
                   const flatIndex =
                     result.albums.length + result.tracks.length + i;
+                  const href = artist.slug
+                    ? `/artist/${artist.slug}`
+                    : `/search?q=${encodeURIComponent(artist.name)}`;
+                  const key = artist.slug
+                    ? `slug:${artist.slug}`
+                    : `name:${artist.name}`;
                   return (
-                    <li key={name}>
+                    <li key={key}>
                       <Link
-                        href={`/search?q=${encodeURIComponent(name)}`}
+                        href={href}
                         onClick={() => pushRecent(query)}
                         className={`flex items-center gap-2 rounded-md p-2 text-sm text-white transition-colors ${
                           highlighted === flatIndex
@@ -424,12 +429,29 @@ export function SearchPageClient() {
                         }`}
                       >
                         <span
-                          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-bold text-black"
+                          className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full font-bold text-black"
                           style={{ background: "#3DD6C8" }}
                         >
-                          {name.charAt(0).toUpperCase()}
+                          {artist.profileImage ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={artist.profileImage}
+                              alt=""
+                              aria-hidden
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            artist.name.charAt(0).toUpperCase()
+                          )}
                         </span>
-                        <span className="truncate">{name}</span>
+                        <span className="min-w-0 flex-1 truncate">
+                          {artist.name}
+                          {artist.slug ? null : (
+                            <span className="ml-1 text-[10px] uppercase tracking-wider text-white/40">
+                              (no page)
+                            </span>
+                          )}
+                        </span>
                       </Link>
                     </li>
                   );

@@ -1,7 +1,12 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getAlbum, getAlbumById, getAllAlbumSlugs } from "@/lib/queries";
+import {
+  getAlbum,
+  getAlbumById,
+  getAllAlbumSlugs,
+  getPublishedArtistSlugByName,
+} from "@/lib/queries";
 import { AlbumDetail } from "@/components/music/AlbumDetail";
 import { AlbumDetailSkeleton } from "@/components/ui/skeletons/AlbumDetailSkeleton";
 import type { Album } from "@/types/music";
@@ -87,12 +92,15 @@ function AlbumJsonLd({ album }: { album: Album }) {
 }
 
 async function AlbumData({ id }: { id: string }) {
-  const album = await loadAlbum(id);
+  const [album, artistSlugsByName] = await Promise.all([
+    loadAlbum(id),
+    getPublishedArtistSlugByName(),
+  ]);
   if (!album) notFound();
   return (
     <>
       <AlbumJsonLd album={album} />
-      <AlbumDetail album={album} />
+      <AlbumDetail album={album} artistSlugsByName={artistSlugsByName} />
     </>
   );
 }

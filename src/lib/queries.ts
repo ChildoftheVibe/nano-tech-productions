@@ -1,6 +1,16 @@
 import { unstable_cache } from "next/cache";
 import { supabase } from "./supabase";
-import type { Album, AlbumListResult, Track, TrackCredits } from "@/types/music";
+import type {
+  Album,
+  AlbumListResult,
+  Artist,
+  ArtistAlbum,
+  ArtistListResult,
+  ArtistRole,
+  ArtistTrack,
+  Track,
+  TrackCredits,
+} from "@/types/music";
 
 const ALBUM_COLUMNS =
   "id, slug, title, description, release_date, cover_image, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, is_published";
@@ -233,10 +243,21 @@ export const searchAlbums = unstable_cache(
 
 export type SearchTrack = Track & { albumSlug: string | null };
 
+/** Search-result artist. Published artists carry full metadata so the UI can
+ *  render an ArtistCard linking to /artist/<slug>. Feature-only names (no
+ *  published page) carry just `name`. */
+export type SearchArtist = {
+  name: string;
+  slug?: string;
+  role?: string;
+  profileImage?: string | null;
+  id?: string;
+};
+
 export type SearchResult = {
   albums: Album[];
   tracks: SearchTrack[];
-  artists: string[];
+  artists: SearchArtist[];
 };
 
 const SEARCH_LIMITS = { albums: 5, tracks: 10, artists: 5 } as const;
@@ -308,11 +329,42 @@ export const searchContent = unstable_cache(
       }
     }
 
-    // Artists: distinct names from tracks.features that match the query.
-    // Pull a wider sample then filter/dedupe in memory — features is a TEXT[]
-    // and there's no clean partial-match operator across array elements.
-    const artists: string[] = [];
+    // Artists: published artists table first; fall back to track-feature
+    // names that don't already correspond to a published artist page.
+    const artists: SearchArtist[] = [];
+    const seenLower = new Set<string>();
     {
+      const { data, error } = await supabase
+        .from("artists")
+        .select("id, slug, name, role, profile_image")
+        .eq("is_published", true)
+        .ilike("name", ilikeNeedle)
+        .limit(SEARCH_LIMITS.artists);
+      if (error) {
+        console.error("[queries.searchContent artists]", error.message);
+      } else if (data) {
+        for (const row of data as Array<{
+          id: string;
+          slug: string;
+          name: string;
+          role: string | null;
+          profile_image: string | null;
+        }>) {
+          const key = row.name.toLowerCase();
+          if (seenLower.has(key)) continue;
+          seenLower.add(key);
+          artists.push({
+            id: row.id,
+            slug: row.slug,
+            name: row.name,
+            role: row.role ?? "featured",
+            profileImage: row.profile_image,
+          });
+          if (artists.length >= SEARCH_LIMITS.artists) break;
+        }
+      }
+    }
+    if (artists.length < SEARCH_LIMITS.artists) {
       const { data, error } = await supabase
         .from("tracks")
         .select("features")
@@ -320,19 +372,21 @@ export const searchContent = unstable_cache(
         .not("features", "is", null)
         .limit(500);
       if (error) {
-        console.error("[queries.searchContent artists]", error.message);
+        console.error(
+          "[queries.searchContent artists.features]",
+          error.message,
+        );
       } else if (data) {
         const needle = query.toLowerCase();
-        const seen = new Set<string>();
         for (const row of data as Array<{ features: string[] | null }>) {
           if (!row.features) continue;
           for (const f of row.features) {
             if (typeof f !== "string") continue;
             const key = f.toLowerCase();
-            if (seen.has(key)) continue;
+            if (seenLower.has(key)) continue;
             if (!key.includes(needle)) continue;
-            seen.add(key);
-            artists.push(f);
+            seenLower.add(key);
+            artists.push({ name: f });
             if (artists.length >= SEARCH_LIMITS.artists) break;
           }
           if (artists.length >= SEARCH_LIMITS.artists) break;
@@ -400,4 +454,264 @@ export const getAllAlbumSlugs = unstable_cache(
   },
   ["album-slugs"],
   { revalidate: 600, tags: ["albums"] },
+);
+
+// ─────────────────────────────────────────────────────────────────────
+// Artists
+// All artist data is admin-managed. These helpers never seed defaults —
+// if the artists table is empty, every consumer must render an empty
+// state, not hardcoded fallback content.
+// ─────────────────────────────────────────────────────────────────────
+
+const ARTIST_COLUMNS =
+  "id, slug, name, bio, role, profile_image, banner_image, location, is_featured, is_published, sort_order, spotify_url, apple_music_url, youtube_url, instagram_url, twitter_url, website_url";
+
+type ArtistRow = {
+  id: string;
+  slug: string;
+  name: string;
+  bio: string | null;
+  role: ArtistRole | string | null;
+  profile_image: string | null;
+  banner_image: string | null;
+  location: string | null;
+  is_featured: boolean | null;
+  is_published: boolean | null;
+  sort_order: number | null;
+  spotify_url: string | null;
+  apple_music_url: string | null;
+  youtube_url: string | null;
+  instagram_url: string | null;
+  twitter_url: string | null;
+  website_url: string | null;
+};
+
+const VALID_ROLES: ArtistRole[] = [
+  "primary",
+  "featured",
+  "producer",
+  "songwriter",
+  "engineer",
+];
+
+function normalizeRole(r: ArtistRole | string | null | undefined): ArtistRole {
+  if (typeof r === "string" && (VALID_ROLES as string[]).includes(r)) {
+    return r as ArtistRole;
+  }
+  return "featured";
+}
+
+function mapArtist(row: ArtistRow): Artist {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    bio: row.bio,
+    role: normalizeRole(row.role),
+    profileImage: row.profile_image,
+    bannerImage: row.banner_image,
+    location: row.location,
+    isFeatured: !!row.is_featured,
+    isPublished: !!row.is_published,
+    sortOrder: row.sort_order ?? 0,
+    spotifyUrl: row.spotify_url,
+    appleMusicUrl: row.apple_music_url,
+    youtubeUrl: row.youtube_url,
+    instagramUrl: row.instagram_url,
+    twitterUrl: row.twitter_url,
+    websiteUrl: row.website_url,
+  };
+}
+
+export type GetArtistsOpts = {
+  published?: boolean;
+  featured?: boolean;
+  limit?: number;
+  offset?: number;
+};
+
+async function fetchArtists({
+  published,
+  featured,
+  limit = 50,
+  offset = 0,
+}: GetArtistsOpts): Promise<ArtistListResult> {
+  let q = supabase
+    .from("artists")
+    .select(ARTIST_COLUMNS, { count: "exact" })
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true })
+    .range(offset, offset + limit - 1);
+  if (published === true) q = q.eq("is_published", true);
+  if (published === false) q = q.eq("is_published", false);
+  if (featured === true) q = q.eq("is_featured", true);
+  const { data, count, error } = await q;
+  if (error) {
+    console.error("[queries.getArtists]", error.message);
+    return { artists: [], totalCount: 0, hasMore: false };
+  }
+  const artists = ((data ?? []) as ArtistRow[]).map(mapArtist);
+  const totalCount = count ?? 0;
+  return {
+    artists,
+    totalCount,
+    hasMore: offset + artists.length < totalCount,
+  };
+}
+
+export const getArtists = unstable_cache(
+  async (opts: GetArtistsOpts = {}): Promise<ArtistListResult> =>
+    fetchArtists(opts),
+  ["artists-list"],
+  { revalidate: 300, tags: ["artists"] },
+);
+
+export const getFeaturedArtists = unstable_cache(
+  async (): Promise<Artist[]> => {
+    const { artists } = await fetchArtists({
+      published: true,
+      featured: true,
+      limit: 24,
+    });
+    return artists;
+  },
+  ["artists-featured"],
+  { revalidate: 300, tags: ["artists"] },
+);
+
+export const getAllArtistSlugs = unstable_cache(
+  async (): Promise<string[]> => {
+    const { data, error } = await supabase
+      .from("artists")
+      .select("slug")
+      .eq("is_published", true);
+    if (error || !data) return [];
+    return (data as Array<{ slug: string }>).map((r) => r.slug);
+  },
+  ["artist-slugs"],
+  { revalidate: 600, tags: ["artists"] },
+);
+
+type ArtistTrackJoinRow = {
+  role: string | null;
+  tracks: {
+    id: string;
+    album_id: string | null;
+    title: string;
+    track_number: number | null;
+    duration: string | null;
+    price: number | string | null;
+    audio_url: string | null;
+    features: string[] | null;
+    is_published: boolean;
+    albums: { slug: string; title: string } | { slug: string; title: string }[] | null;
+  } | null;
+};
+
+type ArtistAlbumJoinRow = {
+  role: string | null;
+  albums: {
+    id: string;
+    slug: string;
+    title: string;
+    release_date: string | null;
+    cover_image: string | null;
+    background_color: string | null;
+    accent_color: string | null;
+    is_published: boolean;
+  } | null;
+};
+
+export const getArtist = unstable_cache(
+  async (slug: string): Promise<Artist | null> => {
+    const { data: artistRow, error: artistErr } = await supabase
+      .from("artists")
+      .select(ARTIST_COLUMNS)
+      .eq("slug", slug)
+      .eq("is_published", true)
+      .maybeSingle();
+    if (artistErr || !artistRow) {
+      if (artistErr) console.error("[queries.getArtist]", artistErr.message);
+      return null;
+    }
+    const artist = mapArtist(artistRow as ArtistRow);
+
+    const [tracksRes, albumsRes] = await Promise.all([
+      supabase
+        .from("artist_tracks")
+        .select(
+          "role, tracks!inner(id, album_id, title, track_number, duration, price, audio_url, features, is_published, albums(slug, title))",
+        )
+        .eq("artist_id", artist.id),
+      supabase
+        .from("artist_albums")
+        .select(
+          "role, albums!inner(id, slug, title, release_date, cover_image, background_color, accent_color, is_published)",
+        )
+        .eq("artist_id", artist.id),
+    ]);
+
+    const trackRows = (tracksRes.data ?? []) as unknown as ArtistTrackJoinRow[];
+    const albumRows = (albumsRes.data ?? []) as unknown as ArtistAlbumJoinRow[];
+
+    const tracks: ArtistTrack[] = trackRows
+      .filter((r) => r.tracks && r.tracks.is_published)
+      .map((r) => {
+        const t = r.tracks!;
+        const album = Array.isArray(t.albums) ? t.albums[0] : t.albums;
+        return {
+          id: t.id,
+          title: t.title,
+          duration: t.duration ?? "0:00",
+          features: t.features ?? undefined,
+          audioUrl: t.audio_url ?? undefined,
+          price: Number(t.price ?? 0),
+          trackNumber: t.track_number ?? 0,
+          albumId: t.album_id ?? "",
+          albumSlug: album?.slug ?? null,
+          albumTitle: album?.title ?? null,
+          artistRole: r.role ?? "featured",
+        };
+      });
+
+    const albums: ArtistAlbum[] = albumRows
+      .filter((r) => r.albums && r.albums.is_published)
+      .map((r) => {
+        const a = r.albums!;
+        return {
+          id: a.id,
+          slug: a.slug,
+          title: a.title,
+          releaseDate: a.release_date ?? "",
+          coverImage: a.cover_image ?? "",
+          bgColor: a.background_color ?? "#393838",
+          accentColor: a.accent_color ?? "#3DD6C8",
+          artistRole: r.role ?? "featured",
+        };
+      });
+
+    return { ...artist, tracks, albums };
+  },
+  ["artist-by-slug"],
+  { revalidate: 60, tags: ["artists"] },
+);
+
+/** Returns names of artists that have a published page, keyed by lowercase name.
+ *  Used by TrackRow / AlbumDetail / search to decide whether a name should be
+ *  rendered as a link (published page exists) or plain text (no page). */
+export const getPublishedArtistSlugByName = unstable_cache(
+  async (): Promise<Record<string, string>> => {
+    const { data, error } = await supabase
+      .from("artists")
+      .select("name, slug")
+      .eq("is_published", true);
+    if (error || !data) return {};
+    const out: Record<string, string> = {};
+    for (const row of data as Array<{ name: string; slug: string }>) {
+      if (row.name && row.slug) out[row.name.toLowerCase()] = row.slug;
+    }
+    return out;
+  },
+  ["artists-slug-by-name"],
+  { revalidate: 300, tags: ["artists"] },
 );
