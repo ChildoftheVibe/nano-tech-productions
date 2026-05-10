@@ -9,8 +9,10 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { Clock, Disc3, Mic2, Music, X } from "lucide-react";
+import { Clock, Disc3, Mic2, Music, SearchX, X } from "lucide-react";
 import { SearchBar } from "./SearchBar";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SearchResultsSkeleton } from "@/components/ui/skeletons/SearchResultsSkeleton";
 import type { Album } from "@/types/music";
 import type { SearchResult, SearchTrack } from "@/lib/queries";
 
@@ -287,10 +289,14 @@ export function SearchPageClient() {
         </p>
       ) : null}
 
+      {loading ? <SearchResultsSkeleton /> : null}
+
       {showNoResults ? (
-        <p className="text-sm text-[#B3B3B3]">
-          No results for <span className="text-white">{trimmed}</span>.
-        </p>
+        <EmptyState
+          icon={<SearchX size={20} />}
+          title={`No results for "${trimmed}"`}
+          message="Try a different word, or check the spelling."
+        />
       ) : null}
 
       {showResults && result && !showNoResults ? (
