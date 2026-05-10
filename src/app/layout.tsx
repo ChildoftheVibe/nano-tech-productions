@@ -21,9 +21,31 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "NTV Vault | Nano Tech Vibe",
-  description: "NTV Vault — the Nano Tech Vibe music platform.",
+  metadataBase: new URL("https://www.nanotechvibe.com"),
+  title: {
+    default: "NTV Vault | Nano Tech Vibe",
+    template: "%s | NTV Vault",
+  },
+  description: "The official Nano Tech Vibe music store.",
   manifest: "/manifest.json",
+  openGraph: {
+    type: "music.album",
+    siteName: "NTV Vault",
+    url: "https://www.nanotechvibe.com",
+    title: "NTV Vault | Nano Tech Vibe",
+    description: "The official Nano Tech Vibe music store.",
+    images: [{ url: "/og-default.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NTV Vault | Nano Tech Vibe",
+    description: "The official Nano Tech Vibe music store.",
+    images: ["/og-default.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default async function RootLayout({
