@@ -196,18 +196,20 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         .setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
 
     const onEnded = () => {
-      if (currentTrack && Number.isFinite(audio.duration)) {
+      const previous = currentTrack;
+      if (previous && Number.isFinite(audio.duration)) {
         completedRef.current = true;
-        trackPlayComplete(currentTrack, audio.duration);
+        trackPlayComplete(previous, audio.duration);
       }
       const store = usePlayerStore.getState();
       store.nextTrack();
       // Auto-advance: the audio element is already "unlocked" because it just
       // finished playing, so a programmatic play() succeeds without a fresh
-      // user gesture. We do it here directly because we removed the
-      // isPlaying→play effect.
+      // user gesture. nextTrack now skips non-playable tracks; if it didn't
+      // advance (no playable in queue) currentTrack is unchanged and we
+      // should NOT re-fire play() on the just-ended track.
       const next = usePlayerStore.getState().currentTrack;
-      if (next?.audioUrl) {
+      if (next && next.id !== previous?.id && next.audioUrl) {
         if (audio.src !== next.audioUrl) {
           audio.src = next.audioUrl;
           audio.load();
@@ -384,6 +386,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const playFromTrack = useCallback(
     (track: Track, album: Album | null = null) => {
+      // TrackRow gates clicks already, but keep this defensive — any future
+      // caller that hands us a non-streamable track should be a no-op rather
+      // than mutating store state into a "playing but silent" condition.
+      if (!track.audioUrl) {
+        console.warn(
+          "[PlayerContext] playFromTrack: skipping track without audioUrl:",
+          track.title,
+        );
+        return;
+      }
       const store = usePlayerStore.getState();
       store.playTrack(track, album);
       // playTrack sets isPlaying=true in state; sync the actual audio element
@@ -402,10 +414,19 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const playFromAlbum = useCallback(
     (album: Album) => {
       const store = usePlayerStore.getState();
+      const before = store.currentTrack;
       store.playAlbum(album);
-      const first = usePlayerStore.getState().currentTrack;
-      if (!first) return;
-      const audio = ensureSrc(first);
+      const next = usePlayerStore.getState().currentTrack;
+      // playAlbum is a no-op when the album has no playable tracks; detect
+      // that and don't resume the previously-loaded track.
+      if (!next || !next.audioUrl || next === before) {
+        console.warn(
+          "[PlayerContext] playFromAlbum: no playable tracks in",
+          album.title,
+        );
+        return;
+      }
+      const audio = ensureSrc(next);
       console.log("[PlayerContext] playFromAlbum src before play:", audio?.src);
       if (audio) {
         audio.play().catch((err) => {
@@ -419,9 +440,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const nextAndPlay = useCallback(() => {
     const store = usePlayerStore.getState();
+    const before = store.currentTrack;
     store.nextTrack();
     const next = usePlayerStore.getState().currentTrack;
-    if (!next) return;
+    // If nextTrack didn't advance (no playable left), don't restart current.
+    if (!next || next.id === before?.id) return;
     const audio = ensureSrc(next);
     console.log("[PlayerContext] nextAndPlay src before play:", audio?.src);
     if (audio) {
@@ -434,9 +457,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const previousAndPlay = useCallback(() => {
     const store = usePlayerStore.getState();
+    const before = store.currentTrack;
     store.previousTrack();
     const prev = usePlayerStore.getState().currentTrack;
-    if (!prev) return;
+    if (!prev || prev.id === before?.id) return;
     const audio = ensureSrc(prev);
     console.log("[PlayerContext] previousAndPlay src before play:", audio?.src);
     if (audio) {

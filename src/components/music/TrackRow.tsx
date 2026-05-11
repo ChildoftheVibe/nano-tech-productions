@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Play } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
@@ -13,6 +14,8 @@ type Props = {
   artistSlugsByName?: Record<string, string>;
 };
 
+const UNAVAILABLE_MESSAGE_MS = 2200;
+
 export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
@@ -21,20 +24,37 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
   const isActive = currentTrack?.id === track.id;
   const isThisPlaying = isActive && isPlaying;
 
+  const [showUnavailable, setShowUnavailable] = useState(false);
+  useEffect(() => {
+    if (!showUnavailable) return;
+    const t = window.setTimeout(
+      () => setShowUnavailable(false),
+      UNAVAILABLE_MESSAGE_MS,
+    );
+    return () => window.clearTimeout(t);
+  }, [showUnavailable]);
+
   const handleClick = () => {
     if (isActive) {
       togglePlayPause();
-    } else {
-      // Direct synchronous play() via PlayerContext keeps the user-gesture
-      // chain alive so Chrome's autoplay policy doesn't block the call.
-      playFromTrack(track, album);
-      void fetch("/api/tracks/played", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trackId: track.id }),
-        keepalive: true,
-      }).catch(() => {});
+      return;
     }
+    if (!track.audioUrl) {
+      // Track row stays visually unchanged (isActive remains false). Flash an
+      // inline note so the user knows the click registered and why nothing
+      // happened.
+      setShowUnavailable(true);
+      return;
+    }
+    // Direct synchronous play() via PlayerContext keeps the user-gesture
+    // chain alive so Chrome's autoplay policy doesn't block the call.
+    playFromTrack(track, album);
+    void fetch("/api/tracks/played", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ trackId: track.id }),
+      keepalive: true,
+    }).catch(() => {});
   };
 
   const openCheckout = useCheckoutStore((s) => s.open);
@@ -135,7 +155,15 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
         >
           {track.title}
         </button>
-        {track.features?.length ? (
+        {showUnavailable ? (
+          <div
+            className="truncate text-xs text-yellow-300/90"
+            role="status"
+            aria-live="polite"
+          >
+            Audio not yet available
+          </div>
+        ) : track.features?.length ? (
           <div className="truncate text-xs text-[#B3B3B3] transition-colors duration-150 group-hover:text-[#3DD6C8]">
             feat.{" "}
             <MaybeArtistLinkList

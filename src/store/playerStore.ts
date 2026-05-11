@@ -69,6 +69,10 @@ export const usePlayerStore = create<PlayerState>()(
       lyricsOpen: false,
 
       playTrack: (track, album = null) => {
+        // Refuse to switch to a track that has no audioUrl. Setting it as
+        // currentTrack would put the player in a "playing but silent" state
+        // because PlayerContext can't load src for it.
+        if (!track.audioUrl) return;
         const { queue } = get();
         const inQueue = queue.some((t) => t.id === track.id);
         set({
@@ -84,10 +88,15 @@ export const usePlayerStore = create<PlayerState>()(
       playAlbum: (album) => {
         if (!album.tracks.length) return;
         const ordered = get().shuffle ? shuffleArray(album.tracks) : album.tracks;
+        // Pick the first track that has a streamable audioUrl. The full
+        // ordered list still goes into the queue so the UI shows everything;
+        // next/previousTrack just skip the non-playable rows.
+        const first = ordered.find((t) => !!t.audioUrl);
+        if (!first) return;
         set({
           currentAlbum: album,
           queue: ordered,
-          currentTrack: ordered[0],
+          currentTrack: first,
           isPlaying: true,
           currentTime: 0,
           duration: 0,
@@ -106,16 +115,24 @@ export const usePlayerStore = create<PlayerState>()(
           return;
         }
         const idx = indexOfTrack(queue, currentTrack);
-        const next = idx + 1;
-        if (next >= queue.length) {
-          if (repeat === "all") {
-            set({ currentTrack: queue[0], currentTime: 0, isPlaying: true });
-          } else {
-            set({ isPlaying: false, currentTime: 0 });
+        // Walk forward for the next track that's actually playable.
+        for (let i = idx + 1; i < queue.length; i++) {
+          if (queue[i].audioUrl) {
+            set({ currentTrack: queue[i], currentTime: 0, isPlaying: true });
+            return;
           }
-          return;
         }
-        set({ currentTrack: queue[next], currentTime: 0, isPlaying: true });
+        // Nothing playable ahead. With repeat="all", wrap to the first
+        // playable from the top; otherwise stop.
+        if (repeat === "all") {
+          for (let i = 0; i < queue.length; i++) {
+            if (queue[i].audioUrl) {
+              set({ currentTrack: queue[i], currentTime: 0, isPlaying: true });
+              return;
+            }
+          }
+        }
+        set({ isPlaying: false, currentTime: 0 });
       },
 
       previousTrack: () => {
@@ -126,8 +143,15 @@ export const usePlayerStore = create<PlayerState>()(
           return;
         }
         const idx = indexOfTrack(queue, currentTrack);
-        const prev = idx <= 0 ? queue.length - 1 : idx - 1;
-        set({ currentTrack: queue[prev], currentTime: 0, isPlaying: true });
+        // Walk backwards (wrap) until we find a playable track.
+        for (let step = 1; step <= queue.length; step++) {
+          const target = (idx - step + queue.length) % queue.length;
+          if (queue[target]?.audioUrl) {
+            set({ currentTrack: queue[target], currentTime: 0, isPlaying: true });
+            return;
+          }
+        }
+        set({ isPlaying: false });
       },
 
       setVolume: (v) => set({ volume: Math.min(1, Math.max(0, v)) }),
