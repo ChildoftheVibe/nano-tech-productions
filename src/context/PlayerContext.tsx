@@ -258,6 +258,22 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         "audioUrl =",
         shuffled[0]?.audioUrl,
       );
+      // Set audio.src directly in the same synchronous block. Relying on the
+      // [currentTrack, queue] effect that runs after the next commit leaves a
+      // window where the user can tap play before src lands — on prod that
+      // produces "The element has no supported sources." Setting src here
+      // closes that window: by the time the React commit + src-effect fire,
+      // src is already the same value and the effect is a no-op.
+      const audio = audioRef.current;
+      const first = shuffled[0];
+      if (audio && first?.audioUrl) {
+        console.log(
+          "[PlayerContext] seed: setting audio.src synchronously →",
+          first.audioUrl,
+        );
+        audio.src = first.audioUrl;
+        audio.load();
+      }
     })();
     return () => {
       cancelled = true;
@@ -303,10 +319,30 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   // block.
   // ─────────────────────────────────────────────────────────────────────
 
+  /**
+   * Ensure the audio element has the right src for `track` and is loaded.
+   * Defensive: when an <audio> has no src assigned, `audio.src` reads back as
+   * the empty string in most browsers, but some report the page URL (the
+   * resolved value of an empty href attribute). Either case means "no media
+   * loaded" and `play()` will throw "The element has no supported sources".
+   * Treat both as needing a fresh assignment.
+   */
   const ensureSrc = useCallback((track: Track) => {
     const audio = audioRef.current;
     if (!audio || !track.audioUrl) return null;
-    if (audio.src !== track.audioUrl) {
+    const current = audio.src;
+    const blank =
+      !current ||
+      current === "" ||
+      (typeof window !== "undefined" && current === window.location.href);
+    if (blank || current !== track.audioUrl) {
+      console.log(
+        "[PlayerContext] ensureSrc → setting audio.src:",
+        track.audioUrl,
+        "(was:",
+        current || "(empty)",
+        ")",
+      );
       audio.src = track.audioUrl;
       audio.load();
     }
@@ -324,16 +360,17 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
     const track = store.currentTrack;
     if (!track?.audioUrl) return;
-    if (audio.src !== track.audioUrl) {
-      audio.src = track.audioUrl;
-      audio.load();
-    }
+    // Guarantee src is set before calling play(). Without this guard, prod
+    // hits "The element has no supported sources" when the user taps play
+    // before React has run the src-setting effect on initial seed.
+    ensureSrc(track);
+    console.log("[PlayerContext] togglePlayPause src before play:", audio.src);
     audio.play().catch((err) => {
       console.warn("[PlayerContext] togglePlayPause play() rejected:", err);
       store.setPlaying(false);
     });
     store.setPlaying(true);
-  }, []);
+  }, [ensureSrc]);
 
   const playFromTrack = useCallback(
     (track: Track, album: Album | null = null) => {
@@ -352,56 +389,53 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     [ensureSrc],
   );
 
-  const playFromAlbum = useCallback((album: Album) => {
-    const store = usePlayerStore.getState();
-    store.playAlbum(album);
-    const first = usePlayerStore.getState().currentTrack;
-    const audio = audioRef.current;
-    if (audio && first?.audioUrl) {
-      if (audio.src !== first.audioUrl) {
-        audio.src = first.audioUrl;
-        audio.load();
+  const playFromAlbum = useCallback(
+    (album: Album) => {
+      const store = usePlayerStore.getState();
+      store.playAlbum(album);
+      const first = usePlayerStore.getState().currentTrack;
+      if (!first) return;
+      const audio = ensureSrc(first);
+      console.log("[PlayerContext] playFromAlbum src before play:", audio?.src);
+      if (audio) {
+        audio.play().catch((err) => {
+          console.warn("[PlayerContext] playFromAlbum play() rejected:", err);
+          store.setPlaying(false);
+        });
       }
-      audio.play().catch((err) => {
-        console.warn("[PlayerContext] playFromAlbum play() rejected:", err);
-        store.setPlaying(false);
-      });
-    }
-  }, []);
+    },
+    [ensureSrc],
+  );
 
   const nextAndPlay = useCallback(() => {
     const store = usePlayerStore.getState();
     store.nextTrack();
     const next = usePlayerStore.getState().currentTrack;
-    const audio = audioRef.current;
-    if (audio && next?.audioUrl) {
-      if (audio.src !== next.audioUrl) {
-        audio.src = next.audioUrl;
-        audio.load();
-      }
+    if (!next) return;
+    const audio = ensureSrc(next);
+    console.log("[PlayerContext] nextAndPlay src before play:", audio?.src);
+    if (audio) {
       audio.play().catch((err) => {
         console.warn("[PlayerContext] nextAndPlay play() rejected:", err);
         store.setPlaying(false);
       });
     }
-  }, []);
+  }, [ensureSrc]);
 
   const previousAndPlay = useCallback(() => {
     const store = usePlayerStore.getState();
     store.previousTrack();
     const prev = usePlayerStore.getState().currentTrack;
-    const audio = audioRef.current;
-    if (audio && prev?.audioUrl) {
-      if (audio.src !== prev.audioUrl) {
-        audio.src = prev.audioUrl;
-        audio.load();
-      }
+    if (!prev) return;
+    const audio = ensureSrc(prev);
+    console.log("[PlayerContext] previousAndPlay src before play:", audio?.src);
+    if (audio) {
       audio.play().catch((err) => {
         console.warn("[PlayerContext] previousAndPlay play() rejected:", err);
         store.setPlaying(false);
       });
     }
-  }, []);
+  }, [ensureSrc]);
 
   return (
     <PlayerContext.Provider
