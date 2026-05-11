@@ -7,6 +7,7 @@ import {
 } from "@/lib/queries";
 import { HomeClient } from "@/components/home/HomeClient";
 import { HomeSkeleton } from "@/components/ui/skeletons/HomeSkeleton";
+import { getAlbumCover } from "@/lib/albumCover";
 
 const PAGE_SIZE =
   Number(process.env.NEXT_PUBLIC_ALBUMS_PER_PAGE) > 0
@@ -24,13 +25,25 @@ async function HomeData() {
       getFeaturedArtists(),
     ]);
 
+  // Preload the first six above-the-fold cover URLs so the browser can race
+  // them against the JS bundle. React hoists these <link> tags into <head>.
+  const preloadCovers = featured
+    .slice(0, 6)
+    .map((a) => getAlbumCover(a.coverImage, "md"))
+    .filter((u) => Boolean(u));
+
   return (
-    <HomeClient
-      featured={featured}
-      latest={latest}
-      initialCollection={initialCollection}
-      featuredArtists={featuredArtists}
-    />
+    <>
+      {preloadCovers.map((href) => (
+        <link key={href} rel="preload" as="image" href={href} />
+      ))}
+      <HomeClient
+        featured={featured}
+        latest={latest}
+        initialCollection={initialCollection}
+        featuredArtists={featuredArtists}
+      />
+    </>
   );
 }
 

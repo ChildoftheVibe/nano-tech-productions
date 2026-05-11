@@ -141,7 +141,7 @@ export function HomeClient({
               initial={animateFirst ? "hidden" : false}
               animate="visible"
             >
-              {featured.map((album) => (
+              {featured.map((album, idx) => (
                 <motion.div
                   key={album.id}
                   className="w-[180px] flex-shrink-0 snap-start"
@@ -153,6 +153,8 @@ export function HomeClient({
                     href={`/album/${album.slug}`}
                     showHoverPlay
                     onPlay={() => playFromAlbum(album)}
+                    priority={idx < 6}
+                    fetchPriority={idx < 3 ? "high" : undefined}
                   />
                   <div className="mt-2 truncate text-sm font-semibold text-white">
                     <Link href={`/album/${album.slug}`} className="hover:underline">

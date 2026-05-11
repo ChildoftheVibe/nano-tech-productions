@@ -100,29 +100,11 @@ export function getStreamingUrl(publicId: string): string {
 // use the simpler names while we keep backwards compatibility.
 // ─────────────────────────────────────────────────────────────────────
 
-const COVERS_FOLDER = "ntp/images/covers";
-
-type CoverSize = "thumb" | "card" | "hero" | number;
-
-/**
- * Optimized WebP album cover URL. Pass a named size or an explicit pixel width.
- * Cloudinary's f_auto/q_auto/c_fill negotiates WebP/AVIF when supported.
- */
-export function getAlbumCover(publicId: string, size: CoverSize = "card"): string {
-  if (!publicId) return "";
-  if (/^https?:\/\//.test(publicId)) return publicId;
-  const widths: Record<Exclude<CoverSize, number>, number> = {
-    thumb: 80,
-    card: 400,
-    hero: 1200,
-  };
-  const w = typeof size === "number" ? size : widths[size];
-  const transform = `f_auto,q_auto,c_fill,w_${w},h_${w}`;
-  const idWithFolder = publicId.includes("/")
-    ? publicId
-    : `${COVERS_FOLDER}/${publicId}`;
-  return `https://res.cloudinary.com/${cloudName}/image/upload/${transform}/${idWithFolder}`;
-}
+// Album cover URL builder lives in a client-safe module so AlbumCard (a
+// "use client" component) can import it without dragging in the
+// server-only Cloudinary SDK config above.
+export { getAlbumCover, ALBUM_COVER_BLUR_DATA_URL } from "./albumCover";
+export type { AlbumCoverSize } from "./albumCover";
 
 /**
  * Public streaming audio URL. Alias for getPublicStreamingUrl with a name that
