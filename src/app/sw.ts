@@ -10,7 +10,13 @@
 // covers Google Fonts, Next data, and the page navigation cache.
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { CacheFirst, ExpirationPlugin, NetworkFirst, Serwist } from "serwist";
+import {
+  CacheFirst,
+  ExpirationPlugin,
+  NetworkFirst,
+  NetworkOnly,
+  Serwist,
+} from "serwist";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -28,6 +34,19 @@ const serwist = new Serwist({
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [
+    {
+      // Bypass the SW entirely for routes that issue 3xx redirects to signed
+      // third-party URLs (Cloudinary) or hold sensitive/admin state. Without
+      // this explicit NetworkOnly match, defaultCache's navigation/data
+      // handlers can swallow the 302 and surface "no-response" to the caller.
+      matcher: ({ url, sameOrigin }) =>
+        sameOrigin &&
+        (url.pathname.startsWith("/api/admin/") ||
+          url.pathname.startsWith("/api/paypal/") ||
+          url.pathname.startsWith("/api/download/") ||
+          url.pathname.startsWith("/api/analytics/")),
+      handler: new NetworkOnly(),
+    },
     {
       // Cloudinary audio (video resource type covers mp3/wav transcodes).
       matcher: ({ url }) =>
