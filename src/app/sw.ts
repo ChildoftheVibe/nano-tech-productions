@@ -44,7 +44,9 @@ const serwist = new Serwist({
         (url.pathname.startsWith("/api/admin/") ||
           url.pathname.startsWith("/api/paypal/") ||
           url.pathname.startsWith("/api/download/") ||
-          url.pathname.startsWith("/api/analytics/")),
+          url.pathname.startsWith("/api/analytics/") ||
+          url.pathname.startsWith("/api/playlist/") ||
+          url.pathname === "/api/playlist"),
       handler: new NetworkOnly(),
     },
     {
@@ -99,7 +101,9 @@ const serwist = new Serwist({
         !url.pathname.startsWith("/api/admin/") &&
         !url.pathname.startsWith("/api/paypal/") &&
         !url.pathname.startsWith("/api/download/") &&
-        !url.pathname.startsWith("/api/analytics/"),
+        !url.pathname.startsWith("/api/analytics/") &&
+        !url.pathname.startsWith("/api/playlist/") &&
+        url.pathname !== "/api/playlist",
       handler: new NetworkFirst({
         cacheName: "ntv-api",
         networkTimeoutSeconds: 5,

@@ -435,7 +435,7 @@ export const searchContent = unstable_cache(
     };
   },
   ["search-content"],
-  { revalidate: 60, tags: ["albums", "tracks"] },
+  { revalidate: 60, tags: ["albums", "tracks", "artists"] },
 );
 
 // Library: albums with track-level play_count rolled up so the client can sort

@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -195,5 +196,6 @@ export async function POST(request: Request) {
     metadata: { slug: data.slug, name: data.name },
   });
 
+  revalidateTag("artists", { expire: 0 });
   return Response.json({ artist: data }, { status: 201 });
 }

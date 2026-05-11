@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -233,6 +234,7 @@ export async function PATCH(
     metadata: { slug: data.slug, name: data.name },
   });
 
+  revalidateTag("artists", { expire: 0 });
   return Response.json({ artist: data });
 }
 
@@ -264,5 +266,6 @@ export async function DELETE(
     metadata: existing ?? undefined,
   });
 
+  revalidateTag("artists", { expire: 0 });
   return Response.json({ ok: true });
 }

@@ -1,6 +1,14 @@
+import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { TrackInput } from "@/lib/db-types";
+
+function revalidateTrackTags() {
+  revalidateTag("tracks", { expire: 0 });
+  revalidateTag("albums", { expire: 0 });
+  revalidateTag("playlist", { expire: 0 });
+  revalidateTag("artists", { expire: 0 });
+}
 
 const TRACK_FIELDS = [
   "album_id",
@@ -84,5 +92,6 @@ export async function POST(request: Request) {
     vault_audio_id: data.vault_audio_id,
   });
 
+  revalidateTrackTags();
   return Response.json({ track: data }, { status: 201 });
 }

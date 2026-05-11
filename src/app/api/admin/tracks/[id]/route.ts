@@ -1,6 +1,14 @@
+import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { TrackInput } from "@/lib/db-types";
+
+function revalidateTrackTags() {
+  revalidateTag("tracks", { expire: 0 });
+  revalidateTag("albums", { expire: 0 });
+  revalidateTag("playlist", { expire: 0 });
+  revalidateTag("artists", { expire: 0 });
+}
 
 const TRACK_FIELDS = [
   "album_id",
@@ -88,6 +96,7 @@ export async function PATCH(
     });
   }
 
+  revalidateTrackTags();
   return Response.json({ track: data });
 }
 
@@ -101,5 +110,6 @@ export async function DELETE(
   const { id } = await params;
   const { error } = await supabaseAdmin.from("tracks").delete().eq("id", id);
   if (error) return Response.json({ error: error.message }, { status: 400 });
+  revalidateTrackTags();
   return Response.json({ ok: true });
 }

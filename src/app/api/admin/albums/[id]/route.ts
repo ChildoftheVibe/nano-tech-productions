@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { AlbumInput } from "@/lib/db-types";
@@ -56,6 +57,7 @@ export async function PATCH(
     .single();
 
   if (error) return Response.json({ error: error.message }, { status: 400 });
+  revalidateTag("albums", { expire: 0 });
   return Response.json({ album: data });
 }
 
@@ -69,5 +71,6 @@ export async function DELETE(
   const { id } = await params;
   const { error } = await supabaseAdmin.from("albums").delete().eq("id", id);
   if (error) return Response.json({ error: error.message }, { status: 400 });
+  revalidateTag("albums", { expire: 0 });
   return Response.json({ ok: true });
 }
