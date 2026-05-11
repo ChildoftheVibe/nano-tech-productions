@@ -105,17 +105,27 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         audio.src = currentTrack.audioUrl;
         audio.load();
       }
-    } else {
-      if (currentTrack) {
-        console.warn(
-          "[PlayerContext] currentTrack has no audioUrl:",
-          currentTrack.title,
-          currentTrack.id,
-        );
-      }
-      audio.removeAttribute("src");
-      audio.load();
+    } else if (currentTrack) {
+      // currentTrack exists but lacks an audioUrl — usually because an album
+      // track had neither public_audio_id nor audio_url set. Previously this
+      // branch called removeAttribute("src") + load(), which wiped the
+      // previously-loaded track's src and broke playback ("The element has
+      // no supported sources" on the next play()). Leave src intact so the
+      // last working track stays playable; a deliberate switch to a real
+      // audioUrl will replace it via the branch above.
+      console.warn(
+        "[PlayerContext] currentTrack has no audioUrl, leaving previous src loaded:",
+        currentTrack.title,
+        currentTrack.id,
+        "(audio.src =",
+        audio.src || "(empty)",
+        ")",
+      );
     }
+    // Initial state (currentTrack === null): src is empty anyway and nothing
+    // to do. Don't clear it here — the only sources of "src goes empty" are
+    // either initial mount or this effect, and clearing in the latter case
+    // is what caused the bug.
   }, [currentTrack, queue]);
 
   // NOTE: There is intentionally no effect that calls audio.play() when
