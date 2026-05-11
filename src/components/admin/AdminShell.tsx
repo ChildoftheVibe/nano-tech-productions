@@ -94,7 +94,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </ul>
         </aside>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        {/* pb-32 on mobile gives clearance for the floating PlayerBar (~88px)
+            plus the MobileTabBar (60px) so admin content isn't hidden under
+            them. md+ resets since both bars are fixed within their own layout
+            already and don't cover desktop content. */}
+        <main className="min-w-0 flex-1 pb-32 md:pb-0">{children}</main>
       </div>
     </div>
   );

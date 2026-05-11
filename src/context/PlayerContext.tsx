@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef } from "react";
 import { usePlayerStore } from "@/store/playerStore";
 import { syncAudioCache, clearAudioCache } from "@/lib/audioCache";
 import {
@@ -11,10 +11,22 @@ import {
   trackPause,
   trackSeek,
 } from "@/lib/analytics";
-import type { Track } from "@/types/music";
+import type { Album, Track } from "@/types/music";
 
 type PlayerContextValue = {
   audioRef: React.RefObject<HTMLAudioElement | null>;
+  /** Toggle play/pause for the current track. Call directly from click
+   *  handlers — runs audio.play()/pause() synchronously to preserve the
+   *  user-gesture chain (browser autoplay policy). */
+  togglePlayPause: () => void;
+  /** Start playback of a specific track. Use from click handlers. */
+  playFromTrack: (track: Track, album?: Album | null) => void;
+  /** Start playback of an album from its first ordered track. */
+  playFromAlbum: (album: Album) => void;
+  /** Next track + play directly. */
+  nextAndPlay: () => void;
+  /** Previous track + play directly. */
+  previousAndPlay: () => void;
 };
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -106,23 +118,22 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [currentTrack, queue]);
 
+  // NOTE: There is intentionally no effect that calls audio.play() when
+  // isPlaying flips true. Programmatic play() invoked from a useEffect runs
+  // outside the user-gesture chain — Chrome routinely blocks it under its
+  // autoplay policy. Instead, every play-initiating click handler calls
+  // audio.play() directly via one of the helpers exposed below
+  // (togglePlayPause / playFromTrack / playFromAlbum / next|previousAndPlay).
+  //
+  // We DO still react to isPlaying going false (pause is always allowed): a
+  // separate effect handles that so external pause triggers still work.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (isPlaying && currentTrack?.audioUrl) {
-      console.log("[PlayerContext] calling audio.play() for", currentTrack.title);
-      audio.play().catch((err) => {
-        console.warn(
-          "[PlayerContext] audio.play() rejected — likely autoplay block:",
-          err?.name,
-          err?.message,
-        );
-        usePlayerStore.getState().setPlaying(false);
-      });
-    } else if (!isPlaying) {
+    if (!isPlaying && !audio.paused) {
       audio.pause();
     }
-  }, [isPlaying, currentTrack]);
+  }, [isPlaying]);
 
   // Fire play_start once per track-play activation.
   useEffect(() => {
@@ -179,7 +190,23 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         completedRef.current = true;
         trackPlayComplete(currentTrack, audio.duration);
       }
-      usePlayerStore.getState().nextTrack();
+      const store = usePlayerStore.getState();
+      store.nextTrack();
+      // Auto-advance: the audio element is already "unlocked" because it just
+      // finished playing, so a programmatic play() succeeds without a fresh
+      // user gesture. We do it here directly because we removed the
+      // isPlaying→play effect.
+      const next = usePlayerStore.getState().currentTrack;
+      if (next?.audioUrl) {
+        if (audio.src !== next.audioUrl) {
+          audio.src = next.audioUrl;
+          audio.load();
+        }
+        audio.play().catch((err) => {
+          console.warn("[PlayerContext] auto-advance play() rejected:", err);
+          store.setPlaying(false);
+        });
+      }
     };
 
     const onPause = () => {
@@ -268,8 +295,125 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [currentTrack, queue]);
 
+  // ─────────────────────────────────────────────────────────────────────
+  // Synchronous play helpers. Every play-initiating click handler in the app
+  // calls one of these; they invoke audio.play() directly so the user-gesture
+  // token from the click is still active. Going via useState→useEffect (the
+  // pattern we used to have) drops the gesture and triggers Chrome's autoplay
+  // block.
+  // ─────────────────────────────────────────────────────────────────────
+
+  const ensureSrc = useCallback((track: Track) => {
+    const audio = audioRef.current;
+    if (!audio || !track.audioUrl) return null;
+    if (audio.src !== track.audioUrl) {
+      audio.src = track.audioUrl;
+      audio.load();
+    }
+    return audio;
+  }, []);
+
+  const togglePlayPause = useCallback(() => {
+    const audio = audioRef.current;
+    const store = usePlayerStore.getState();
+    if (!audio) return;
+    if (store.isPlaying) {
+      audio.pause();
+      store.setPlaying(false);
+      return;
+    }
+    const track = store.currentTrack;
+    if (!track?.audioUrl) return;
+    if (audio.src !== track.audioUrl) {
+      audio.src = track.audioUrl;
+      audio.load();
+    }
+    audio.play().catch((err) => {
+      console.warn("[PlayerContext] togglePlayPause play() rejected:", err);
+      store.setPlaying(false);
+    });
+    store.setPlaying(true);
+  }, []);
+
+  const playFromTrack = useCallback(
+    (track: Track, album: Album | null = null) => {
+      const store = usePlayerStore.getState();
+      store.playTrack(track, album);
+      // playTrack sets isPlaying=true in state; sync the actual audio element
+      // synchronously so the user-gesture token still grants permission.
+      const audio = ensureSrc(track);
+      if (audio) {
+        audio.play().catch((err) => {
+          console.warn("[PlayerContext] playFromTrack play() rejected:", err);
+          store.setPlaying(false);
+        });
+      }
+    },
+    [ensureSrc],
+  );
+
+  const playFromAlbum = useCallback((album: Album) => {
+    const store = usePlayerStore.getState();
+    store.playAlbum(album);
+    const first = usePlayerStore.getState().currentTrack;
+    const audio = audioRef.current;
+    if (audio && first?.audioUrl) {
+      if (audio.src !== first.audioUrl) {
+        audio.src = first.audioUrl;
+        audio.load();
+      }
+      audio.play().catch((err) => {
+        console.warn("[PlayerContext] playFromAlbum play() rejected:", err);
+        store.setPlaying(false);
+      });
+    }
+  }, []);
+
+  const nextAndPlay = useCallback(() => {
+    const store = usePlayerStore.getState();
+    store.nextTrack();
+    const next = usePlayerStore.getState().currentTrack;
+    const audio = audioRef.current;
+    if (audio && next?.audioUrl) {
+      if (audio.src !== next.audioUrl) {
+        audio.src = next.audioUrl;
+        audio.load();
+      }
+      audio.play().catch((err) => {
+        console.warn("[PlayerContext] nextAndPlay play() rejected:", err);
+        store.setPlaying(false);
+      });
+    }
+  }, []);
+
+  const previousAndPlay = useCallback(() => {
+    const store = usePlayerStore.getState();
+    store.previousTrack();
+    const prev = usePlayerStore.getState().currentTrack;
+    const audio = audioRef.current;
+    if (audio && prev?.audioUrl) {
+      if (audio.src !== prev.audioUrl) {
+        audio.src = prev.audioUrl;
+        audio.load();
+      }
+      audio.play().catch((err) => {
+        console.warn("[PlayerContext] previousAndPlay play() rejected:", err);
+        store.setPlaying(false);
+      });
+    }
+  }, []);
+
   return (
-    <PlayerContext.Provider value={{ audioRef }}>
+    <PlayerContext.Provider
+      value={{
+        audioRef,
+        togglePlayPause,
+        playFromTrack,
+        playFromAlbum,
+        nextAndPlay,
+        previousAndPlay,
+      }}
+    >
       {children}
       <audio ref={audioRef} preload="metadata" />
     </PlayerContext.Provider>

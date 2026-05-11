@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { AlbumCard } from "@/components/music/AlbumCard";
-import { usePlayerStore } from "@/store/playerStore";
+import { usePlayer } from "@/context/PlayerContext";
 import type { LibraryAlbum } from "@/lib/queries";
 
 type Sort = "newest" | "oldest" | "az" | "most_played";
@@ -48,7 +48,7 @@ const compareDate = (a: string, b: string) => {
 export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
   const [sort, setSort] = useState<Sort>("newest");
   const [filter, setFilter] = useState<Filter>("all");
-  const playAlbum = usePlayerStore((s) => s.playAlbum);
+  const { playFromAlbum } = usePlayer();
 
   const visible = useMemo(() => {
     const filtered = albums.filter((a) => {
@@ -157,7 +157,7 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
                     album={album}
                     size="md"
                     showHoverPlay
-                    onPlay={() => playAlbum(album)}
+                    onPlay={() => playFromAlbum(album)}
                   />
                 </div>
                 <div className="min-w-0 flex-1 md:pt-2">

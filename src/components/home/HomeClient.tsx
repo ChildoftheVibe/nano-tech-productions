@@ -7,6 +7,7 @@ import { Pause, Play } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { ArtistCard } from "@/components/artist/ArtistCard";
 import { usePlayerStore } from "@/store/playerStore";
+import { usePlayer } from "@/context/PlayerContext";
 import { usePageEngagement } from "@/lib/usePageEngagement";
 import type { Album, AlbumListResult, Artist } from "@/types/music";
 
@@ -71,8 +72,7 @@ export function HomeClient({
 
   usePageEngagement("/");
 
-  const playAlbum = usePlayerStore((s) => s.playAlbum);
-  const togglePlay = usePlayerStore((s) => s.togglePlay);
+  const { playFromAlbum, togglePlayPause } = usePlayer();
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const currentAlbum = usePlayerStore((s) => s.currentAlbum);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
@@ -152,7 +152,7 @@ export function HomeClient({
                     size="md"
                     href={`/album/${album.slug}`}
                     showHoverPlay
-                    onPlay={() => playAlbum(album)}
+                    onPlay={() => playFromAlbum(album)}
                   />
                   <div className="mt-2 truncate text-sm font-semibold text-white">
                     <Link href={`/album/${album.slug}`} className="hover:underline">
@@ -228,7 +228,7 @@ export function HomeClient({
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <motion.button
-                    onClick={() => playAlbum(latest)}
+                    onClick={() => playFromAlbum(latest)}
                     disabled={!latest.tracks.length}
                     className="flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold text-black disabled:opacity-40"
                     style={{ background: latest.accentColor }}
@@ -326,7 +326,7 @@ export function HomeClient({
                     album={album}
                     size="md"
                     showHoverPlay
-                    onPlay={() => playAlbum(album)}
+                    onPlay={() => playFromAlbum(album)}
                   />
                 </div>
                 <div className="min-w-0 flex-1 md:pt-2">
@@ -395,7 +395,7 @@ export function HomeClient({
                 {currentAlbum ? ` · ${currentAlbum.title}` : ""}
               </div>
               <motion.button
-                onClick={togglePlay}
+                onClick={togglePlayPause}
                 className="mt-3 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-black"
                 style={{
                   background: currentAlbum?.accentColor ?? "#3DD6C8",

@@ -19,6 +19,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
+import { usePlayer } from "@/context/PlayerContext";
 
 const formatTime = (s: number) => {
   if (!Number.isFinite(s) || s < 0) return "0:00";
@@ -39,9 +40,10 @@ export function PlayerBar() {
 
   const lyricsOpen = usePlayerStore((s) => s.lyricsOpen);
 
-  const togglePlay = usePlayerStore((s) => s.togglePlay);
-  const nextTrack = usePlayerStore((s) => s.nextTrack);
-  const previousTrack = usePlayerStore((s) => s.previousTrack);
+  // Autoplay policy requires audio.play() to run synchronously inside the
+  // click handler — bound through PlayerContext, not the store, so the
+  // helpers can hit the audio element directly.
+  const { togglePlayPause, nextAndPlay, previousAndPlay } = usePlayer();
   const setVolume = usePlayerStore((s) => s.setVolume);
   const seekTo = usePlayerStore((s) => s.seekTo);
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
@@ -129,7 +131,7 @@ export function PlayerBar() {
               <div className="truncate text-xs text-[#B3B3B3]">{features}</div>
             </button>
             <motion.button
-              onClick={togglePlay}
+              onClick={togglePlayPause}
               aria-label={isPlaying ? "Pause" : "Play"}
               className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white text-black"
               whileTap={{ scale: 0.92 }}
@@ -155,7 +157,7 @@ export function PlayerBar() {
               </motion.button>
             ) : null}
             <motion.button
-              onClick={nextTrack}
+              onClick={nextAndPlay}
               aria-label="Next track"
               className="flex-shrink-0 p-2 text-[#B3B3B3]"
               whileTap={{ scale: 0.92 }}
@@ -280,7 +282,7 @@ export function PlayerBar() {
               />
             </motion.button>
             <motion.button
-              onClick={previousTrack}
+              onClick={previousAndPlay}
               aria-label="Previous track"
               disabled={!currentTrack}
               className="p-1 text-[#B3B3B3] transition-colors hover:text-white disabled:opacity-40"
@@ -289,7 +291,7 @@ export function PlayerBar() {
               <SkipBack size={20} fill="currentColor" />
             </motion.button>
             <motion.button
-              onClick={togglePlay}
+              onClick={togglePlayPause}
               aria-label={isPlaying ? "Pause" : "Play"}
               disabled={!currentTrack}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black disabled:opacity-40"
@@ -304,7 +306,7 @@ export function PlayerBar() {
               )}
             </motion.button>
             <motion.button
-              onClick={nextTrack}
+              onClick={nextAndPlay}
               aria-label="Next track"
               disabled={!currentTrack}
               className="p-1 text-[#B3B3B3] transition-colors hover:text-white disabled:opacity-40"

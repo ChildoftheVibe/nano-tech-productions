@@ -81,38 +81,39 @@ export function VaultClient({ tracks }: { tracks: VaultTrack[] }) {
     };
   }, []);
 
-  const handlePreview = async (track: VaultTrack) => {
+  const handlePreview = (track: VaultTrack) => {
     if (busyId) return;
-    setBusyId(track.id);
     setPlayerError(null);
     setAutoplayBlocked(false);
-    try {
-      const res = await fetch(`/api/admin/wav/${track.id}`, { cache: "no-store" });
-      if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { error?: string };
-        setPlayerError(body.error ?? `Preview failed (${res.status}).`);
-        return;
-      }
-      const { url } = (await res.json()) as { url: string };
-      const audio = audioRef.current;
-      if (!audio) return;
-      audio.src = url;
-      audio.load();
-      setActiveTrackId(track.id);
-      setActiveTitle(`${track.albumTitle} — ${track.title}`);
-      // Try to autoplay. Chrome blocks play() invoked after an async fetch
-      // because the user-gesture token has lapsed; the visible <audio
-      // controls> below acts as the fallback. Surface the blocked state so the
-      // user knows to press play themselves.
-      try {
-        await audio.play();
-      } catch {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // Point the audio element at our proxy endpoint. It 302-redirects to the
+    // signed Cloudinary URL — set src and call play() synchronously here so
+    // the user-gesture token from the click survives autoplay-policy checks.
+    const streamUrl = `/api/admin/wav/${track.id}/stream`;
+    audio.src = streamUrl;
+    audio.load();
+    setActiveTrackId(track.id);
+    setActiveTitle(`${track.albumTitle} — ${track.title}`);
+
+    const onError = () => {
+      setPlayerError(
+        "Preview failed — the vault file may be unavailable or your session expired.",
+      );
+      audio.removeEventListener("error", onError);
+    };
+    audio.addEventListener("error", onError, { once: true });
+
+    const result = audio.play();
+    if (result && typeof result.catch === "function") {
+      result.catch((err: unknown) => {
+        // Even with the proxy approach, some browsers (Safari) want every
+        // play() to follow a fresh tap. Fall back to surfacing the inline
+        // hint so the user can press play in the visible controls.
+        console.warn("[Vault] audio.play() rejected:", err);
         setAutoplayBlocked(true);
-      }
-    } catch (err) {
-      setPlayerError(err instanceof Error ? err.message : "Preview failed.");
-    } finally {
-      setBusyId(null);
+      });
     }
   };
 

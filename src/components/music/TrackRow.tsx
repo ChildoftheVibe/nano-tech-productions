@@ -2,6 +2,7 @@
 
 import { Play } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
+import { usePlayer } from "@/context/PlayerContext";
 import { useCheckoutStore, trackCheckoutItem } from "@/store/checkoutStore";
 import { MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
 import type { Album, Track } from "@/types/music";
@@ -15,17 +16,18 @@ type Props = {
 export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
-  const playTrack = usePlayerStore((s) => s.playTrack);
-  const togglePlay = usePlayerStore((s) => s.togglePlay);
+  const { togglePlayPause, playFromTrack } = usePlayer();
 
   const isActive = currentTrack?.id === track.id;
   const isThisPlaying = isActive && isPlaying;
 
   const handleClick = () => {
     if (isActive) {
-      togglePlay();
+      togglePlayPause();
     } else {
-      playTrack(track, album);
+      // Direct synchronous play() via PlayerContext keeps the user-gesture
+      // chain alive so Chrome's autoplay policy doesn't block the call.
+      playFromTrack(track, album);
       void fetch("/api/tracks/played", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

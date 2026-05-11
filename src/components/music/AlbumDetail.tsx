@@ -7,6 +7,7 @@ import { AlbumCard } from "@/components/music/AlbumCard";
 import { TrackRow } from "@/components/music/TrackRow";
 import { MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
 import { usePlayerStore } from "@/store/playerStore";
+import { usePlayer } from "@/context/PlayerContext";
 import { useCheckoutStore, albumCheckoutItem } from "@/store/checkoutStore";
 import {
   trackAlbumView,
@@ -71,7 +72,7 @@ export function AlbumDetail({
   album,
   artistSlugsByName = {},
 }: AlbumDetailProps) {
-  const playAlbum = usePlayerStore((s) => s.playAlbum);
+  const { playFromAlbum } = usePlayer();
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
   const shuffle = usePlayerStore((s) => s.shuffle);
   const openCheckout = useCheckoutStore((s) => s.open);
@@ -97,7 +98,7 @@ export function AlbumDetail({
 
   const handleShuffle = () => {
     if (!shuffle) toggleShuffle();
-    playAlbum(album);
+    playFromAlbum(album);
   };
 
   const featuredArtists = Array.from(
@@ -209,7 +210,7 @@ export function AlbumDetail({
 
       <section className="flex flex-wrap items-center gap-3 px-6 pb-6 md:px-8">
         <motion.button
-          onClick={() => playAlbum(album)}
+          onClick={() => playFromAlbum(album)}
           disabled={!album.tracks.length}
           aria-label={`Play ${album.title}`}
           className="flex h-14 w-14 items-center justify-center rounded-full disabled:opacity-40"

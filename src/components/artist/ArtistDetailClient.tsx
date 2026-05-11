@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Play } from "lucide-react";
 import { motion } from "framer-motion";
-import { usePlayerStore } from "@/store/playerStore";
+import { usePlayer } from "@/context/PlayerContext";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { ArtistHero } from "./ArtistHero";
 import type { Album, Artist, ArtistTrack, Track } from "@/types/music";
@@ -33,7 +33,7 @@ function artistTrackToTrack(t: ArtistTrack): Track {
 }
 
 export function ArtistDetailClient({ artist }: { artist: Artist }) {
-  const playTrack = usePlayerStore((s) => s.playTrack);
+  const { playFromTrack } = usePlayer();
   const albums = artist.albums ?? [];
   const tracks = artist.tracks ?? [];
 
@@ -42,7 +42,7 @@ export function ArtistDetailClient({ artist }: { artist: Artist }) {
     // We don't have full Album objects for the artist's tracks (only minimal
     // album metadata via the join); pass null so the player still functions
     // even when album context isn't loaded.
-    playTrack(artistTrackToTrack(t), null);
+    playFromTrack(artistTrackToTrack(t), null);
   };
 
   return (

@@ -17,6 +17,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
+import { usePlayer } from "@/context/PlayerContext";
 
 const formatTime = (s: number) => {
   if (!Number.isFinite(s) || s < 0) return "0:00";
@@ -38,9 +39,9 @@ export function FullScreenPlayer() {
   const repeat = usePlayerStore((s) => s.repeat);
   const queueLen = usePlayerStore((s) => s.queue.length);
 
-  const togglePlay = usePlayerStore((s) => s.togglePlay);
-  const nextTrack = usePlayerStore((s) => s.nextTrack);
-  const previousTrack = usePlayerStore((s) => s.previousTrack);
+  // Use the PlayerContext helpers so audio.play() runs synchronously in the
+  // click handler and the user-gesture token survives.
+  const { togglePlayPause, nextAndPlay, previousAndPlay } = usePlayer();
   const seekTo = usePlayerStore((s) => s.seekTo);
   const setVolume = usePlayerStore((s) => s.setVolume);
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
@@ -189,7 +190,7 @@ export function FullScreenPlayer() {
                 />
               </motion.button>
               <motion.button
-                onClick={previousTrack}
+                onClick={previousAndPlay}
                 aria-label="Previous track"
                 className="p-2 text-white/90"
                 whileTap={{ scale: 0.92 }}
@@ -197,7 +198,7 @@ export function FullScreenPlayer() {
                 <SkipBack size={28} fill="currentColor" />
               </motion.button>
               <motion.button
-                onClick={togglePlay}
+                onClick={togglePlayPause}
                 aria-label={isPlaying ? "Pause" : "Play"}
                 className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-black"
                 whileHover={{ scale: 1.04 }}
@@ -210,7 +211,7 @@ export function FullScreenPlayer() {
                 )}
               </motion.button>
               <motion.button
-                onClick={nextTrack}
+                onClick={nextAndPlay}
                 aria-label="Next track"
                 className="p-2 text-white/90"
                 whileTap={{ scale: 0.92 }}

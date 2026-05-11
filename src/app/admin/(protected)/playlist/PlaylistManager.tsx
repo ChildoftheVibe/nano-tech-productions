@@ -237,7 +237,10 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
         {entries.length === 0 ? (
           <p className="text-white/60">No tracks yet — add some below.</p>
         ) : (
-          <ul className="space-y-1.5">
+          <ul
+            className="space-y-1.5 overflow-y-auto rounded border border-white/5 p-1"
+            style={{ maxHeight: "calc(100vh - 360px)" }}
+          >
             {entries.map((entry, i) => {
               const t = tracksById.get(entry.trackId);
               const isOver = overId === entry.id && draggingId !== entry.id;
@@ -252,7 +255,9 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
                     setDraggingId(null);
                     setOverId(null);
                   }}
-                  className={`flex items-center gap-3 rounded border bg-[#222121] px-3 py-2 transition-colors ${
+                  // min-h-[44px] keeps the row at the WCAG mobile-tap target
+                  // size; on desktop py-2 already exceeds it.
+                  className={`flex min-h-[44px] items-center gap-3 rounded border bg-[#222121] px-3 py-2 transition-colors ${
                     isOver
                       ? "border-[#3DD6C8] bg-[#3DD6C8]/10"
                       : "border-white/10"
@@ -328,11 +333,14 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
             {search ? "No matching tracks." : "All tracks are in the playlist."}
           </p>
         ) : (
-          <ul className="grid grid-cols-1 gap-1.5 md:grid-cols-2">
+          <ul
+            className="grid grid-cols-1 gap-1.5 overflow-y-auto rounded border border-white/5 p-1 md:grid-cols-2"
+            style={{ maxHeight: "calc(100vh - 360px)" }}
+          >
             {filteredAvailable.map((t) => (
               <li
                 key={t.id}
-                className="flex items-center justify-between gap-3 rounded border border-white/10 bg-[#222121] px-3 py-2"
+                className="flex min-h-[44px] items-center justify-between gap-3 rounded border border-white/10 bg-[#222121] px-3 py-2"
               >
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{t.title}</div>

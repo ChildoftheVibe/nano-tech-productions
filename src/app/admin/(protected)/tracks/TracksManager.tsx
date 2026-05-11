@@ -155,7 +155,10 @@ export function TracksManager({
         <p className="text-white/60">No tracks found.</p>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-white/10 bg-[#222121]">
+          <div
+            className="overflow-x-auto overflow-y-auto rounded-lg border border-white/10 bg-[#222121]"
+            style={{ maxHeight: "calc(100vh - 240px)" }}
+          >
             <table className="w-full text-sm">
               <thead className="bg-black/20 text-left text-xs uppercase tracking-wider text-white/50">
                 <tr>

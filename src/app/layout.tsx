@@ -9,6 +9,7 @@ import { PlayerBar } from "@/components/layout/PlayerBar";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { FullScreenPlayer } from "@/components/layout/FullScreenPlayer";
 import { LyricsModal } from "@/components/layout/LyricsModal";
+import { TapToStartBanner } from "@/components/layout/TapToStartBanner";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -80,6 +81,7 @@ export default async function RootLayout({
               </div>
               <FullScreenPlayer />
               <LyricsModal />
+              <TapToStartBanner />
               <CheckoutHost />
             </PlayerProvider>
           </AnalyticsProvider>
