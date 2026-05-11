@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { supabase } from "./supabase";
+import { getPublicStreamingUrl } from "./cloudinary";
 import type {
   Album,
   AlbumListResult,
@@ -15,7 +16,7 @@ import type {
 const ALBUM_COLUMNS =
   "id, slug, title, description, release_date, cover_image, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, is_published";
 const TRACK_COLUMNS =
-  "id, album_id, title, track_number, duration, price, audio_url, features, is_published, credits, lyrics, has_lyrics";
+  "id, album_id, title, track_number, duration, price, audio_url, public_audio_id, features, is_published, credits, lyrics, has_lyrics";
 
 type AlbumRow = {
   id: string;
@@ -43,12 +44,27 @@ type TrackRow = {
   duration: string | null;
   price: number | string;
   audio_url: string | null;
+  public_audio_id: string | null;
   features: string[] | null;
   is_published: boolean;
   credits: TrackCredits | null;
   lyrics: string | null;
   has_lyrics: boolean | null;
 };
+
+/** Build the streaming URL a Track exposes to the player.
+ *  Order of preference:
+ *   1. public_audio_id → getPublicStreamingUrl (gives MP3 320kbps via Cloudinary
+ *      transformation — small file, fast first-byte, works well in <audio>).
+ *   2. audio_url stored in the row (legacy fallback — usually a raw .wav URL).
+ *   3. undefined (track has no playable audio). */
+function resolveAudioUrl(row: TrackRow): string | undefined {
+  if (row.public_audio_id) {
+    const streaming = getPublicStreamingUrl(row.public_audio_id);
+    if (streaming) return streaming;
+  }
+  return row.audio_url ?? undefined;
+}
 
 const mapTrack = (row: TrackRow): Track => ({
   id: row.id,
@@ -58,7 +74,7 @@ const mapTrack = (row: TrackRow): Track => ({
   duration: row.duration ?? "0:00",
   price: Number(row.price ?? 0),
   features: row.features ?? undefined,
-  audioUrl: row.audio_url ?? undefined,
+  audioUrl: resolveAudioUrl(row),
   credits: row.credits ?? {},
   lyrics: row.lyrics,
   has_lyrics: !!row.has_lyrics,
@@ -205,17 +221,30 @@ const PLAYLIST_MAX = 500;
 
 export const getPlaylistTracks = unstable_cache(
   async (): Promise<Track[]> => {
+    // A track is playable when EITHER audio_url is set (legacy direct URL) OR
+    // public_audio_id is set (new path — we derive an MP3 streaming URL from
+    // it). Filter on that or-clause so newly-uploaded tracks land in the
+    // queue even if audio_url was somehow left null.
     const { data, error } = await supabase
       .from("tracks")
       .select(TRACK_COLUMNS)
       .eq("is_published", true)
-      .not("audio_url", "is", null)
+      .or("audio_url.not.is.null,public_audio_id.not.is.null")
       .limit(PLAYLIST_MAX);
     if (error) {
       console.error("[queries.getPlaylistTracks]", error.message);
       return [];
     }
-    return ((data ?? []) as TrackRow[]).filter((r) => !!r.audio_url).map(mapTrack);
+    const rows = (data ?? []) as TrackRow[];
+    const tracks = rows.map(mapTrack).filter((t) => !!t.audioUrl);
+    console.log(
+      "[queries.getPlaylistTracks] returning",
+      tracks.length,
+      "playable tracks (of",
+      rows.length,
+      "published candidates)",
+    );
+    return tracks;
   },
   ["playlist-tracks"],
   { revalidate: 60, tags: ["playlist"] },

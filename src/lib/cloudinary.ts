@@ -29,7 +29,9 @@ export function cloudinaryUrl(publicId: string, transform = "f_auto,q_auto") {
 export function getPublicStreamingUrl(publicId: string): string {
   if (!publicId) return "";
   if (/^https?:\/\//.test(publicId)) return publicId;
-  return `https://res.cloudinary.com/${cloudName}/video/upload/f_mp3,br_320k/${PUBLIC_FOLDER}/${publicId}`;
+  const url = `https://res.cloudinary.com/${cloudName}/video/upload/f_mp3,br_320k/${PUBLIC_FOLDER}/${publicId}`;
+  console.log("[cloudinary.getPublicStreamingUrl]", publicId, "→", url);
+  return url;
 }
 
 /**

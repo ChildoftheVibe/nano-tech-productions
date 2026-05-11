@@ -84,10 +84,23 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     if (currentTrack?.audioUrl) {
       if (audio.src !== currentTrack.audioUrl) {
+        console.log(
+          "[PlayerContext] setting audio.src for",
+          currentTrack.title,
+          "→",
+          currentTrack.audioUrl,
+        );
         audio.src = currentTrack.audioUrl;
         audio.load();
       }
     } else {
+      if (currentTrack) {
+        console.warn(
+          "[PlayerContext] currentTrack has no audioUrl:",
+          currentTrack.title,
+          currentTrack.id,
+        );
+      }
       audio.removeAttribute("src");
       audio.load();
     }
@@ -97,10 +110,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const audio = audioRef.current;
     if (!audio) return;
     if (isPlaying && currentTrack?.audioUrl) {
-      audio.play().catch(() => {
+      console.log("[PlayerContext] calling audio.play() for", currentTrack.title);
+      audio.play().catch((err) => {
+        console.warn(
+          "[PlayerContext] audio.play() rejected — likely autoplay block:",
+          err?.name,
+          err?.message,
+        );
         usePlayerStore.getState().setPlaying(false);
       });
-    } else {
+    } else if (!isPlaying) {
       audio.pause();
     }
   }, [isPlaying, currentTrack]);
@@ -192,10 +211,26 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const store = usePlayerStore.getState();
       if (store.queue.length > 0 || store.currentTrack) return;
       const tracks = await fetchPlaylist();
+      console.log(
+        "[PlayerContext] seed: fetched",
+        tracks.length,
+        "playable tracks from /api/playlist",
+      );
       if (cancelled || !tracks.length) return;
       const fresh = usePlayerStore.getState();
       if (fresh.queue.length > 0 || fresh.currentTrack) return;
-      fresh.setQueue(shuffle(tracks));
+      const shuffled = shuffle(tracks);
+      // Without a currentTrack the PlayerBar play button stays disabled
+      // (disabled={!currentTrack}) — clicks do nothing, which presents as
+      // "the play button doesn't work". Seed the first track too so the
+      // user can press play without first picking an album.
+      fresh.setQueue(shuffled, shuffled[0] ?? null);
+      console.log(
+        "[PlayerContext] seed: queue set, currentTrack =",
+        shuffled[0]?.title,
+        "audioUrl =",
+        shuffled[0]?.audioUrl,
+      );
     })();
     return () => {
       cancelled = true;
