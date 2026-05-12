@@ -48,6 +48,33 @@ export type Track = {
 
 export type TrackInput = Partial<Omit<Track, "id" | "created_at">>;
 
+export type Instrumental = {
+  id: string;
+  album_id: string | null;
+  title: string;
+  slug: string;
+  description: string | null;
+  type: "single" | "album_track";
+  price: number;
+  cover_image: string | null;
+  public_audio_id: string | null;
+  vault_audio_id: string | null;
+  preview_audio_id: string | null;
+  audio_url: string | null;
+  preview_url: string | null;
+  duration: string | null;
+  is_published: boolean;
+  is_downloadable: boolean;
+  play_count: number;
+  download_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type InstrumentalInput = Partial<
+  Omit<Instrumental, "id" | "created_at" | "updated_at">
+>;
+
 export type DiscountAppliesTo = "single" | "album" | "all";
 
 export type DiscountCode = {

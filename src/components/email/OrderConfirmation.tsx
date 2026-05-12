@@ -18,7 +18,7 @@ const formatUSD = (n: number) =>
 
 export type EmailItem = {
   name: string;
-  kind: "track" | "album";
+  kind: "track" | "album" | "instrumental";
   price: number;
 };
 

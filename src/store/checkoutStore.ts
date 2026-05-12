@@ -1,9 +1,11 @@
 import { create } from "zustand";
-import type { Album, Track } from "@/types/music";
+import type { Album, Instrumental, Track } from "@/types/music";
+
+export type CheckoutItemKind = "track" | "album" | "instrumental";
 
 export type CheckoutItemRef = {
   id: string;
-  kind: "track" | "album";
+  kind: CheckoutItemKind;
   name: string;
   price: number;
   coverImage?: string;
@@ -11,6 +13,9 @@ export type CheckoutItemRef = {
   accentColor?: string;
   trackIds: string[];
   albumId?: string;
+  /** Set when kind === "instrumental" so the verify route can mint the
+   *  right token type without re-resolving the row. */
+  instrumentalId?: string;
 };
 
 type CheckoutState = {
@@ -52,5 +57,21 @@ export function albumCheckoutItem(album: Album, price: number): CheckoutItemRef 
     accentColor: album.accentColor,
     trackIds: album.tracks.map((t) => t.id),
     albumId: album.id,
+  };
+}
+
+export function instrumentalCheckoutItem(
+  instrumental: Instrumental,
+): CheckoutItemRef {
+  return {
+    id: instrumental.id,
+    kind: "instrumental",
+    name: instrumental.title,
+    price: instrumental.price,
+    coverImage: instrumental.coverImage ?? undefined,
+    bgColor: "#1a0838",
+    accentColor: "#3DD6C8",
+    trackIds: [],
+    instrumentalId: instrumental.id,
   };
 }

@@ -30,11 +30,24 @@ function isAllowedFolder(folder: string): boolean {
       return SLUG_RE.test(parts[0]) || parts[0] === "_pending";
     }
   }
-  for (const base of ["ntp/audio/public/", "ntp/audio/vault/"] as const) {
+  for (const base of [
+    "ntp/audio/public/",
+    "ntp/audio/vault/",
+    "ntp/audio/instrumentals/public/",
+    "ntp/audio/instrumentals/vault/",
+  ] as const) {
     if (folder.startsWith(base)) {
       const slug = folder.slice(base.length);
       return SLUG_RE.test(slug);
     }
+  }
+  // Instrumental cover: ntp/instrumentals/<slug>/cover.
+  if (folder.startsWith("ntp/instrumentals/") && folder.endsWith("/cover")) {
+    const slug = folder.slice(
+      "ntp/instrumentals/".length,
+      -"/cover".length,
+    );
+    return SLUG_RE.test(slug);
   }
   return false;
 }

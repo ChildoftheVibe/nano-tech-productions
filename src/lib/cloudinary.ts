@@ -17,6 +17,8 @@ if (cloudName) {
 
 const PUBLIC_FOLDER = "ntp/audio/public";
 const VAULT_FOLDER = "ntp/audio/vault";
+const INSTRUMENTAL_PUBLIC_FOLDER = "ntp/audio/instrumentals/public";
+const INSTRUMENTAL_VAULT_FOLDER = "ntp/audio/instrumentals/vault";
 
 export function cloudinaryUrl(publicId: string, transform = "f_auto,q_auto") {
   return `https://res.cloudinary.com/${cloudName}/image/upload/${transform}/${publicId}`;
@@ -112,6 +114,74 @@ export type { AlbumCoverSize } from "./albumCover";
  */
 export function getAudioUrl(publicId: string): string {
   return getPublicStreamingUrl(publicId);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Instrumentals (Sounds page). Same Cloudinary mechanics as tracks but
+// under a separate folder so admins can sort + filter cleanly.
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * 30-second public preview. fl_splice + du_30 trims to the first 30
+ * seconds; the 128 kbps bitrate keeps the file small for fast load on
+ * the /sounds grid. Safe to embed in an <audio> tag.
+ */
+export function getInstrumentalPreviewUrl(publicId: string): string {
+  if (!publicId) return "";
+  if (/^https?:\/\//.test(publicId)) return publicId;
+  return `https://res.cloudinary.com/${cloudName}/video/upload/fl_splice,du_30/f_mp3,br_128k/${INSTRUMENTAL_PUBLIC_FOLDER}/${publicId}`;
+}
+
+/**
+ * Full 320 kbps MP3 stream of the instrumental. Used for the post-purchase
+ * download link. Browsers prompt download via the redirect handler attaching
+ * fl_attachment downstream — this URL itself is inline-friendly.
+ */
+export function getInstrumentalStreamUrl(publicId: string): string {
+  if (!publicId) return "";
+  if (/^https?:\/\//.test(publicId)) return publicId;
+  return `https://res.cloudinary.com/${cloudName}/video/upload/f_mp3,br_320k/${INSTRUMENTAL_PUBLIC_FOLDER}/${publicId}`;
+}
+
+/**
+ * Signed MP3 320 download URL given to a verified instrumental purchaser.
+ * 2-hour expiry, fl_attachment forces the browser to save instead of play.
+ * Server-only — requires api_secret.
+ */
+export function getInstrumentalDownloadUrl(
+  publicId: string,
+  orderId: string,
+): string {
+  if (!publicId || !cloudName || !apiSecret) return "";
+  const expiresAt = Math.floor(Date.now() / 1000) + 60 * 60 * 2;
+  return cloudinary.url(`${INSTRUMENTAL_PUBLIC_FOLDER}/${publicId}`, {
+    resource_type: "video",
+    type: "upload",
+    sign_url: true,
+    secure: true,
+    expires_at: expiresAt,
+    transformation: [
+      { flags: "attachment", fetch_format: "mp3", bit_rate: "320k" },
+    ],
+    context: { order: orderId },
+  });
+}
+
+/**
+ * Admin WAV master access for an instrumental in the private vault.
+ * Same authenticated-delivery signed URL pattern as getAdminWavUrl.
+ */
+export function getInstrumentalVaultWavUrl(publicId: string): string {
+  if (!publicId || !cloudName || !apiSecret) return "";
+  const expiresAt = Math.floor(Date.now() / 1000) + 60 * 30;
+  return cloudinary.url(`${INSTRUMENTAL_VAULT_FOLDER}/${publicId}`, {
+    resource_type: "video",
+    type: "authenticated",
+    sign_url: true,
+    secure: true,
+    expires_at: expiresAt,
+    format: "wav",
+  });
 }
 
 /**

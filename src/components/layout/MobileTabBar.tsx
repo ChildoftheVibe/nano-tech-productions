@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Library, Search, Settings } from "lucide-react";
+import { Home, Library, Search, Volume2 } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 
 type Tab = {
@@ -21,16 +21,16 @@ const TABS: Tab[] = [
     match: (p) => p.startsWith("/search"),
   },
   {
+    href: "/sounds",
+    label: "Sounds",
+    Icon: Volume2,
+    match: (p) => p.startsWith("/sounds"),
+  },
+  {
     href: "/library",
     label: "Library",
     Icon: Library,
     match: (p) => p.startsWith("/library"),
-  },
-  {
-    href: "/admin",
-    label: "Admin",
-    Icon: Settings,
-    match: (p) => p.startsWith("/admin"),
   },
 ];
 
@@ -59,7 +59,7 @@ export function MobileTabBar() {
             className="flex flex-1 flex-col items-center justify-center gap-1 transition-colors"
             style={{ color }}
           >
-            <Icon size={22} />
+            <Icon size={22} aria-hidden="true" />
             <span className="text-[10px] font-semibold uppercase tracking-wider">
               {label}
             </span>

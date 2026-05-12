@@ -1,6 +1,10 @@
 import { unstable_cache } from "next/cache";
 import { supabase } from "./supabase";
-import { getPublicStreamingUrl } from "./cloudinary";
+import {
+  getInstrumentalPreviewUrl,
+  getInstrumentalStreamUrl,
+  getPublicStreamingUrl,
+} from "./cloudinary";
 import type {
   Album,
   AlbumListResult,
@@ -9,6 +13,9 @@ import type {
   ArtistListResult,
   ArtistRole,
   ArtistTrack,
+  Instrumental,
+  InstrumentalListResult,
+  InstrumentalType,
   Track,
   TrackCredits,
 } from "@/types/music";
@@ -723,6 +730,141 @@ export const getArtist = unstable_cache(
   },
   ["artist-by-slug"],
   { revalidate: 60, tags: ["artists"] },
+);
+
+// ─────────────────────────────────────────────────────────────────────
+// Instrumentals (Sounds page). Public reads go through the
+// `public_instrumentals` view which is locked to is_published=true and
+// excludes vault_audio_id at the SQL layer.
+// ─────────────────────────────────────────────────────────────────────
+
+type InstrumentalRow = {
+  id: string;
+  album_id: string | null;
+  title: string;
+  slug: string;
+  description: string | null;
+  type: string;
+  price: number | string;
+  cover_image: string | null;
+  public_audio_id: string | null;
+  preview_audio_id: string | null;
+  audio_url: string | null;
+  preview_url: string | null;
+  duration: string | null;
+  is_published: boolean;
+  is_downloadable: boolean;
+  play_count: number | null;
+  download_count: number | null;
+};
+
+const INSTRUMENTAL_COLUMNS =
+  "id, album_id, title, slug, description, type, price, cover_image, public_audio_id, preview_audio_id, audio_url, preview_url, duration, is_published, is_downloadable, play_count, download_count";
+
+/** Derive the playable URLs an Instrumental exposes. Prefer Cloudinary
+ *  transformations over any stored audio_url/preview_url so we always pick
+ *  up f_mp3/br_128k/du_30 even if the legacy column wasn't refreshed. */
+function resolveInstrumentalAudio(row: InstrumentalRow): {
+  audioUrl: string | null;
+  previewUrl: string | null;
+} {
+  const audioUrl = row.public_audio_id
+    ? getInstrumentalStreamUrl(row.public_audio_id)
+    : row.audio_url;
+  // preview_audio_id is optional — most uploads will rely on Cloudinary
+  // generating the 30s preview from the same public_audio_id.
+  const previewSource = row.preview_audio_id ?? row.public_audio_id;
+  const previewUrl = previewSource
+    ? getInstrumentalPreviewUrl(previewSource)
+    : row.preview_url;
+  return {
+    audioUrl: audioUrl || null,
+    previewUrl: previewUrl || null,
+  };
+}
+
+function mapInstrumental(row: InstrumentalRow): Instrumental {
+  const { audioUrl, previewUrl } = resolveInstrumentalAudio(row);
+  const type: InstrumentalType =
+    row.type === "album_track" ? "album_track" : "single";
+  return {
+    id: row.id,
+    albumId: row.album_id,
+    title: row.title,
+    slug: row.slug,
+    description: row.description,
+    type,
+    price: Number(row.price ?? 0.99),
+    coverImage: row.cover_image,
+    publicAudioId: row.public_audio_id,
+    previewAudioId: row.preview_audio_id,
+    audioUrl,
+    previewUrl,
+    duration: row.duration,
+    isPublished: row.is_published,
+    isDownloadable: row.is_downloadable,
+    playCount: row.play_count ?? 0,
+    downloadCount: row.download_count ?? 0,
+  };
+}
+
+export type GetInstrumentalsOpts = {
+  page?: number;
+  limit?: number;
+  type?: InstrumentalType;
+  albumId?: string;
+};
+
+export const getInstrumentals = unstable_cache(
+  async ({
+    page = 1,
+    limit = 20,
+    type,
+    albumId,
+  }: GetInstrumentalsOpts = {}): Promise<InstrumentalListResult> => {
+    const start = (page - 1) * limit;
+    const end = start + limit - 1;
+    let q = supabase
+      .from("public_instrumentals")
+      .select(INSTRUMENTAL_COLUMNS, { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(start, end);
+    if (type) q = q.eq("type", type);
+    if (albumId) q = q.eq("album_id", albumId);
+    const { data, count, error } = await q;
+    if (error) {
+      console.error("[queries.getInstrumentals]", error.message);
+      return { instrumentals: [], totalCount: 0, hasMore: false };
+    }
+    const instrumentals = ((data ?? []) as InstrumentalRow[]).map(
+      mapInstrumental,
+    );
+    const totalCount = count ?? 0;
+    return {
+      instrumentals,
+      totalCount,
+      hasMore: start + instrumentals.length < totalCount,
+    };
+  },
+  ["instrumentals-list"],
+  { revalidate: 300, tags: ["instrumentals"] },
+);
+
+export const getInstrumental = unstable_cache(
+  async (slug: string): Promise<Instrumental | null> => {
+    const { data, error } = await supabase
+      .from("public_instrumentals")
+      .select(INSTRUMENTAL_COLUMNS)
+      .eq("slug", slug)
+      .maybeSingle();
+    if (error || !data) {
+      if (error) console.error("[queries.getInstrumental]", error.message);
+      return null;
+    }
+    return mapInstrumental(data as InstrumentalRow);
+  },
+  ["instrumental-by-slug"],
+  { revalidate: 60, tags: ["instrumentals"] },
 );
 
 /** Returns names of artists that have a published page, keyed by lowercase name.

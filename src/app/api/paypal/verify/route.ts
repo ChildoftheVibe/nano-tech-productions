@@ -27,7 +27,7 @@ const ALBUM_PRICE = 9.99;
 
 type IncomingItem = {
   id: string;
-  kind: "track" | "album";
+  kind: "track" | "album" | "instrumental";
   name: string;
   price?: number;
   albumId?: string;
@@ -83,15 +83,29 @@ export async function POST(req: Request) {
     .eq("paypal_order_id", body.orderId)
     .maybeSingle();
   if (existingOrder?.status === "completed") {
-    const { data: tokens } = await supabaseAdmin
-      .from("download_tokens")
-      .select("token, track_id")
-      .eq("order_id", existingOrder.id);
+    const [tracksTokens, instrumentalsTokens] = await Promise.all([
+      supabaseAdmin
+        .from("download_tokens")
+        .select("token, track_id")
+        .eq("order_id", existingOrder.id),
+      supabaseAdmin
+        .from("instrumental_download_tokens")
+        .select("token, instrumental_id")
+        .eq("order_id", existingOrder.id),
+    ]);
     const origin = siteOrigin(req);
+    const downloadUrls = [
+      ...(tracksTokens.data ?? []).map(
+        (t) => `${origin}/api/download/${t.token}`,
+      ),
+      ...(instrumentalsTokens.data ?? []).map(
+        (t) => `${origin}/api/download/instrumental/${t.token}`,
+      ),
+    ];
     return NextResponse.json(
       {
         verified: true,
-        downloadUrls: (tokens ?? []).map((t) => `${origin}/api/download/${t.token}`),
+        downloadUrls,
         replay: true,
       },
       { headers: noStore },
@@ -100,7 +114,10 @@ export async function POST(req: Request) {
 
   // Re-resolve & price the cart server-side; never trust the client's prices.
   const items = (body.items ?? []).filter(
-    (i) => i && (i.kind === "track" || i.kind === "album") && typeof i.id === "string",
+    (i) =>
+      i &&
+      (i.kind === "track" || i.kind === "album" || i.kind === "instrumental") &&
+      typeof i.id === "string",
   );
   if (!items.length) {
     return NextResponse.json(
@@ -111,8 +128,11 @@ export async function POST(req: Request) {
 
   const trackIds = items.filter((i) => i.kind === "track").map((i) => i.id);
   const albumIds = items.filter((i) => i.kind === "album").map((i) => i.id);
+  const instrumentalIds = items
+    .filter((i) => i.kind === "instrumental")
+    .map((i) => i.id);
 
-  const [trackRows, albumRows, albumTracks] = await Promise.all([
+  const [trackRows, albumRows, albumTracks, instrumentalRows] = await Promise.all([
     trackIds.length
       ? supabaseAdmin
           .from("tracks")
@@ -134,9 +154,20 @@ export async function POST(req: Request) {
           .in("album_id", albumIds)
           .eq("is_published", true)
       : Promise.resolve({ data: [], error: null }),
+    instrumentalIds.length
+      ? supabaseAdmin
+          .from("instrumentals")
+          .select("id, title, price, is_published, is_downloadable")
+          .in("id", instrumentalIds)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
-  if (trackRows.error || albumRows.error || albumTracks.error) {
+  if (
+    trackRows.error ||
+    albumRows.error ||
+    albumTracks.error ||
+    instrumentalRows.error
+  ) {
     return NextResponse.json(
       { verified: false, error: "lookup_failed" },
       { status: 500, headers: noStore },
@@ -145,6 +176,9 @@ export async function POST(req: Request) {
 
   const trackById = new Map((trackRows.data ?? []).map((t) => [t.id as string, t]));
   const albumById = new Map((albumRows.data ?? []).map((a) => [a.id as string, a]));
+  const instrumentalById = new Map(
+    (instrumentalRows.data ?? []).map((i) => [i.id as string, i]),
+  );
   const albumTrackIds = new Map<string, string[]>();
   for (const row of albumTracks.data ?? []) {
     const aid = row.album_id as string;
@@ -156,6 +190,7 @@ export async function POST(req: Request) {
 
   let subtotal = 0;
   const purchasedTrackIds: string[] = [];
+  const purchasedInstrumentalIds: string[] = [];
   for (const i of items) {
     if (i.kind === "track") {
       const row = trackById.get(i.id);
@@ -167,7 +202,7 @@ export async function POST(req: Request) {
       }
       subtotal += Number(row.price);
       if (row.is_downloadable) purchasedTrackIds.push(row.id as string);
-    } else {
+    } else if (i.kind === "album") {
       const row = albumById.get(i.id);
       if (!row || !row.is_published) {
         return NextResponse.json(
@@ -178,6 +213,16 @@ export async function POST(req: Request) {
       subtotal += ALBUM_PRICE;
       const ids = albumTrackIds.get(i.id) ?? [];
       purchasedTrackIds.push(...ids);
+    } else {
+      const row = instrumentalById.get(i.id);
+      if (!row || !row.is_published) {
+        return NextResponse.json(
+          { verified: false, error: "instrumental_unavailable" },
+          { status: 400, headers: noStore },
+        );
+      }
+      subtotal += Number(row.price);
+      if (row.is_downloadable) purchasedInstrumentalIds.push(row.id as string);
     }
   }
   subtotal = round2(subtotal);
@@ -186,11 +231,18 @@ export async function POST(req: Request) {
   let discountCodeId: string | null = null;
   let discountCodeText: string | null = null;
   if (body.discountCode) {
-    const checkItems: DiscountCheckItem[] = items.map((i) => ({
-      id: i.id,
-      kind: i.kind,
-      albumId: i.albumId,
-    }));
+    // Discount codes only target tracks/albums today. Instrumentals are
+    // eligible for `applies_to = 'all'` codes through the subtotal but
+    // shouldn't appear in the per-item targeting list.
+    const checkItems: DiscountCheckItem[] = items
+      .filter((i): i is IncomingItem & { kind: "track" | "album" } =>
+        i.kind === "track" || i.kind === "album",
+      )
+      .map((i) => ({
+        id: i.id,
+        kind: i.kind,
+        albumId: i.albumId,
+      }));
     const dr = await validateDiscount(body.discountCode, subtotal, checkItems);
     if (dr.valid) {
       discountAmount = dr.discountAmount;
@@ -343,6 +395,36 @@ export async function POST(req: Request) {
     }
   }
 
+  if (purchasedInstrumentalIds.length) {
+    const tokenRows = purchasedInstrumentalIds.map((iid) => ({
+      order_id: orderRowId,
+      instrumental_id: iid,
+      format: "mp3_320",
+    }));
+    const { data: tokens, error: tokErr } = await supabaseAdmin
+      .from("instrumental_download_tokens")
+      .insert(tokenRows)
+      .select("token, instrumental_id");
+    if (tokErr) {
+      await logAuditEvent({
+        eventType: "checkout_instrumental_token_mint_failed",
+        performedBy: ip,
+        ipAddress: ip,
+        metadata: { reason: tokErr.message, order_id: orderRowId },
+      });
+    } else {
+      const origin = siteOrigin(req);
+      for (const t of tokens ?? []) {
+        downloadUrls.push(`${origin}/api/download/instrumental/${t.token}`);
+        const inst = instrumentalById.get(t.instrumental_id as string);
+        emailDownloads.push({
+          trackName: inst?.title ?? "Instrumental",
+          url: `${origin}/api/download/instrumental/${t.token}`,
+        });
+      }
+    }
+  }
+
   if (discountCodeId) {
     await incrementDiscountUsage(discountCodeId);
   }
@@ -367,6 +449,14 @@ export async function POST(req: Request) {
       return {
         name: row?.title ?? i.name,
         kind: "track" as const,
+        price: row ? Number(row.price) : 0,
+      };
+    }
+    if (i.kind === "instrumental") {
+      const row = instrumentalById.get(i.id);
+      return {
+        name: row?.title ?? i.name,
+        kind: "instrumental" as const,
         price: row ? Number(row.price) : 0,
       };
     }

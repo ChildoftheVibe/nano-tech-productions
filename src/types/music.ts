@@ -112,3 +112,31 @@ export type ArtistListResult = {
   totalCount: number;
   hasMore: boolean;
 };
+
+export type InstrumentalType = "single" | "album_track";
+
+export type Instrumental = {
+  id: string;
+  albumId: string | null;
+  title: string;
+  slug: string;
+  description: string | null;
+  type: InstrumentalType;
+  price: number;
+  coverImage: string | null;
+  publicAudioId: string | null;
+  previewAudioId: string | null;
+  audioUrl: string | null;
+  previewUrl: string | null;
+  duration: string | null;
+  isPublished: boolean;
+  isDownloadable: boolean;
+  playCount: number;
+  downloadCount: number;
+};
+
+export type InstrumentalListResult = {
+  instrumentals: Instrumental[];
+  totalCount: number;
+  hasMore: boolean;
+};

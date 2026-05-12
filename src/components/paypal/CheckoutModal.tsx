@@ -217,7 +217,11 @@ function CheckoutModalContent({
               )}
               <div className="min-w-0 flex-1">
                 <div className="text-xs uppercase tracking-wider text-[#B3B3B3]">
-                  {item.kind === "album" ? "Album" : "Single Track"}
+                  {item.kind === "album"
+                    ? "Album"
+                    : item.kind === "instrumental"
+                      ? "Instrumental"
+                      : "Single Track"}
                 </div>
                 <div className="truncate font-semibold">{item.name}</div>
               </div>
@@ -479,7 +483,12 @@ function SuccessView({
       <h3 className="mb-1 text-2xl font-bold">Purchase Complete!</h3>
       <p className="mb-5 text-sm text-white/70">
         Thanks for supporting NTV.{" "}
-        {item.kind === "album" ? "Your album" : "Your track"} is yours.
+        {item.kind === "album"
+          ? "Your album"
+          : item.kind === "instrumental"
+            ? "Your instrumental"
+            : "Your track"}{" "}
+        is yours.
       </p>
       {phase.downloadUrls.length > 0 ? (
         <div className="mb-5 space-y-2">

@@ -12,6 +12,7 @@ import {
   BarChart3,
   ShieldCheck,
   Users,
+  Volume2,
 } from "lucide-react";
 
 const NAV = [
@@ -19,6 +20,7 @@ const NAV = [
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/albums", label: "Albums", icon: Disc3 },
   { href: "/admin/tracks", label: "Tracks", icon: Music2 },
+  { href: "/admin/sounds", label: "Sounds", icon: Volume2 },
   { href: "/admin/artists", label: "Artists", icon: Users },
   { href: "/admin/discounts", label: "Discounts", icon: Tag },
   { href: "/admin/orders", label: "Orders", icon: Receipt },
