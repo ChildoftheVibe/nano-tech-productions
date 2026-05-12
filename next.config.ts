@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
 
+// Stable per-deploy identifier. On Vercel this comes straight from the
+// commit SHA; locally and in CI it falls back to a timestamp so successive
+// `next dev` / `next build` runs each get their own cache namespace.
+const BUILD_ID =
+  process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) ??
+  process.env.GITHUB_SHA?.slice(0, 12) ??
+  `dev-${Date.now()}`;
+
 // Content-Security-Policy. Tight by default; loosened only where vendors require it.
 //
 //  - PostHog:     us.i.posthog.com (events) + us-assets.i.posthog.com (recorder/static)
@@ -68,7 +76,9 @@ const withSerwist = withSerwistInit({
   swDest: "public/sw.js",
   // Disable in dev — service workers + Next dev hot-reload play poorly.
   disable: process.env.NODE_ENV === "development",
-  cacheOnNavigation: true,
+  // Navigations are NetworkOnly inside sw.ts; caching them here would
+  // re-introduce the stale-HTML-after-deploy bug.
+  cacheOnNavigation: false,
   reloadOnOnline: true,
 });
 
@@ -84,6 +94,21 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 31536000,
     deviceSizes: [640, 750, 828, 1080, 1200],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
+  },
+  env: {
+    NEXT_PUBLIC_BUILD_ID: BUILD_ID,
+  },
+  generateBuildId: async () => BUILD_ID,
+  webpack(config, { webpack }) {
+    config.plugins ??= [];
+    // The service worker (compiled as a webpack entry by @serwist/next)
+    // reads __NTV_BUILD_ID__ to namespace its caches per-deploy.
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        __NTV_BUILD_ID__: JSON.stringify(BUILD_ID),
+      }),
+    );
+    return config;
   },
   async headers() {
     return [
