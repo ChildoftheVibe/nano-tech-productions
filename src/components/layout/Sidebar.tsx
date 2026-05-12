@@ -24,32 +24,35 @@ export function Sidebar({ initialAlbums }: Props) {
   return (
     // TODO: hidden below md — needs a mobile bottom tab bar (later phase).
     <aside
+      aria-label="Sidebar"
       className="hidden flex-shrink-0 flex-col text-white md:flex"
       style={{ width: 240, background: "#2a2929" }}
     >
       <div className="flex-shrink-0 px-5 pt-5 pb-3">
         <Link
           href="/"
+          aria-label="NTV Vault home"
           className="ntv-logo font-mono text-2xl font-bold tracking-wider text-[#3DD6C8]"
         >
           NTV
         </Link>
       </div>
 
-      <nav className="flex-shrink-0 px-2 py-2">
+      <nav aria-label="Primary" className="flex-shrink-0 px-2 py-2">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
           return (
             <Link
               key={href}
               href={href}
+              aria-current={active ? "page" : undefined}
               className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                 active
                   ? "bg-white/10 text-white"
                   : "text-[#B3B3B3] hover:bg-white/5 hover:text-white"
               }`}
             >
-              <Icon size={20} />
+              <Icon size={20} aria-hidden="true" />
               <span>{label}</span>
             </Link>
           );
@@ -62,12 +65,18 @@ export function Sidebar({ initialAlbums }: Props) {
       />
 
       <div className="flex-shrink-0 px-5 pb-2 pt-1">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#B3B3B3]">
+        <h2
+          id="sidebar-collection-heading"
+          className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#B3B3B3]"
+        >
           Your Collection
         </h2>
       </div>
 
-      <ul className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
+      <ul
+        aria-labelledby="sidebar-collection-heading"
+        className="min-h-0 flex-1 overflow-y-auto px-2 pb-2"
+      >
         {initialAlbums.length === 0 ? (
           <li className="px-3 py-4 text-xs text-[#B3B3B3]">
             No albums yet — run the seed script.
@@ -82,6 +91,8 @@ export function Sidebar({ initialAlbums }: Props) {
               <li key={album.id}>
                 <Link
                   href={`/album/${album.slug}`}
+                  aria-label={year ? `${album.title}, ${year}` : album.title}
+                  aria-current={active ? "page" : undefined}
                   className="group flex items-center gap-3 rounded-md py-2 pr-2 transition-colors duration-150 hover:bg-white/[0.06]"
                   style={{
                     borderLeft: active
@@ -95,7 +106,7 @@ export function Sidebar({ initialAlbums }: Props) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={album.coverImage}
-                      alt={album.title}
+                      alt={`${album.title} album cover`}
                       className="h-10 w-10 flex-shrink-0 rounded object-cover"
                       onError={(e) => {
                         const el = e.currentTarget as HTMLImageElement;
@@ -108,6 +119,7 @@ export function Sidebar({ initialAlbums }: Props) {
                   <div
                     className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded"
                     style={{ background: album.bgColor, color: album.accentColor }}
+                    aria-hidden="true"
                   >
                     <Music size={16} />
                   </div>

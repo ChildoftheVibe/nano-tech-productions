@@ -42,6 +42,20 @@ export function LyricsModal() {
   const currentAlbum = usePlayerStore((s) => s.currentAlbum);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  // Move focus to the close button when the modal opens; return focus to
+  // whatever triggered it on close. AT users get a clear in/out experience.
+  useEffect(() => {
+    if (!open) return;
+    previousFocusRef.current = (document.activeElement as HTMLElement) ?? null;
+    const id = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
+    return () => {
+      window.clearTimeout(id);
+      previousFocusRef.current?.focus?.();
+    };
+  }, [open]);
 
   // Auto-close if the active track has no lyrics.
   useEffect(() => {
@@ -100,7 +114,7 @@ export function LyricsModal() {
           onClick={close}
           aria-modal="true"
           role="dialog"
-          aria-label="Lyrics"
+          aria-label={`Lyrics for ${currentTrack.title}`}
         >
           <motion.div
             className="absolute inset-0 flex flex-col"
@@ -126,11 +140,12 @@ export function LyricsModal() {
                 <div className="truncate text-xs text-[#B3B3B3]">{subtitle}</div>
               </div>
               <button
+                ref={closeButtonRef}
                 onClick={close}
                 aria-label="Close lyrics"
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DD6C8]"
               >
-                <ChevronDown size={24} />
+                <ChevronDown size={24} aria-hidden="true" />
               </button>
             </header>
 

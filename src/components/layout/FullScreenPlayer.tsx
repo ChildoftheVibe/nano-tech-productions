@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import {
   ChevronDown,
@@ -62,6 +62,30 @@ export function FullScreenPlayer() {
     if (open && !currentTrack) close();
   }, [open, currentTrack, close]);
 
+  // Escape closes the overlay.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, close]);
+
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  // Trap entry: focus close button on open, return focus on close.
+  useEffect(() => {
+    if (!open) return;
+    previousFocusRef.current = (document.activeElement as HTMLElement) ?? null;
+    const id = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
+    return () => {
+      window.clearTimeout(id);
+      previousFocusRef.current?.focus?.();
+    };
+  }, [open]);
+
   const onDragEnd = (_: unknown, info: PanInfo) => {
     if (info.offset.y > 120 || info.velocity.y > 600) close();
   };
@@ -116,11 +140,12 @@ export function FullScreenPlayer() {
             {/* Drag handle + close */}
             <div className="flex items-center justify-between pb-2">
               <button
+                ref={closeButtonRef}
                 onClick={close}
                 aria-label="Minimize player"
-                className="-ml-2 flex h-10 w-10 items-center justify-center text-white/80 hover:text-white"
+                className="-ml-2 flex h-10 w-10 items-center justify-center text-white/80 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DD6C8]"
               >
-                <ChevronDown size={28} />
+                <ChevronDown size={28} aria-hidden="true" />
               </button>
               <div
                 aria-hidden

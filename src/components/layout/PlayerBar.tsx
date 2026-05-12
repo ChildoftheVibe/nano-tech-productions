@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BookOpen,
@@ -76,6 +76,64 @@ export function PlayerBar() {
     ? `Jhodge feat. ${currentTrack.features.join(", ")}`
     : "Jhodge";
 
+  const trackName = currentTrack?.title;
+  const playLabel = trackName
+    ? isPlaying
+      ? `Pause ${trackName}`
+      : `Play ${trackName}`
+    : isPlaying
+      ? "Pause"
+      : "Play";
+  const lyricsLabel = trackName ? `View lyrics for ${trackName}` : "View lyrics";
+
+  // Global keyboard shortcuts. Skip when the user is typing or interacting
+  // with another widget so this never steals input from forms, sliders, or
+  // contenteditable surfaces.
+  useEffect(() => {
+    const shouldIgnore = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false;
+      if (target.isContentEditable) return true;
+      const tag = target.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (shouldIgnore(e.target)) return;
+      if (!currentTrack) return;
+      if (e.key === " " || e.code === "Space") {
+        e.preventDefault();
+        togglePlayPause();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        seekTo(Math.min(duration || 0, currentTime + 10));
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        seekTo(Math.max(0, currentTime - 10));
+      } else if (e.key === "m" || e.key === "M") {
+        e.preventDefault();
+        if (volume === 0) {
+          setVolume(prevVolume || 0.7);
+        } else {
+          setPrevVolume(volume);
+          setVolume(0);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [
+    currentTrack,
+    togglePlayPause,
+    seekTo,
+    setVolume,
+    duration,
+    currentTime,
+    volume,
+    prevVolume,
+  ]);
+
+  const percentPlayed = duration > 0 ? (currentTime / duration) * 100 : 0;
+
   return (
     <footer
       className="relative flex-shrink-0 text-white"
@@ -84,6 +142,7 @@ export function PlayerBar() {
         background: "#181818",
         borderTop: "1px solid rgba(255,255,255,0.1)",
       }}
+      aria-label="Music player"
     >
       {/* Mobile: full-width thin progress bar at very top */}
       <input
@@ -94,7 +153,12 @@ export function PlayerBar() {
         value={Math.min(currentTime, duration || 0)}
         onChange={(e) => seekTo(Number(e.target.value))}
         disabled={!duration}
-        aria-label="Seek"
+        aria-label="Track progress"
+        role="slider"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(percentPlayed)}
+        aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
         className="ntv-range absolute inset-x-0 top-0 z-10 h-1 w-full cursor-pointer accent-[#3DD6C8] md:hidden"
       />
 
@@ -132,7 +196,7 @@ export function PlayerBar() {
             </button>
             <motion.button
               onClick={togglePlayPause}
-              aria-label={isPlaying ? "Pause" : "Play"}
+              aria-label={playLabel}
               className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white text-black"
               whileTap={{ scale: 0.92 }}
             >
@@ -145,7 +209,8 @@ export function PlayerBar() {
             {showLyricsButton ? (
               <motion.button
                 onClick={toggleLyrics}
-                aria-label="Lyrics"
+                aria-label={lyricsLabel}
+                aria-pressed={lyricsOpen}
                 className="flex-shrink-0 p-2"
                 style={{
                   color: lyricsOpen ? "#3DD6C8" : "#B3B3B3",
@@ -292,7 +357,7 @@ export function PlayerBar() {
             </motion.button>
             <motion.button
               onClick={togglePlayPause}
-              aria-label={isPlaying ? "Pause" : "Play"}
+              aria-label={playLabel}
               disabled={!currentTrack}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black disabled:opacity-40"
               whileHover={{ scale: 1.05 }}
@@ -345,7 +410,12 @@ export function PlayerBar() {
               value={Math.min(currentTime, duration || 0)}
               onChange={(e) => seekTo(Number(e.target.value))}
               disabled={!duration}
-              aria-label="Seek"
+              aria-label="Track progress"
+              role="slider"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(percentPlayed)}
+              aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
               className="ntv-range h-1 flex-1 cursor-pointer accent-[#3DD6C8]"
             />
             <span className="font-mono text-[11px] tabular-nums text-[#B3B3B3]">
@@ -358,7 +428,8 @@ export function PlayerBar() {
           {showLyricsButton ? (
             <motion.button
               onClick={toggleLyrics}
-              aria-label="Lyrics"
+              aria-label={lyricsLabel}
+              aria-pressed={lyricsOpen}
               title="Lyrics"
               className="p-2 transition-colors"
               style={{
@@ -391,6 +462,11 @@ export function PlayerBar() {
             value={volume}
             onChange={(e) => setVolume(Number(e.target.value))}
             aria-label="Volume"
+            role="slider"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(volume * 100)}
+            aria-valuetext={`${Math.round(volume * 100)} percent`}
             className="ntv-range h-1 w-24 cursor-pointer accent-[#3DD6C8]"
           />
         </div>

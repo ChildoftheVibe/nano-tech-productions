@@ -58,6 +58,12 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="bg-[#393838] text-white">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[1000] focus:rounded focus:bg-[#3DD6C8] focus:px-4 focus:py-2 focus:font-semibold focus:text-black focus:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        >
+          Skip to main content
+        </a>
         <Suspense fallback={null}>
           <AnalyticsProvider>
             <PlayerProvider>
@@ -65,6 +71,8 @@ export default async function RootLayout({
                 <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
                   <Sidebar initialAlbums={sidebarAlbums} />
                   <main
+                    id="main-content"
+                    tabIndex={-1}
                     style={{
                       flex: 1,
                       overflowY: "auto",

@@ -61,6 +61,8 @@ export function AlbumCard({
   const optimizedSrc = album.coverImage
     ? getAlbumCover(album.coverImage, coverSizeFor[size])
     : "";
+  const year = album.releaseDate?.slice(0, 4) ?? "";
+  const cardLabel = year ? `${album.title}, ${year}` : album.title;
 
   const cover = (
     <motion.div
@@ -77,7 +79,7 @@ export function AlbumCard({
       {optimizedSrc ? (
         <Image
           src={optimizedSrc}
-          alt={album.title}
+          alt={`${album.title} album cover`}
           fill
           sizes={SIZES_ATTR}
           placeholder="blur"
@@ -108,10 +110,10 @@ export function AlbumCard({
             onPlay();
           }}
           aria-label={`Play ${album.title}`}
-          className="absolute bottom-2 right-2 flex h-12 w-12 translate-y-2 items-center justify-center rounded-full opacity-0 shadow-lg transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100"
+          className="absolute bottom-2 right-2 flex h-12 w-12 translate-y-2 items-center justify-center rounded-full opacity-0 shadow-lg transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           style={{ background: "#3DD6C8" }}
         >
-          <Play size={18} fill="black" className="ml-0.5 text-black" />
+          <Play size={18} fill="black" className="ml-0.5 text-black" aria-hidden="true" />
         </button>
       ) : null}
     </motion.div>
@@ -119,7 +121,7 @@ export function AlbumCard({
 
   if (!href) return cover;
   return (
-    <Link href={href} className="block">
+    <Link href={href} aria-label={cardLabel} className="block">
       {cover}
     </Link>
   );

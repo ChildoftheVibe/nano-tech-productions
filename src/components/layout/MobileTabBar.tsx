@@ -39,7 +39,8 @@ export function MobileTabBar() {
 
   return (
     <nav
-      aria-label="Primary"
+      role="navigation"
+      aria-label="Main"
       className="flex flex-shrink-0 items-stretch md:hidden"
       style={{
         height: 60,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Lock, Music, X } from "lucide-react";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
@@ -76,6 +76,20 @@ function CheckoutModalContent({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, phase.kind]);
 
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  // Modal mounts → capture prior focus, move focus to close button.
+  // Modal unmounts → return focus to whatever opened the checkout.
+  useEffect(() => {
+    previousFocusRef.current = (document.activeElement as HTMLElement) ?? null;
+    const id = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
+    return () => {
+      window.clearTimeout(id);
+      previousFocusRef.current?.focus?.();
+    };
+  }, []);
+
   const applyDiscount = async () => {
     setValidating(true);
     setDiscountError(null);
@@ -144,6 +158,9 @@ function CheckoutModalContent({
       }}
     >
       <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="checkout-modal-title"
         className="w-full max-w-[480px] overflow-hidden rounded-xl text-white shadow-2xl"
         style={{
           background: "#282828",
@@ -156,16 +173,19 @@ function CheckoutModalContent({
       >
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
           <div className="flex items-center gap-2">
-            <Lock size={16} className="text-[#3DD6C8]" />
-            <h2 className="text-lg font-bold">Checkout</h2>
+            <Lock size={16} className="text-[#3DD6C8]" aria-hidden="true" />
+            <h2 id="checkout-modal-title" className="text-lg font-bold">
+              Checkout
+            </h2>
           </div>
           <button
+            ref={closeButtonRef}
             onClick={onClose}
             disabled={phase.kind === "submitting"}
-            aria-label="Close"
-            className="rounded-full p-1 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-40"
+            aria-label="Close checkout"
+            className="rounded-full p-1 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DD6C8]"
           >
-            <X size={18} />
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
 
