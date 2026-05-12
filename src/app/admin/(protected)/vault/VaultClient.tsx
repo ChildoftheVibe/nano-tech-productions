@@ -92,18 +92,26 @@ export function VaultClient({ tracks }: { tracks: VaultTrack[] }) {
     // signed Cloudinary URL — set src and call play() synchronously here so
     // the user-gesture token from the click survives autoplay-policy checks.
     const streamUrl = `/api/admin/wav/${track.id}/stream`;
+    console.log("[Vault] preview start", { trackId: track.id, streamUrl });
+
+    // Attach the error listener BEFORE load() so a synchronous load failure
+    // can't race the listener registration. MediaError codes:
+    //   1 ABORTED  2 NETWORK  3 DECODE  4 SRC_NOT_SUPPORTED
+    const onError = () => {
+      const code = audio.error?.code;
+      const message = audio.error?.message;
+      const currentSrc = audio.currentSrc;
+      console.error("[Vault] audio error", { code, message, currentSrc });
+      setPlayerError(
+        `Preview failed (MediaError ${code ?? "?"}). Check console + Network for /api/admin/wav/${track.id}/stream.`,
+      );
+    };
+    audio.addEventListener("error", onError, { once: true });
+
     audio.src = streamUrl;
     audio.load();
     setActiveTrackId(track.id);
     setActiveTitle(`${track.albumTitle} — ${track.title}`);
-
-    const onError = () => {
-      setPlayerError(
-        "Preview failed — the vault file may be unavailable or your session expired.",
-      );
-      audio.removeEventListener("error", onError);
-    };
-    audio.addEventListener("error", onError, { once: true });
 
     const result = audio.play();
     if (result && typeof result.catch === "function") {
