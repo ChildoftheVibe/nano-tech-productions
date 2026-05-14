@@ -320,7 +320,7 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3 text-white">
+    <form onSubmit={onSubmit} className="space-y-3 pb-20 text-white">
       <div className="rounded border border-[#3DD6C8]/30 bg-[#3DD6C8]/5 px-4 py-3">
         <div className="font-mono text-base font-bold text-[#3DD6C8]">
           {headerText}
@@ -537,7 +537,7 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
 
       {error && <p className="text-sm text-red-400">{error}</p>}
 
-      <div className="flex gap-2">
+      <div className="sticky bottom-32 z-10 flex gap-2 border-t border-white/10 bg-[#1a1919]/95 py-3 backdrop-blur-sm md:bottom-0">
         <button
           type="submit"
           disabled={submitting}

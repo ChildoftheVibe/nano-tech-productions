@@ -2,8 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Loader2, Lock, Music, X } from "lucide-react";
-import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
+import { AlertTriangle, Loader2, Lock, Music, X } from "lucide-react";
+import {
+  PayPalButtons,
+  PayPalScriptProvider,
+  usePayPalScriptReducer,
+} from "@paypal/react-paypal-js";
 import { useCheckoutStore, type CheckoutItemRef } from "@/store/checkoutStore";
 
 type Phase =
@@ -145,6 +149,22 @@ function CheckoutModalContent({
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? "";
   const paypalReady = !!clientId;
 
+  // Log a masked clientId once per modal mount so missing/wrong env vars in
+  // production are diagnosable from the browser console without leaking the
+  // key. Sentinel for "PayPal button missing" reports.
+  useEffect(() => {
+    const masked = clientId
+      ? `${clientId.slice(0, 6)}…(${clientId.length} chars)`
+      : "(empty)";
+    console.log("[checkout] NEXT_PUBLIC_PAYPAL_CLIENT_ID:", masked);
+    if (!clientId) {
+      console.warn(
+        "[checkout] PayPal client ID not set — buttons cannot render. " +
+          "Set NEXT_PUBLIC_PAYPAL_CLIENT_ID in Vercel project env vars.",
+      );
+    }
+  }, [clientId]);
+
   return (
     <motion.div
       className="fixed inset-0 z-[100] flex items-center justify-center px-4"
@@ -161,7 +181,7 @@ function CheckoutModalContent({
         role="dialog"
         aria-modal="true"
         aria-labelledby="checkout-modal-title"
-        className="w-full max-w-[480px] overflow-hidden rounded-xl text-white shadow-2xl"
+        className="flex max-h-[calc(100dvh-32px)] w-full max-w-[480px] flex-col overflow-hidden rounded-xl text-white shadow-2xl"
         style={{
           background: "#282828",
           border: "1px solid rgba(255,255,255,0.08)",
@@ -192,7 +212,7 @@ function CheckoutModalContent({
         {phase.kind === "success" ? (
           <SuccessView phase={phase} item={item} onClose={onClose} />
         ) : (
-          <div className="p-5">
+          <div className="min-h-0 flex-1 overflow-y-auto p-5">
             <div className="mb-4 flex items-center gap-3">
               {item.coverImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -306,7 +326,7 @@ function CheckoutModalContent({
                 <code className="mx-1 rounded bg-black/30 px-1">
                   NEXT_PUBLIC_PAYPAL_CLIENT_ID
                 </code>
-                in <code>.env.local</code>.
+                in your environment.
               </div>
             ) : (
               <PayPalScriptProvider
@@ -317,90 +337,82 @@ function CheckoutModalContent({
                     {phase.message}
                   </div>
                 ) : null}
-                <div
-                  className={
-                    phase.kind === "submitting"
-                      ? "pointer-events-none opacity-50"
-                      : ""
-                  }
-                >
-                  <PayPalButtons
-                    style={{ layout: "vertical", color: "gold", shape: "pill" }}
-                    disabled={phase.kind === "submitting"}
-                    createOrder={async () => {
-                      const res = await fetch("/api/paypal/create-order", {
+                <PayPalCheckoutPanel
+                  submitting={phase.kind === "submitting"}
+                  onCreateOrder={async () => {
+                    const res = await fetch("/api/paypal/create-order", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(orderRequestBody()),
+                    });
+                    if (!res.ok) {
+                      const json = await res.json().catch(() => ({}));
+                      throw new Error(json.error ?? "create_failed");
+                    }
+                    const json = (await res.json()) as { orderId: string };
+                    return json.orderId;
+                  }}
+                  onApprove={async (orderID) => {
+                    setPhase({ kind: "submitting" });
+                    try {
+                      const res = await fetch("/api/paypal/verify", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(orderRequestBody()),
+                        body: JSON.stringify({
+                          orderId: orderID,
+                          items: orderRequestBody().items,
+                          discountCode: discount.applied
+                            ? discount.code
+                            : undefined,
+                        }),
                       });
-                      if (!res.ok) {
-                        const json = await res.json().catch(() => ({}));
-                        throw new Error(json.error ?? "create_failed");
-                      }
-                      const json = (await res.json()) as { orderId: string };
-                      return json.orderId;
-                    }}
-                    onApprove={async (data) => {
-                      setPhase({ kind: "submitting" });
-                      try {
-                        const res = await fetch("/api/paypal/verify", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            orderId: data.orderID,
-                            items: orderRequestBody().items,
-                            discountCode: discount.applied
-                              ? discount.code
-                              : undefined,
-                          }),
-                        });
-                        const json = (await res.json()) as {
-                          verified: boolean;
-                          downloadUrls?: string[];
-                          error?: string;
-                        };
-                        if (!res.ok || !json.verified) {
-                          setPhase({
-                            kind: "error",
-                            message:
-                              "Payment couldn't be verified. If you were charged, contact support.",
-                          });
-                          return;
-                        }
-                        try {
-                          const { trackPurchaseComplete } = await import(
-                            "@/lib/analytics"
-                          );
-                          trackPurchaseComplete(
-                            data.orderID,
-                            orderRequestBody().items,
-                            total,
-                          );
-                        } catch {
-                          // analytics best-effort
-                        }
-                        setPhase({
-                          kind: "success",
-                          downloadUrls: json.downloadUrls ?? [],
-                        });
-                      } catch {
+                      const json = (await res.json()) as {
+                        verified: boolean;
+                        downloadUrls?: string[];
+                        error?: string;
+                      };
+                      if (!res.ok || !json.verified) {
                         setPhase({
                           kind: "error",
-                          message: "Network error during verification. Please retry.",
+                          message:
+                            "Payment couldn't be verified. If you were charged, contact support.",
                         });
+                        return;
                       }
-                    }}
-                    onError={() => {
+                      try {
+                        const { trackPurchaseComplete } = await import(
+                          "@/lib/analytics"
+                        );
+                        trackPurchaseComplete(
+                          orderID,
+                          orderRequestBody().items,
+                          total,
+                        );
+                      } catch {
+                        // analytics best-effort
+                      }
+                      setPhase({
+                        kind: "success",
+                        downloadUrls: json.downloadUrls ?? [],
+                      });
+                    } catch {
                       setPhase({
                         kind: "error",
-                        message: "PayPal returned an error. Please try again.",
+                        message:
+                          "Network error during verification. Please retry.",
                       });
-                    }}
-                  />
-                </div>
+                    }
+                  }}
+                  onPayPalError={() =>
+                    setPhase({
+                      kind: "error",
+                      message: "PayPal returned an error. Please try again.",
+                    })
+                  }
+                />
                 {phase.kind === "submitting" ? (
                   <div className="mt-3 flex items-center justify-center gap-2 text-xs text-white/70">
-                    <Loader2 size={14} className="animate-spin" />
+                    <Loader2 size={14} className="animate-spin" aria-hidden="true" />
                     Verifying payment…
                   </div>
                 ) : null}
@@ -430,6 +442,92 @@ function Row({
     <div className="flex justify-between">
       <span className="text-white/70">{label}</span>
       <span className={accent ? "text-[#3DD6C8]" : "text-white"}>{value}</span>
+    </div>
+  );
+}
+
+/**
+ * Renders the PayPal buttons inside the script-loaded boundary so we can
+ * surface the SDK's loading + error state. Without this, a failed CDN
+ * fetch or a wrong/expired clientId leaves an invisible <div /> where the
+ * checkout button should be — exactly the "no submit button" bug.
+ *
+ * Hard fallback after 10s of pending state, in case PayPal's script never
+ * resolves or rejects (rare in practice but observed when an upstream
+ * proxy blackholes the SDK).
+ */
+function PayPalCheckoutPanel({
+  submitting,
+  onCreateOrder,
+  onApprove,
+  onPayPalError,
+}: {
+  submitting: boolean;
+  onCreateOrder: () => Promise<string>;
+  onApprove: (orderID: string) => Promise<void>;
+  onPayPalError: () => void;
+}) {
+  const [{ isPending, isRejected, isResolved }] = usePayPalScriptReducer();
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (!isPending) return;
+    const id = window.setTimeout(() => setTimedOut(true), 10_000);
+    return () => window.clearTimeout(id);
+  }, [isPending]);
+
+  if (isRejected || timedOut) {
+    return (
+      <div
+        role="alert"
+        className="flex items-start gap-2 rounded border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-200"
+      >
+        <AlertTriangle size={14} className="mt-0.5 flex-shrink-0" aria-hidden="true" />
+        <div>
+          <div className="font-semibold">
+            Payment processing unavailable. Please try again.
+          </div>
+          <div className="mt-1 text-red-200/70">
+            We couldn&apos;t load the PayPal checkout. Disable ad blockers,
+            check your connection, or try a different browser.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center gap-2 rounded border border-white/10 bg-black/20 px-3 py-6 text-xs text-white/60">
+        <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+        Loading PayPal checkout…
+      </div>
+    );
+  }
+
+  if (!isResolved) return null;
+
+  return (
+    <div className={submitting ? "pointer-events-none opacity-50" : ""}>
+      <PayPalButtons
+        style={{ layout: "vertical", color: "gold", shape: "pill" }}
+        disabled={submitting}
+        createOrder={async () => {
+          try {
+            return await onCreateOrder();
+          } catch (err) {
+            console.error("[checkout] createOrder failed:", err);
+            throw err;
+          }
+        }}
+        onApprove={async (data) => {
+          await onApprove(data.orderID);
+        }}
+        onError={(err) => {
+          console.error("[checkout] PayPalButtons onError:", err);
+          onPayPalError();
+        }}
+      />
     </div>
   );
 }
