@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth";
 import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
 import { checkRateLimitStrict } from "@/lib/rateLimit";
+import { logError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
   try {
     token = await createSession(ip);
   } catch (err) {
-    console.error("[admin/auth/login]", err);
+    logError(err, { caller: "admin/auth/login" });
     return NextResponse.json({ error: "session_failed" }, { status: 500 });
   }
 

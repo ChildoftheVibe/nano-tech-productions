@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { clientIpFromHeaders, logAuditEvent } from "@/lib/audit";
+import { logError } from "@/lib/logger";
 
 const ARTIST_FIELDS = [
   "slug",
@@ -84,7 +85,7 @@ async function syncAssociations(
       role: t.role || "featured",
     }));
     const { error } = await supabaseAdmin.from("artist_tracks").insert(rows);
-    if (error) console.error("[artists] insert artist_tracks", error.message);
+    if (error) logError(error, { caller: "artists" });
   }
   if (albums.length > 0) {
     const rows = albums.map((a) => ({
@@ -93,7 +94,7 @@ async function syncAssociations(
       role: a.role || "featured",
     }));
     const { error } = await supabaseAdmin.from("artist_albums").insert(rows);
-    if (error) console.error("[artists] insert artist_albums", error.message);
+    if (error) logError(error, { caller: "artists" });
   }
 }
 

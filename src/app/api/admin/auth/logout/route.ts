@@ -5,6 +5,7 @@ import {
   revokeSession,
 } from "@/lib/auth";
 import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
+import { logError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     try {
       await revokeSession(token);
     } catch (err) {
-      console.error("[admin/auth/logout]", err);
+      logError(err, { caller: "admin/auth/logout" });
     }
   }
   await clearAdminCookie();

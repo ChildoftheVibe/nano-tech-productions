@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { SentryErrorBoundary } from "@/components/ui/SentryErrorBoundary";
 
 export default async function ProtectedAdminLayout({
   children,
@@ -9,5 +10,9 @@ export default async function ProtectedAdminLayout({
 }) {
   if (!(await isAdmin())) redirect("/admin/login");
 
-  return <AdminShell>{children}</AdminShell>;
+  return (
+    <AdminShell>
+      <SentryErrorBoundary>{children}</SentryErrorBoundary>
+    </AdminShell>
+  );
 }

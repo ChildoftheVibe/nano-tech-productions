@@ -1,6 +1,7 @@
 import "server-only";
 
 import { supabaseAdmin } from "./supabase";
+import { logError } from "@/lib/logger";
 
 export type AuditEvent = {
   eventType: string;
@@ -23,9 +24,9 @@ export async function logAuditEvent(event: AuditEvent): Promise<void> {
       user_agent: event.userAgent ?? null,
       metadata: event.metadata ?? null,
     });
-    if (error) console.error("[audit]", error.message);
+    if (error) logError(error, { caller: "audit" });
   } catch (err) {
-    console.error("[audit] insert failed", err);
+    logError(err, { caller: "audit" });
   }
 }
 

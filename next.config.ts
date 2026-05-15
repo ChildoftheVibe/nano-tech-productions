@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // Stable per-deploy identifier. On Vercel this comes straight from the
 // commit SHA; locally and in CI it falls back to a timestamp so successive
@@ -19,6 +20,7 @@ const BUILD_ID =
 //
 // 'unsafe-inline' on script-src is required by the Next.js inline runtime that
 // hydrates RSC boundaries; nonces would be cleaner but require per-request work.
+//  - Sentry:      *.sentry.io (error ingest) + *.ingest.sentry.io
 const csp = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -30,7 +32,7 @@ const csp = [
   "font-src 'self' data: https://fonts.gstatic.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.paypal.com https://us-assets.i.posthog.com https://va.vercel-scripts.com",
-  "connect-src 'self' https://*.paypal.com https://us.i.posthog.com https://us-assets.i.posthog.com https://vitals.vercel-insights.com https://*.supabase.co wss://*.supabase.co https://api.cloudinary.com https://cdn.jsdelivr.net",
+  "connect-src 'self' https://*.paypal.com https://us.i.posthog.com https://us-assets.i.posthog.com https://vitals.vercel-insights.com https://*.supabase.co wss://*.supabase.co https://api.cloudinary.com https://cdn.jsdelivr.net https://*.sentry.io https://*.ingest.sentry.io",
   "frame-src https://*.paypal.com",
   "worker-src 'self' blob:",
   "upgrade-insecure-requests",
@@ -119,4 +121,15 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSerwist(nextConfig);
+export default withSentryConfig(withSerwist(nextConfig), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT ?? "ntv-vault",
+  // Only upload source maps when an auth token is present (CI/Vercel).
+  // Silent locally to avoid noisy build output when no credentials are set.
+  silent: !process.env.SENTRY_AUTH_TOKEN,
+  disableLogger: true,
+  // Treeshake Sentry SDK logger statements in production.
+  reactComponentAnnotation: { enabled: true },
+  // Disable automatic instrumentation of server actions (we handle it manually).
+  autoInstrumentServerFunctions: false,
+});

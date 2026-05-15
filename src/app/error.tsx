@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 type Props = {
   error: Error & { digest?: string };
@@ -9,8 +10,12 @@ type Props = {
 };
 
 export default function GlobalRouteError({ error, reset }: Props) {
+  const [eventId, setEventId] = useState<string | null>(null);
+
   useEffect(() => {
-    console.error("[app/error]", error);
+    const id = Sentry.captureException(error) ?? null;
+    const t = setTimeout(() => setEventId(id), 0);
+    return () => clearTimeout(t);
   }, [error]);
 
   const isDev = process.env.NODE_ENV === "development";
@@ -47,11 +52,15 @@ export default function GlobalRouteError({ error, reset }: Props) {
           {error.stack ? `\n\n${error.stack}` : ""}
           {error.digest ? `\n\ndigest: ${error.digest}` : ""}
         </pre>
-      ) : error.digest ? (
+      ) : (
         <p className="mt-4 font-mono text-[11px] text-white/40">
-          ref: {error.digest}
+          {eventId
+            ? `Error reference: ${eventId}`
+            : error.digest
+              ? `ref: ${error.digest}`
+              : null}
         </p>
-      ) : null}
+      )}
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         <button
           type="button"

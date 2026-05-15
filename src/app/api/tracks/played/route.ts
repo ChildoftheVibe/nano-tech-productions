@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
   void supabaseAdmin
     .rpc("increment_play_count", { track_id: trackId })
     .then(({ error }) => {
-      if (error) console.error("[api/tracks/played]", error.message);
+      if (error) logError(error, { caller: "api/tracks/played" });
     });
 
   return NextResponse.json({ ok: true }, { status: 202 });

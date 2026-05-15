@@ -17,6 +17,8 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { CheckoutHost } from "@/components/paypal/CheckoutHost";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { AnalyticsProvider } from "@/providers/AnalyticsProvider";
+import { RouteChangeFocus } from "@/components/layout/RouteChangeFocus";
+import { SentryErrorBoundary } from "@/components/ui/SentryErrorBoundary";
 import { getAlbums } from "@/lib/queries";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -67,6 +69,7 @@ export default async function RootLayout({
         <Suspense fallback={null}>
           <AnalyticsProvider>
             <PlayerProvider>
+              <RouteChangeFocus />
               <div style={{ display: "flex", height: "100vh", flexDirection: "column" }}>
                 <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
                   <Sidebar initialAlbums={sidebarAlbums} />
@@ -86,13 +89,25 @@ export default async function RootLayout({
                   </main>
                 </div>
                 <MobileTabBar />
-                <PlayerBar />
+                <SentryErrorBoundary
+                  fallback={
+                    <footer
+                      style={{ height: 90, background: "#181818", borderTop: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                      <span className="text-xs text-white/40">Player unavailable</span>
+                    </footer>
+                  }
+                >
+                  <PlayerBar />
+                </SentryErrorBoundary>
               </div>
               <FullScreenPlayer />
               <LyricsModal />
               <TapToStartBanner />
               <SWUpdateBanner />
-              <CheckoutHost />
+              <SentryErrorBoundary>
+                <CheckoutHost />
+              </SentryErrorBoundary>
             </PlayerProvider>
           </AnalyticsProvider>
         </Suspense>

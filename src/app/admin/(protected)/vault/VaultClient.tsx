@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { logError } from "@/lib/logger";
 import { Download, Lock, Pause, Play, ScrollText } from "lucide-react";
 
 export type VaultTrack = {
@@ -101,7 +102,7 @@ export function VaultClient({ tracks }: { tracks: VaultTrack[] }) {
       const code = audio.error?.code;
       const message = audio.error?.message;
       const currentSrc = audio.currentSrc;
-      console.error("[Vault] audio error", { code, message, currentSrc });
+      logError(new Error("[Vault] audio error"), { code, message, currentSrc });
       setPlayerError(
         `Preview failed (MediaError ${code ?? "?"}). Check console + Network for /api/admin/wav/${track.id}/stream.`,
       );

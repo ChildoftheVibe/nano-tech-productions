@@ -3,6 +3,7 @@ import { isAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getAdminWavUrl } from "@/lib/cloudinary";
 import { clientIpFromHeaders, logAuditEvent } from "@/lib/audit";
+import { logError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -69,7 +70,7 @@ export async function GET(
 
   const signedUrl = getAdminWavUrl(track.vault_audio_id);
   if (!signedUrl) {
-    console.error("[wav/stream] 503 cloudinary not configured", { trackId });
+    logError(new Error("[wav/stream] 503 cloudinary not configured"), { trackId });
     return NextResponse.json(
       { error: "cloudinary_unconfigured" },
       { status: 503, headers: { "cache-control": "no-store" } },
@@ -91,7 +92,7 @@ export async function GET(
   try {
     upstream = await fetch(signedUrl, { headers: upstreamHeaders });
   } catch (err) {
-    console.error("[wav/stream] upstream fetch threw", {
+    logError(new Error("[wav/stream] upstream fetch threw"), {
       trackId,
       err: String(err),
     });
@@ -102,7 +103,7 @@ export async function GET(
   }
 
   if (upstream.status !== 200 && upstream.status !== 206) {
-    console.error("[wav/stream] upstream non-success", {
+    logError(new Error("[wav/stream] upstream non-success"), {
       trackId,
       status: upstream.status,
       statusText: upstream.statusText,

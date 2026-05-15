@@ -1,6 +1,7 @@
 import "server-only";
 
 import { supabaseAdmin } from "./supabase";
+import { logError } from "@/lib/logger";
 
 export type RateLimitOpts = {
   identifier: string;
@@ -28,12 +29,12 @@ export async function checkRateLimit({
       p_window_minutes: windowMinutes,
     });
     if (error) {
-      console.error("[rateLimit]", error.message);
+      logError(error, { caller: "rateLimit" });
       return true;
     }
     return data === true;
   } catch (err) {
-    console.error("[rateLimit] unexpected", err);
+    logError(err, { caller: "rateLimit" });
     return true;
   }
 }
@@ -49,12 +50,12 @@ export async function checkRateLimitStrict(opts: RateLimitOpts): Promise<boolean
       p_window_minutes: opts.windowMinutes,
     });
     if (error) {
-      console.error("[rateLimit:strict]", error.message);
+      logError(error, { caller: "rateLimit:strict" });
       return false;
     }
     return data === true;
   } catch (err) {
-    console.error("[rateLimit:strict] unexpected", err);
+    logError(err, { caller: "rateLimit:strict" });
     return false;
   }
 }
