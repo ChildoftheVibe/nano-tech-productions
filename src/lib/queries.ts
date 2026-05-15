@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { supabase } from "./supabase";
+import { logError } from "@/lib/logger";
 import {
   getInstrumentalPreviewUrl,
   getInstrumentalStreamUrl,
@@ -122,7 +123,7 @@ export const getAlbums = unstable_cache(
     if (published) q = q.eq("is_published", true);
     const { data, count, error } = await q;
     if (error) {
-      console.error("[queries.getAlbums]", error.message);
+      logError(error, { caller: "queries.getAlbums" });
       return { albums: [], totalCount: 0, hasMore: false };
     }
     const albums = ((data ?? []) as AlbumRow[]).map((row) => mapAlbum(row));
@@ -155,7 +156,7 @@ export const getAlbum = unstable_cache(
       .eq("is_published", true)
       .maybeSingle();
     if (error || !data) {
-      if (error) console.error("[queries.getAlbum]", error.message);
+      if (error) logError(error, { caller: "queries.getAlbum" });
       return null;
     }
     const row = data as AlbumRow;
@@ -177,7 +178,7 @@ export const getAlbumById = unstable_cache(
       .eq("id", id)
       .maybeSingle();
     if (error || !data) {
-      if (error) console.error("[queries.getAlbumById]", error.message);
+      if (error) logError(error, { caller: "queries.getAlbumById" });
       return null;
     }
     const row = data as AlbumRow;
@@ -213,7 +214,7 @@ export const getTracks = unstable_cache(
     if (published) q = q.eq("is_published", true);
     const { data, count, error } = await q;
     if (error) {
-      console.error("[queries.getTracks]", error.message);
+      logError(error, { caller: "queries.getTracks" });
       return { tracks: [], totalCount: 0, hasMore: false };
     }
     const tracks = ((data ?? []) as TrackRow[]).map(mapTrack);
@@ -239,7 +240,7 @@ export const getPlaylistTracks = unstable_cache(
       .or("audio_url.not.is.null,public_audio_id.not.is.null")
       .limit(PLAYLIST_MAX);
     if (error) {
-      console.error("[queries.getPlaylistTracks]", error.message);
+      logError(error, { caller: "queries.getPlaylistTracks" });
       return [];
     }
     const rows = (data ?? []) as TrackRow[];
@@ -268,7 +269,7 @@ export const searchAlbums = unstable_cache(
       .textSearch("search_vector", q, { type: "websearch", config: "english" })
       .limit(50);
     if (error) {
-      console.error("[queries.searchAlbums]", error.message);
+      logError(error, { caller: "queries.searchAlbums" });
       return [];
     }
     return ((data ?? []) as AlbumRow[]).map((row) => mapAlbum(row));
@@ -326,7 +327,7 @@ export const searchContent = unstable_cache(
         })
         .limit(SEARCH_LIMITS.albums);
       if (error) {
-        console.error("[queries.searchContent albums.textSearch]", error.message);
+        logError(error, { caller: "queries.searchContent albums.textSearch" });
       } else if (data) {
         albumRows = data as AlbumRow[];
       }
@@ -339,7 +340,7 @@ export const searchContent = unstable_cache(
         .or(`title.ilike.${ilikeNeedle},description.ilike.${ilikeNeedle}`)
         .limit(SEARCH_LIMITS.albums);
       if (error) {
-        console.error("[queries.searchContent albums.ilike]", error.message);
+        logError(error, { caller: "queries.searchContent albums.ilike" });
       } else if (data) {
         albumRows = data as AlbumRow[];
       }
@@ -359,7 +360,7 @@ export const searchContent = unstable_cache(
         .ilike("title", ilikeNeedle)
         .limit(SEARCH_LIMITS.tracks);
       if (error) {
-        console.error("[queries.searchContent tracks]", error.message);
+        logError(error, { caller: "queries.searchContent tracks" });
       } else if (data) {
         trackRows = data as unknown as TrackSearchRow[];
       }
@@ -377,7 +378,7 @@ export const searchContent = unstable_cache(
         .ilike("name", ilikeNeedle)
         .limit(SEARCH_LIMITS.artists);
       if (error) {
-        console.error("[queries.searchContent artists]", error.message);
+        logError(error, { caller: "queries.searchContent artists" });
       } else if (data) {
         for (const row of data as Array<{
           id: string;
@@ -408,10 +409,7 @@ export const searchContent = unstable_cache(
         .not("features", "is", null)
         .limit(500);
       if (error) {
-        console.error(
-          "[queries.searchContent artists.features]",
-          error.message,
-        );
+        logError(error, { caller: "queries.searchContent artists.features" });
       } else if (data) {
         const needle = query.toLowerCase();
         for (const row of data as Array<{ features: string[] | null }>) {
@@ -460,7 +458,7 @@ export const getLibraryAlbums = unstable_cache(
       .eq("is_published", true)
       .order("release_date", { ascending: false });
     if (error) {
-      console.error("[queries.getLibraryAlbums]", error.message);
+      logError(error, { caller: "queries.getLibraryAlbums" });
       return [];
     }
     type LibTrack = { id: string; play_count: number | null; is_published: boolean };
@@ -583,7 +581,7 @@ async function fetchArtists({
   if (featured === true) q = q.eq("is_featured", true);
   const { data, count, error } = await q;
   if (error) {
-    console.error("[queries.getArtists]", error.message);
+    logError(error, { caller: "queries.getArtists" });
     return { artists: [], totalCount: 0, hasMore: false };
   }
   const artists = ((data ?? []) as ArtistRow[]).map(mapArtist);
@@ -667,7 +665,7 @@ export const getArtist = unstable_cache(
       .eq("is_published", true)
       .maybeSingle();
     if (artistErr || !artistRow) {
-      if (artistErr) console.error("[queries.getArtist]", artistErr.message);
+      if (artistErr) logError(artistErr, { caller: "queries.getArtist" });
       return null;
     }
     const artist = mapArtist(artistRow as ArtistRow);
@@ -833,7 +831,7 @@ export const getInstrumentals = unstable_cache(
     if (albumId) q = q.eq("album_id", albumId);
     const { data, count, error } = await q;
     if (error) {
-      console.error("[queries.getInstrumentals]", error.message);
+      logError(error, { caller: "queries.getInstrumentals" });
       return { instrumentals: [], totalCount: 0, hasMore: false };
     }
     const instrumentals = ((data ?? []) as InstrumentalRow[]).map(
@@ -858,7 +856,7 @@ export const getInstrumental = unstable_cache(
       .eq("slug", slug)
       .maybeSingle();
     if (error || !data) {
-      if (error) console.error("[queries.getInstrumental]", error.message);
+      if (error) logError(error, { caller: "queries.getInstrumental" });
       return null;
     }
     return mapInstrumental(data as InstrumentalRow);

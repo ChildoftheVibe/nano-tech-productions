@@ -5,7 +5,7 @@ import { motion, type Variants } from "framer-motion";
 import { ExternalLink, Play, Shuffle, ShoppingBag } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { TrackRow } from "@/components/music/TrackRow";
-import { MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
+import { MaybeArtistLink, MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { useCheckoutStore, albumCheckoutItem } from "@/store/checkoutStore";
@@ -232,7 +232,7 @@ export function AlbumDetail({
         </motion.button>
         <motion.button
           onClick={handleBuyAlbum}
-          className="ml-2 flex h-14 items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white"
+          className="ml-2 flex h-14 items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-black"
           style={{ background: "#EB41DF" }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.96 }}
@@ -321,12 +321,12 @@ export function AlbumDetail({
             </h3>
             <div className="flex flex-wrap gap-2">
               {featuredArtists.map((name) => (
-                <span
+                <MaybeArtistLink
                   key={name}
+                  name={name}
+                  slugsByName={artistSlugsByName}
                   className="rounded-full border border-white/15 px-4 py-2 text-xs text-white"
-                >
-                  {name}
-                </span>
+                />
               ))}
             </div>
           </div>

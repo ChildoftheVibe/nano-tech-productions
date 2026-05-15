@@ -159,9 +159,7 @@ export function SearchPageClient() {
       out.push({ kind: "track", href, track: t });
     }
     for (const a of result.artists) {
-      const href = a.slug
-        ? `/artist/${a.slug}`
-        : `/search?q=${encodeURIComponent(a.name)}`;
+      const href = a.slug ? `/artist/${a.slug}` : "#";
       out.push({ kind: "artist", href, artist: a });
     }
     return out;
@@ -417,42 +415,49 @@ export function SearchPageClient() {
                   const key = artist.slug
                     ? `slug:${artist.slug}`
                     : `name:${artist.name}`;
+                  const avatarEl = (
+                    <span
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full font-bold text-black"
+                      style={{ background: "#3DD6C8" }}
+                    >
+                      {artist.profileImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={artist.profileImage}
+                          alt=""
+                          aria-hidden
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        artist.name.charAt(0).toUpperCase()
+                      )}
+                    </span>
+                  );
                   return (
                     <li key={key}>
-                      <Link
-                        href={href}
-                        onClick={() => pushRecent(query)}
-                        className={`flex items-center gap-2 rounded-md p-2 text-sm text-white transition-colors ${
-                          highlighted === flatIndex
-                            ? "bg-white/10"
-                            : "hover:bg-white/5"
-                        }`}
-                      >
-                        <span
-                          className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full font-bold text-black"
-                          style={{ background: "#3DD6C8" }}
+                      {artist.slug ? (
+                        <Link
+                          href={href}
+                          onClick={() => pushRecent(query)}
+                          className={`flex items-center gap-2 rounded-md p-2 text-sm text-white transition-colors ${
+                            highlighted === flatIndex
+                              ? "bg-white/10"
+                              : "hover:bg-white/5"
+                          }`}
                         >
-                          {artist.profileImage ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={artist.profileImage}
-                              alt=""
-                              aria-hidden
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            artist.name.charAt(0).toUpperCase()
-                          )}
+                          {avatarEl}
+                          <span className="min-w-0 flex-1 truncate">{artist.name}</span>
+                        </Link>
+                      ) : (
+                        <span
+                          className={`flex items-center gap-2 rounded-md p-2 text-sm text-white ${
+                            highlighted === flatIndex ? "bg-white/10" : ""
+                          }`}
+                        >
+                          {avatarEl}
+                          <span className="min-w-0 flex-1 truncate">{artist.name}</span>
                         </span>
-                        <span className="min-w-0 flex-1 truncate">
-                          {artist.name}
-                          {artist.slug ? null : (
-                            <span className="ml-1 text-[10px] uppercase tracking-wider text-white/40">
-                              (no page)
-                            </span>
-                          )}
-                        </span>
-                      </Link>
+                      )}
                     </li>
                   );
                 })}
