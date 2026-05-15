@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { logError } from "@/lib/logger";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, Loader2, Lock, Music, X } from "lucide-react";
 import {
@@ -284,7 +285,7 @@ function CheckoutModalContent({
                 )}
               </div>
               {discountError ? (
-                <p className="mt-1 text-xs text-red-300">{discountError}</p>
+                <p role="alert" className="mt-1 text-xs text-red-300">{discountError}</p>
               ) : null}
             </div>
 
@@ -333,7 +334,7 @@ function CheckoutModalContent({
                 options={{ clientId, currency: "USD", intent: "capture" }}
               >
                 {phase.kind === "error" ? (
-                  <div className="mb-3 rounded border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-200">
+                  <div role="alert" className="mb-3 rounded border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-200">
                     {phase.message}
                   </div>
                 ) : null}
@@ -411,7 +412,7 @@ function CheckoutModalContent({
                   }
                 />
                 {phase.kind === "submitting" ? (
-                  <div className="mt-3 flex items-center justify-center gap-2 text-xs text-white/70">
+                  <div role="status" className="mt-3 flex items-center justify-center gap-2 text-xs text-white/70">
                     <Loader2 size={14} className="animate-spin" aria-hidden="true" />
                     Verifying payment…
                   </div>
@@ -498,7 +499,7 @@ function PayPalCheckoutPanel({
 
   if (isPending) {
     return (
-      <div className="flex items-center justify-center gap-2 rounded border border-white/10 bg-black/20 px-3 py-6 text-xs text-white/60">
+      <div role="status" className="flex items-center justify-center gap-2 rounded border border-white/10 bg-black/20 px-3 py-6 text-xs text-white/60">
         <Loader2 size={14} className="animate-spin" aria-hidden="true" />
         Loading PayPal checkout…
       </div>
@@ -516,7 +517,7 @@ function PayPalCheckoutPanel({
           try {
             return await onCreateOrder();
           } catch (err) {
-            console.error("[checkout] createOrder failed:", err);
+            logError(err, { caller: "checkout" });
             throw err;
           }
         }}
@@ -524,7 +525,7 @@ function PayPalCheckoutPanel({
           await onApprove(data.orderID);
         }}
         onError={(err) => {
-          console.error("[checkout] PayPalButtons onError:", err);
+          logError(err, { caller: "checkout" });
           onPayPalError();
         }}
       />

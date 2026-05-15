@@ -164,13 +164,13 @@ export function FullScreenPlayer() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={cover}
-                    alt={currentAlbum?.title ?? currentTrack.title}
+                    alt={`${currentAlbum?.title ?? currentTrack.title} album cover`}
                     className="h-full w-full object-cover"
                     draggable={false}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">
-                    <Music size={48} className="text-white/40" />
+                    <Music size={48} className="text-white/40" aria-hidden="true" />
                   </div>
                 )}
               </div>
@@ -193,6 +193,11 @@ export function FullScreenPlayer() {
                 onChange={(e) => seekTo(Number(e.target.value))}
                 disabled={!duration}
                 aria-label="Seek"
+                role="slider"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={duration > 0 ? Math.round((currentTime / duration) * 100) : 0}
+                aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
                 className="ntv-range h-1 w-full cursor-pointer accent-[#3DD6C8]"
               />
               <div className="mt-1 flex items-center justify-between font-mono text-[11px] tabular-nums text-white/70">
@@ -277,6 +282,11 @@ export function FullScreenPlayer() {
                 value={volume}
                 onChange={(e) => setVolume(Number(e.target.value))}
                 aria-label="Volume"
+                role="slider"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(volume * 100)}
+                aria-valuetext={`${Math.round(volume * 100)} percent`}
                 className="ntv-range h-1 flex-1 cursor-pointer accent-[#3DD6C8]"
               />
               <button

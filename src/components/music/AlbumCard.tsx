@@ -100,7 +100,7 @@ export function AlbumCard({
         className={`${optimizedSrc ? "hidden" : "flex"} absolute inset-0 h-full w-full items-center justify-center`}
         style={{ background: album.bgColor, color: album.accentColor }}
       >
-        <Music size={Math.max(16, Math.floor(px / 4))} />
+        <Music size={Math.max(16, Math.floor(px / 4))} aria-hidden="true" />
       </div>
       {showHoverPlay && onPlay ? (
         <button

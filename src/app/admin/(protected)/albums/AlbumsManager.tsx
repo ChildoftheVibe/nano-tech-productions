@@ -131,12 +131,12 @@ export function AlbumsManager({
             <table className="w-full text-sm">
               <thead className="bg-black/20 text-left text-xs uppercase tracking-wider text-white/50">
                 <tr>
-                  <th className="px-4 py-3">Cover</th>
-                  <th className="px-4 py-3">Title</th>
-                  <th className="px-4 py-3">Release</th>
-                  <th className="px-4 py-3">Tracks</th>
-                  <th className="px-4 py-3">Published</th>
-                  <th className="px-4 py-3"></th>
+                  <th scope="col" className="px-4 py-3">Cover</th>
+                  <th scope="col" className="px-4 py-3">Title</th>
+                  <th scope="col" className="px-4 py-3">Release</th>
+                  <th scope="col" className="px-4 py-3">Tracks</th>
+                  <th scope="col" className="px-4 py-3">Published</th>
+                  <th scope="col" className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -182,6 +182,8 @@ export function AlbumsManager({
                         <button
                           onClick={() => onTogglePublish(album)}
                           disabled={pending}
+                          aria-pressed={album.is_published}
+                          aria-label={`${album.is_published ? "Unpublish" : "Publish"} ${album.title}`}
                           className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider transition-colors ${
                             album.is_published
                               ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"

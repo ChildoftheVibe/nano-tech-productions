@@ -67,6 +67,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
       className={`group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-md px-3 py-2 transition-colors duration-150 hover:bg-white/[0.04] md:grid-cols-[40px_1fr_120px_80px_60px] md:gap-4 md:px-4 ${
         isActive ? "bg-white/[0.04]" : ""
       }`}
+      aria-label={`Track ${track.trackNumber}: ${track.title}`}
     >
       <button
         onClick={handleClick}
@@ -180,6 +181,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
 
       <button
         onClick={handleBuy}
+        aria-label={`Buy ${track.title} for $${track.price.toFixed(2)}`}
         className="hidden rounded-full border border-[#3DD6C8] px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#3DD6C8] opacity-0 transition-opacity duration-150 hover:bg-[#3DD6C8]/10 group-hover:opacity-100 md:block"
       >
         Buy

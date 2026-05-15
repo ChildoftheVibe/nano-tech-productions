@@ -162,13 +162,13 @@ export function TracksManager({
             <table className="w-full text-sm">
               <thead className="bg-black/20 text-left text-xs uppercase tracking-wider text-white/50">
                 <tr>
-                  <th className="px-4 py-3">#</th>
-                  <th className="px-4 py-3">Title</th>
-                  <th className="px-4 py-3">Album</th>
-                  <th className="px-4 py-3">Price</th>
-                  <th className="px-4 py-3">Downloadable</th>
-                  <th className="px-4 py-3">Published</th>
-                  <th className="px-4 py-3"></th>
+                  <th scope="col" className="px-4 py-3">#</th>
+                  <th scope="col" className="px-4 py-3">Title</th>
+                  <th scope="col" className="px-4 py-3">Album</th>
+                  <th scope="col" className="px-4 py-3">Price</th>
+                  <th scope="col" className="px-4 py-3">Downloadable</th>
+                  <th scope="col" className="px-4 py-3">Published</th>
+                  <th scope="col" className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -199,6 +199,8 @@ export function TracksManager({
                         <button
                           onClick={() => onTogglePublish(track)}
                           disabled={pending}
+                          aria-pressed={track.is_published}
+                          aria-label={`${track.is_published ? "Unpublish" : "Publish"} ${track.title}`}
                           className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider transition-colors ${
                             track.is_published
                               ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"

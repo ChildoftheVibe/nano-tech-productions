@@ -237,7 +237,7 @@ export function ArtistsManager({ initialArtists, allTracks, allAlbums }: Props) 
       </div>
 
       {error ? (
-        <p className="mb-4 rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+        <p role="alert" className="mb-4 rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
           {error}
         </p>
       ) : null}
@@ -255,16 +255,16 @@ export function ArtistsManager({ initialArtists, allTracks, allAlbums }: Props) 
           <table className="w-full text-sm">
             <thead className="text-[11px] font-bold uppercase tracking-wider text-white/50">
               <tr className="border-b border-white/10">
-                <th className="px-2 py-2 text-left" />
-                <th className="px-2 py-2 text-left">Photo</th>
-                <th className="px-2 py-2 text-left">Name</th>
-                <th className="px-2 py-2 text-left">Role</th>
-                <th className="px-2 py-2 text-right">Tracks</th>
-                <th className="px-2 py-2 text-right">Albums</th>
-                <th className="px-2 py-2 text-center">Featured</th>
-                <th className="px-2 py-2 text-center">Published</th>
-                <th className="px-2 py-2 text-right">Order</th>
-                <th className="px-2 py-2 text-right">Actions</th>
+                <th scope="col" className="px-2 py-2 text-left" />
+                <th scope="col" className="px-2 py-2 text-left">Photo</th>
+                <th scope="col" className="px-2 py-2 text-left">Name</th>
+                <th scope="col" className="px-2 py-2 text-left">Role</th>
+                <th scope="col" className="px-2 py-2 text-right">Tracks</th>
+                <th scope="col" className="px-2 py-2 text-right">Albums</th>
+                <th scope="col" className="px-2 py-2 text-center">Featured</th>
+                <th scope="col" className="px-2 py-2 text-center">Published</th>
+                <th scope="col" className="px-2 py-2 text-right">Order</th>
+                <th scope="col" className="px-2 py-2 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -298,7 +298,7 @@ export function ArtistsManager({ initialArtists, allTracks, allAlbums }: Props) 
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={artist.profileImage}
-                            alt={artist.name}
+                            alt={`${artist.name} profile photo`}
                             className="h-full w-full object-cover"
                           />
                         ) : (
@@ -324,6 +324,8 @@ export function ArtistsManager({ initialArtists, allTracks, allAlbums }: Props) 
                         type="button"
                         onClick={() => onToggle(artist, "isFeatured")}
                         disabled={isPending}
+                        aria-pressed={artist.isFeatured}
+                        aria-label={`${artist.isFeatured ? "Unfeature" : "Feature"} ${artist.name}`}
                         className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                           artist.isFeatured
                             ? "bg-[#EB41DF]/20 text-[#EB41DF]"
@@ -338,6 +340,8 @@ export function ArtistsManager({ initialArtists, allTracks, allAlbums }: Props) 
                         type="button"
                         onClick={() => onToggle(artist, "isPublished")}
                         disabled={isPending}
+                        aria-pressed={artist.isPublished}
+                        aria-label={`${artist.isPublished ? "Unpublish" : "Publish"} ${artist.name}`}
                         className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                           artist.isPublished
                             ? "bg-[#3DD6C8]/20 text-[#3DD6C8]"

@@ -52,7 +52,7 @@ export function ArtistCard({ artist, size = "md" }: Props) {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={artist.profileImage}
-              alt={artist.name}
+              alt={`${artist.name} profile photo`}
               className="h-full w-full object-cover"
             />
           ) : (
