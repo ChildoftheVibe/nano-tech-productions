@@ -46,7 +46,7 @@ const TWENTY_FIVE_MB = 25 * 1024 * 1024;
 
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
-  skipWaiting: false,
+  skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
   cacheId: CACHE_PREFIX,
