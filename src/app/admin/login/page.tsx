@@ -3,16 +3,30 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+/** Only allow redirects to internal /admin paths — never external URLs. */
+function sanitizeRedirect(raw: string | null): string {
+  if (!raw) return "/admin";
+  try {
+    // If it parses as an absolute URL it's external → reject.
+    new URL(raw);
+    return "/admin";
+  } catch {
+    // Relative path — must start with /admin.
+    return raw.startsWith("/admin") ? raw : "/admin";
+  }
+}
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const search = useSearchParams();
-  const redirectTo = search.get("redirect") ?? "/admin";
+  const safeRedirect = sanitizeRedirect(search.get("redirect"));
 
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
@@ -31,10 +45,51 @@ export default function AdminLoginPage() {
         );
         return;
       }
-      router.replace(redirectTo);
+      router.replace(safeRedirect);
       router.refresh();
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function onBiometricLogin() {
+    setBiometricLoading(true);
+    setError(null);
+    try {
+      const optRes = await fetch("/api/admin/auth/webauthn/auth-options", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+      });
+      if (!optRes.ok) {
+        setError("Biometric login is not set up yet. Use your password first.");
+        return;
+      }
+      const options = await optRes.json();
+
+      const { startAuthentication } = await import("@simplewebauthn/browser");
+      const authResult = await startAuthentication({ optionsJSON: options });
+
+      const verRes = await fetch("/api/admin/auth/webauthn/auth-verify", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(authResult),
+      });
+      if (!verRes.ok) {
+        setError("Biometric authentication failed.");
+        return;
+      }
+      router.replace(safeRedirect);
+      router.refresh();
+    } catch (err) {
+      if (err instanceof Error && err.name === "NotAllowedError") {
+        setError("Biometric authentication was cancelled.");
+      } else if (err instanceof Error && err.name === "NotSupportedError") {
+        setError("Biometric authentication is not supported on this device.");
+      } else {
+        setError("Biometric authentication failed. Use your password instead.");
+      }
+    } finally {
+      setBiometricLoading(false);
     }
   }
 
@@ -83,6 +138,42 @@ export default function AdminLoginPage() {
           className="w-full rounded bg-[#3DD6C8] py-2.5 font-medium text-black transition-opacity disabled:opacity-50"
         >
           {submitting ? "Signing in…" : "Sign in"}
+        </button>
+
+        <div className="relative flex items-center gap-3">
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="text-xs text-white/30">or</span>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <button
+          type="button"
+          onClick={onBiometricLogin}
+          disabled={biometricLoading}
+          className="flex w-full items-center justify-center gap-2 rounded border border-white/15 bg-white/5 py-2.5 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 disabled:opacity-50"
+        >
+          {biometricLoading ? (
+            "Authenticating…"
+          ) : (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                className="h-4 w-4"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M7.864 4.243A7.5 7.5 0 0 1 19.5 10.5c0 2.92-.556 5.709-1.568 8.268M5.742 6.364A7.465 7.465 0 0 0 4.5 10.5a7.464 7.464 0 0 1-1.15 3.993m1.989 3.559A11.954 11.954 0 0 0 10.5 10.5a3.5 3.5 0 1 1 7 0c0 .684-.1 1.345-.28 1.97M5.004 12.682a7.47 7.47 0 0 1-.004-.182A7.5 7.5 0 0 1 15.75 5.25l.003.003"
+                />
+              </svg>
+              Sign in with Face ID / Phone Password
+            </>
+          )}
         </button>
       </form>
     </main>

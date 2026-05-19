@@ -1,6 +1,7 @@
 import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logError, logInfo } from "@/lib/logger";
 import type { TrackInput } from "@/lib/db-types";
 
 function revalidateTrackTags() {
@@ -51,7 +52,10 @@ export async function GET() {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (error) return Response.json({ error: error.message }, { status: 500 });
+  if (error) {
+    logError(error, { caller: "admin/tracks GET" });
+    return Response.json({ error: "internal_error" }, { status: 500 });
+  }
   return Response.json({ tracks: data });
 }
 
@@ -71,10 +75,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "title is required" }, { status: 400 });
   }
 
-  console.log("[admin/tracks POST] input audio fields:", {
+  logInfo("admin/tracks POST audio fields", {
     audio_url: input.audio_url,
     public_audio_id: input.public_audio_id,
-    vault_audio_id: input.vault_audio_id,
+    vault_audio_id: !!input.vault_audio_id,
   });
 
   const { data, error } = await supabaseAdmin
@@ -83,14 +87,12 @@ export async function POST(request: Request) {
     .select("*")
     .single();
 
-  if (error) return Response.json({ error: error.message }, { status: 400 });
+  if (error) {
+    logError(error, { caller: "admin/tracks POST" });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
 
-  console.log("[admin/tracks POST] saved audio fields:", {
-    id: data.id,
-    audio_url: data.audio_url,
-    public_audio_id: data.public_audio_id,
-    vault_audio_id: data.vault_audio_id,
-  });
+  logInfo("admin/tracks POST saved", { id: data.id });
 
   revalidateTrackTags();
   return Response.json({ track: data }, { status: 201 });

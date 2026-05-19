@@ -141,6 +141,50 @@ export type CaptureResult = {
   raw: unknown;
 };
 
+/**
+ * Verifies a PayPal webhook signature by calling PayPal's notification verify API.
+ * Returns true only when PayPal confirms the signature is genuine.
+ * PAYPAL_WEBHOOK_ID must be set to the webhook ID from the PayPal dashboard.
+ */
+export async function verifyWebhookSignature(
+  headers: Headers,
+  rawBody: string,
+): Promise<boolean> {
+  const webhookId = process.env.PAYPAL_WEBHOOK_ID;
+  if (!webhookId) return false;
+
+  let token: string;
+  try {
+    token = await getAccessToken();
+  } catch {
+    return false;
+  }
+
+  const payload = {
+    auth_algo: headers.get("paypal-auth-algo"),
+    cert_url: headers.get("paypal-cert-url"),
+    transmission_id: headers.get("paypal-transmission-id"),
+    transmission_sig: headers.get("paypal-transmission-sig"),
+    transmission_time: headers.get("paypal-transmission-time"),
+    webhook_id: webhookId,
+    webhook_event: JSON.parse(rawBody) as unknown,
+  };
+
+  const res = await fetch(`${BASE_URL}/v1/notifications/verify-webhook-signature`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  if (!res.ok) return false;
+  const json = (await res.json()) as { verification_status?: string };
+  return json.verification_status === "SUCCESS";
+}
+
 export async function capturePayPalOrder(orderId: string): Promise<CaptureResult> {
   const token = await getAccessToken();
   const res = await fetch(`${BASE_URL}/v2/checkout/orders/${orderId}/capture`, {

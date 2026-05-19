@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logError } from "@/lib/logger";
 import type { DiscountInput } from "@/lib/db-types";
 
 const DISCOUNT_FIELDS = [
@@ -49,7 +50,10 @@ export async function PATCH(
     .select("*")
     .single();
 
-  if (error) return Response.json({ error: error.message }, { status: 400 });
+  if (error) {
+    logError(error, { caller: "admin/discounts PATCH" });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
   return Response.json({ discount: data });
 }
 
@@ -65,6 +69,9 @@ export async function DELETE(
     .from("discount_codes")
     .delete()
     .eq("id", id);
-  if (error) return Response.json({ error: error.message }, { status: 400 });
+  if (error) {
+    logError(error, { caller: "admin/discounts DELETE" });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
   return Response.json({ ok: true });
 }

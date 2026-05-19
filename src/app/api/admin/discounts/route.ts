@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logError } from "@/lib/logger";
 import type { DiscountInput } from "@/lib/db-types";
 
 const DISCOUNT_FIELDS = [
@@ -34,7 +35,10 @@ export async function GET() {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (error) return Response.json({ error: error.message }, { status: 500 });
+  if (error) {
+    logError(error, { caller: "admin/discounts GET" });
+    return Response.json({ error: "internal_error" }, { status: 500 });
+  }
   return Response.json({ discounts: data });
 }
 
@@ -63,6 +67,9 @@ export async function POST(request: Request) {
     .select("*")
     .single();
 
-  if (error) return Response.json({ error: error.message }, { status: 400 });
+  if (error) {
+    logError(error, { caller: "admin/discounts POST" });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
   return Response.json({ discount: data }, { status: 201 });
 }

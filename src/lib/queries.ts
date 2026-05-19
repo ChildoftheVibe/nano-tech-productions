@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { supabase } from "./supabase";
-import { logError } from "@/lib/logger";
+import { logError, logInfo } from "@/lib/logger";
 import {
   getInstrumentalPreviewUrl,
   getInstrumentalStreamUrl,
@@ -245,13 +245,7 @@ export const getPlaylistTracks = unstable_cache(
     }
     const rows = (data ?? []) as TrackRow[];
     const tracks = rows.map(mapTrack).filter((t) => !!t.audioUrl);
-    console.log(
-      "[queries.getPlaylistTracks] returning",
-      tracks.length,
-      "playable tracks (of",
-      rows.length,
-      "published candidates)",
-    );
+    logInfo("[queries] getPlaylistTracks", { playable: tracks.length, total: rows.length });
     return tracks;
   },
   ["playlist-tracks"],

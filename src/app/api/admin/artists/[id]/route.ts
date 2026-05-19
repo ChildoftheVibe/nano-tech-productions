@@ -131,10 +131,8 @@ export async function GET(
   ]);
 
   if (artistRes.error || !artistRes.data) {
-    return Response.json(
-      { error: artistRes.error?.message ?? "not_found" },
-      { status: 404 },
-    );
+    if (artistRes.error) logError(artistRes.error, { caller: "admin/artists GET", id });
+    return Response.json({ error: "not_found" }, { status: 404 });
   }
 
   type TrackJoin = {
@@ -217,11 +215,10 @@ export async function PATCH(
     .select("*")
     .single();
 
-  if (error || !data)
-    return Response.json(
-      { error: error?.message ?? "update_failed" },
-      { status: 400 },
-    );
+  if (error || !data) {
+    logError(error ?? new Error("update_failed"), { caller: "admin/artists PATCH", id });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
 
   await syncAssociations(data.id, tracks, albums);
 
@@ -255,7 +252,10 @@ export async function DELETE(
     .maybeSingle();
 
   const { error } = await supabaseAdmin.from("artists").delete().eq("id", id);
-  if (error) return Response.json({ error: error.message }, { status: 400 });
+  if (error) {
+    logError(error, { caller: "admin/artists DELETE", id });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
 
   const h = await headers();
   await logAuditEvent({

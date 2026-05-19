@@ -112,7 +112,10 @@ export async function GET() {
     .order("sort_order", { ascending: true })
     .order("name", { ascending: true });
 
-  if (error) return Response.json({ error: error.message }, { status: 500 });
+  if (error) {
+    logError(error, { caller: "admin/artists GET" });
+    return Response.json({ error: "internal_error" }, { status: 500 });
+  }
 
   type Row = {
     id: string;
@@ -179,11 +182,10 @@ export async function POST(request: Request) {
     .select("*")
     .single();
 
-  if (error || !data)
-    return Response.json(
-      { error: error?.message ?? "insert_failed" },
-      { status: 400 },
-    );
+  if (error || !data) {
+    logError(error ?? new Error("insert_failed"), { caller: "admin/artists POST" });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
 
   await syncAssociations(data.id, trackAssoc, albumAssoc);
 

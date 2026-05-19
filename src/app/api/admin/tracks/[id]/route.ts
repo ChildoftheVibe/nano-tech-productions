@@ -1,6 +1,7 @@
 import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logError, logInfo } from "@/lib/logger";
 import type { TrackInput } from "@/lib/db-types";
 
 function revalidateTrackTags() {
@@ -64,13 +65,9 @@ export async function PATCH(
     "public_audio_id" in input ||
     "vault_audio_id" in input
   ) {
-    console.log("[admin/tracks PATCH] input audio fields:", {
+    logInfo("admin/tracks PATCH audio fields updated", {
       id,
-      audio_url: "audio_url" in input ? input.audio_url : "(unchanged)",
-      public_audio_id:
-        "public_audio_id" in input ? input.public_audio_id : "(unchanged)",
-      vault_audio_id:
-        "vault_audio_id" in input ? input.vault_audio_id : "(unchanged)",
+      has_vault: !!input.vault_audio_id,
     });
   }
 
@@ -81,19 +78,9 @@ export async function PATCH(
     .select("*")
     .single();
 
-  if (error) return Response.json({ error: error.message }, { status: 400 });
-
-  if (
-    "audio_url" in input ||
-    "public_audio_id" in input ||
-    "vault_audio_id" in input
-  ) {
-    console.log("[admin/tracks PATCH] saved audio fields:", {
-      id: data.id,
-      audio_url: data.audio_url,
-      public_audio_id: data.public_audio_id,
-      vault_audio_id: data.vault_audio_id,
-    });
+  if (error) {
+    logError(error, { caller: "admin/tracks PATCH", id });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
   }
 
   revalidateTrackTags();
@@ -109,7 +96,10 @@ export async function DELETE(
 
   const { id } = await params;
   const { error } = await supabaseAdmin.from("tracks").delete().eq("id", id);
-  if (error) return Response.json({ error: error.message }, { status: 400 });
+  if (error) {
+    logError(error, { caller: "admin/tracks DELETE", id });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
   revalidateTrackTags();
   return Response.json({ ok: true });
 }

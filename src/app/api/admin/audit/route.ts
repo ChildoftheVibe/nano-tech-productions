@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,7 +26,8 @@ export async function GET(req: Request) {
 
   const { data, error } = await q;
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500, headers: noStore });
+    logError(error, { caller: "admin/audit GET" });
+    return NextResponse.json({ error: "internal_error" }, { status: 500, headers: noStore });
   }
   return NextResponse.json({ entries: data ?? [] }, { headers: noStore });
 }

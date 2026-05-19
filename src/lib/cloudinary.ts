@@ -1,6 +1,7 @@
 import "server-only";
 
 import { v2 as cloudinary } from "cloudinary";
+import { logInfo } from "./logger";
 
 export const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
 const apiKey = process.env.CLOUDINARY_API_KEY ?? "";
@@ -32,7 +33,7 @@ export function getPublicStreamingUrl(publicId: string): string {
   if (!publicId) return "";
   if (/^https?:\/\//.test(publicId)) return publicId;
   const url = `https://res.cloudinary.com/${cloudName}/video/upload/f_mp3,br_320k/${PUBLIC_FOLDER}/${publicId}`;
-  console.log("[cloudinary.getPublicStreamingUrl]", publicId, "→", url);
+  logInfo("[cloudinary] getPublicStreamingUrl", { publicId, url });
   return url;
 }
 
@@ -60,7 +61,7 @@ export function getPurchaseDownloadUrl(publicId: string, orderId: string): strin
  */
 export function getAdminWavUrl(publicId: string): string {
   if (!publicId || !cloudName || !apiSecret) return "";
-  const expiresAt = Math.floor(Date.now() / 1000) + 60 * 30;
+  const expiresAt = Math.floor(Date.now() / 1000) + 60 * 5;
   return cloudinary.url(`${VAULT_FOLDER}/${publicId}`, {
     resource_type: "video",
     type: "authenticated",
@@ -77,7 +78,7 @@ export function getAdminWavUrl(publicId: string): string {
  */
 export function getAdminWavDownloadUrl(publicId: string): string {
   if (!publicId || !cloudName || !apiSecret) return "";
-  const expiresAt = Math.floor(Date.now() / 1000) + 60 * 15;
+  const expiresAt = Math.floor(Date.now() / 1000) + 60 * 5;
   return cloudinary.url(`${VAULT_FOLDER}/${publicId}`, {
     resource_type: "video",
     type: "authenticated",
@@ -173,7 +174,7 @@ export function getInstrumentalDownloadUrl(
  */
 export function getInstrumentalVaultWavUrl(publicId: string): string {
   if (!publicId || !cloudName || !apiSecret) return "";
-  const expiresAt = Math.floor(Date.now() / 1000) + 60 * 30;
+  const expiresAt = Math.floor(Date.now() / 1000) + 60 * 5;
   return cloudinary.url(`${INSTRUMENTAL_VAULT_FOLDER}/${publicId}`, {
     resource_type: "video",
     type: "authenticated",

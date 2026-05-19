@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +14,10 @@ export async function GET() {
     .select("id, track_id, position, is_active, added_at")
     .order("position", { ascending: true, nullsFirst: false });
 
-  if (error) return Response.json({ error: error.message }, { status: 500 });
+  if (error) {
+    logError(error, { caller: "admin/playlist GET" });
+    return Response.json({ error: "internal_error" }, { status: 500 });
+  }
   return Response.json({ entries: data ?? [] });
 }
 
@@ -50,7 +54,10 @@ export async function POST(request: Request) {
         .from("playlist")
         .update({ is_active: true })
         .eq("id", existing.id);
-      if (error) return Response.json({ error: error.message }, { status: 400 });
+      if (error) {
+        logError(error, { caller: "admin/playlist add reactivate" });
+        return Response.json({ error: "operation_failed" }, { status: 400 });
+      }
       return Response.json({ ok: true, entryId: existing.id });
     }
 
@@ -67,7 +74,10 @@ export async function POST(request: Request) {
       .insert({ track_id: trackId, position: nextPos, is_active: true })
       .select("id")
       .single();
-    if (error) return Response.json({ error: error.message }, { status: 400 });
+    if (error) {
+      logError(error, { caller: "admin/playlist add insert" });
+      return Response.json({ error: "operation_failed" }, { status: 400 });
+    }
     return Response.json({ ok: true, entryId: data.id }, { status: 201 });
   }
 
@@ -77,12 +87,18 @@ export async function POST(request: Request) {
       .select("id")
       .eq("is_published", true)
       .not("audio_url", "is", null);
-    if (tErr) return Response.json({ error: tErr.message }, { status: 500 });
+    if (tErr) {
+      logError(tErr, { caller: "admin/playlist add_all_published tracks" });
+      return Response.json({ error: "internal_error" }, { status: 500 });
+    }
 
     const { data: existing, error: pErr } = await supabaseAdmin
       .from("playlist")
       .select("id, track_id, position");
-    if (pErr) return Response.json({ error: pErr.message }, { status: 500 });
+    if (pErr) {
+      logError(pErr, { caller: "admin/playlist add_all_published existing" });
+      return Response.json({ error: "internal_error" }, { status: 500 });
+    }
 
     const existingByTrack = new Map<
       string,
@@ -115,11 +131,17 @@ export async function POST(request: Request) {
         .from("playlist")
         .update({ is_active: true })
         .in("id", toReactivate);
-      if (error) return Response.json({ error: error.message }, { status: 400 });
+      if (error) {
+        logError(error, { caller: "admin/playlist reactivate" });
+        return Response.json({ error: "operation_failed" }, { status: 400 });
+      }
     }
     if (toInsert.length > 0) {
       const { error } = await supabaseAdmin.from("playlist").insert(toInsert);
-      if (error) return Response.json({ error: error.message }, { status: 400 });
+      if (error) {
+        logError(error, { caller: "admin/playlist bulk insert" });
+        return Response.json({ error: "operation_failed" }, { status: 400 });
+      }
     }
 
     return Response.json({
@@ -137,15 +159,16 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-    // Re-number positions sequentially. Run sequentially to preserve order
-    // semantics regardless of return ordering.
     for (let i = 0; i < order.length; i++) {
       const id = order[i] as string;
       const { error } = await supabaseAdmin
         .from("playlist")
         .update({ position: i + 1 })
         .eq("id", id);
-      if (error) return Response.json({ error: error.message }, { status: 400 });
+      if (error) {
+        logError(error, { caller: "admin/playlist reorder", id });
+        return Response.json({ error: "operation_failed" }, { status: 400 });
+      }
     }
     return Response.json({ ok: true });
   }

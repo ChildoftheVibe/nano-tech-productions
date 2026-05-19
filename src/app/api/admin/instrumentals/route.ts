@@ -2,6 +2,7 @@ import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
+import { logError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -53,7 +54,10 @@ export async function GET() {
     .from("instrumentals")
     .select("*")
     .order("created_at", { ascending: false });
-  if (error) return Response.json({ error: error.message }, { status: 500 });
+  if (error) {
+    logError(error, { caller: "admin/instrumentals GET" });
+    return Response.json({ error: "internal_error" }, { status: 500 });
+  }
   return Response.json({ instrumentals: data });
 }
 
@@ -81,7 +85,10 @@ export async function POST(request: Request) {
     .insert(input)
     .select("*")
     .single();
-  if (error) return Response.json({ error: error.message }, { status: 400 });
+  if (error) {
+    logError(error, { caller: "admin/instrumentals POST" });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
 
   await logAuditEvent({
     eventType: "instrumental_created",

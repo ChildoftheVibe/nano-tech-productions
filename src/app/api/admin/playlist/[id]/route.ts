@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +38,10 @@ export async function PATCH(
     .select("id, track_id, position, is_active")
     .single();
 
-  if (error) return Response.json({ error: error.message }, { status: 400 });
+  if (error) {
+    logError(error, { caller: "admin/playlist PATCH", id });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
   return Response.json({ entry: data });
 }
 
@@ -50,6 +54,9 @@ export async function DELETE(
 
   const { id } = await params;
   const { error } = await supabaseAdmin.from("playlist").delete().eq("id", id);
-  if (error) return Response.json({ error: error.message }, { status: 400 });
+  if (error) {
+    logError(error, { caller: "admin/playlist DELETE", id });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
   return Response.json({ ok: true });
 }

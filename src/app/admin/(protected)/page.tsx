@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase";
+import { RegisterPasskey } from "@/components/admin/RegisterPasskey";
 
 export const dynamic = "force-dynamic";
 
@@ -148,6 +149,10 @@ export default async function AdminDashboard() {
   return (
     <div className="p-8">
       <h1 className="mb-6 text-2xl font-semibold">Dashboard</h1>
+
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <RegisterPasskey />
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

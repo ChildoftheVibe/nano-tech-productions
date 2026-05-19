@@ -2,6 +2,7 @@ import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
+import { logError } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,7 +61,10 @@ export async function GET(
     .select("*")
     .eq("id", id)
     .maybeSingle();
-  if (error) return Response.json({ error: error.message }, { status: 500 });
+  if (error) {
+    logError(error, { caller: "admin/instrumentals GET", id });
+    return Response.json({ error: "internal_error" }, { status: 500 });
+  }
   if (!data) return Response.json({ error: "not_found" }, { status: 404 });
   return Response.json({ instrumental: data });
 }
@@ -94,7 +98,10 @@ export async function PATCH(
     .eq("id", id)
     .select("*")
     .single();
-  if (error) return Response.json({ error: error.message }, { status: 400 });
+  if (error) {
+    logError(error, { caller: "admin/instrumentals PATCH", id });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
 
   await logAuditEvent({
     eventType: "instrumental_updated",
@@ -120,7 +127,10 @@ export async function DELETE(
     .from("instrumentals")
     .delete()
     .eq("id", id);
-  if (error) return Response.json({ error: error.message }, { status: 400 });
+  if (error) {
+    logError(error, { caller: "admin/instrumentals DELETE", id });
+    return Response.json({ error: "operation_failed" }, { status: 400 });
+  }
 
   await logAuditEvent({
     eventType: "instrumental_deleted",

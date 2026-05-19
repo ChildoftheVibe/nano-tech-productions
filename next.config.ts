@@ -113,9 +113,47 @@ const nextConfig: NextConfig = {
     return config;
   },
   async headers() {
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/$/, "");
+    const corsHeaders = siteUrl
+      ? [
+          { key: "Access-Control-Allow-Origin", value: siteUrl },
+          { key: "Access-Control-Allow-Credentials", value: "true" },
+          { key: "Access-Control-Allow-Methods", value: "GET, POST, PATCH, DELETE, OPTIONS" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type" },
+          { key: "Vary", value: "Origin" },
+        ]
+      : [];
+
     return [
       { source: "/:path*", headers: baseSecurityHeaders },
-      { source: "/api/:path*", headers: apiNoStoreHeaders },
+      // Apply no-store + CORS to all API routes; specific overrides follow below.
+      { source: "/api/:path*", headers: [...apiNoStoreHeaders, ...corsHeaders] },
+      // Public read-only APIs that benefit from CDN caching (must come AFTER the
+      // catch-all above so their Cache-Control overrides the no-store default).
+      {
+        source: "/api/albums",
+        headers: [
+          { key: "Cache-Control", value: "public, s-maxage=300, stale-while-revalidate=60" },
+        ],
+      },
+      {
+        source: "/api/playlist",
+        headers: [
+          { key: "Cache-Control", value: "public, s-maxage=60, stale-while-revalidate=30" },
+        ],
+      },
+      {
+        source: "/api/search",
+        headers: [
+          { key: "Cache-Control", value: "public, s-maxage=60, stale-while-revalidate=300" },
+        ],
+      },
+      {
+        source: "/api/instrumentals",
+        headers: [
+          { key: "Cache-Control", value: "public, s-maxage=300, stale-while-revalidate=60" },
+        ],
+      },
       { source: "/admin/:path*", headers: adminNoIndexHeaders },
     ];
   },

@@ -3,7 +3,7 @@ import { isAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getAdminWavUrl } from "@/lib/cloudinary";
 import { clientIpFromHeaders, logAuditEvent } from "@/lib/audit";
-import { logError } from "@/lib/logger";
+import { logError, logInfo } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,10 +34,9 @@ export async function GET(
 ) {
   const { trackId } = await params;
   const hasRange = req.headers.has("range");
-  console.log("[wav/stream] GET", { trackId, range: hasRange });
+  logInfo("[wav/stream] GET", { trackId, range: hasRange });
 
   if (!(await isAdmin())) {
-    console.warn("[wav/stream] 401 unauthorized", { trackId });
     return NextResponse.json(
       { error: "unauthorized" },
       { status: 401, headers: { "cache-control": "no-store" } },
@@ -51,17 +50,13 @@ export async function GET(
     .maybeSingle();
 
   if (error || !track) {
-    console.warn("[wav/stream] 404 track lookup failed", {
-      trackId,
-      error: error?.message,
-    });
+    if (error) logError(error, { caller: "wav/stream GET", trackId });
     return NextResponse.json(
       { error: "not_found" },
       { status: 404, headers: { "cache-control": "no-store" } },
     );
   }
   if (!track.vault_audio_id) {
-    console.warn("[wav/stream] 404 track has no vault_audio_id", { trackId });
     return NextResponse.json(
       { error: "no_vault_file" },
       { status: 404, headers: { "cache-control": "no-store" } },
@@ -77,12 +72,7 @@ export async function GET(
     );
   }
 
-  console.log("[wav/stream] proxying", {
-    trackId,
-    title: track.title,
-    vaultId: track.vault_audio_id,
-    signedUrl,
-  });
+  logInfo("[wav/stream] proxying", { trackId, title: track.title });
 
   const upstreamHeaders: Record<string, string> = {};
   const range = req.headers.get("range");
