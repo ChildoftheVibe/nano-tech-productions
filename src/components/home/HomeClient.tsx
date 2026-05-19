@@ -110,9 +110,9 @@ export function HomeClient({
   };
 
   return (
-    <div className="px-4 pt-2 pb-12 md:px-8">
+    <div className="px-4 md:px-8 pt-4 md:pt-6 pb-12 md:pb-16">
       <motion.section
-        className="pt-1 pb-4 md:pt-2 md:pb-6"
+        className="pb-8 md:pb-12"
         initial={animateFirst ? { opacity: 0, y: 8 } : false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
@@ -120,9 +120,9 @@ export function HomeClient({
         <h1 className="text-2xl font-bold text-white md:text-4xl">{greeting}</h1>
       </motion.section>
 
-      <section className="pb-10">
+      <section className="pb-12 md:pb-16">
         <motion.div
-          className="mb-4 flex items-baseline justify-between"
+          className="mb-6 md:mb-8 flex items-baseline justify-between"
           initial={animateFirst ? "hidden" : false}
           animate="visible"
           variants={sectionHeader}
@@ -136,7 +136,7 @@ export function HomeClient({
         ) : (
           <div className="-mx-4 overflow-x-auto px-4 md:-mx-8 md:px-8">
             <motion.div
-              className="flex snap-x snap-mandatory gap-4 pb-2"
+              className="flex snap-x snap-mandatory gap-6 md:gap-8 pb-2"
               variants={containerStagger}
               initial={animateFirst ? "hidden" : false}
               animate="visible"
@@ -172,9 +172,9 @@ export function HomeClient({
       </section>
 
       {latest ? (
-        <section className="pb-10">
+        <section className="pb-12 md:pb-16">
           <motion.div
-            className="mb-4 flex items-baseline justify-between"
+            className="mb-6 md:mb-8 flex items-baseline justify-between"
             initial={animateFirst ? "hidden" : false}
             animate="visible"
             variants={sectionHeader}
@@ -191,7 +191,7 @@ export function HomeClient({
               border: "1px solid rgba(255,255,255,0.06)",
             }}
           >
-            <div className="flex flex-col gap-4 p-4 md:flex-row md:items-end md:gap-8 md:p-8">
+            <div className="flex flex-col gap-6 p-6 md:flex-row md:items-end md:gap-8 md:p-8 lg:p-12">
               <motion.div
                 className="hidden md:block"
                 initial={animateFirst ? { scale: 0.95, opacity: 0 } : false}
@@ -209,13 +209,13 @@ export function HomeClient({
                 <AlbumCard album={latest} size="md" href={`/album/${latest.slug}`} />
               </motion.div>
               <div className="min-w-0 flex-1">
-                <div className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#B3B3B3]">
+                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#B3B3B3]">
                   Latest Release
                 </div>
-                <h3 className="mb-2 text-2xl font-extrabold text-white md:text-5xl">
+                <h3 className="mb-3 text-2xl font-extrabold text-white md:text-5xl">
                   {latest.title}
                 </h3>
-                <div className="mb-3 text-sm text-[#B3B3B3]">
+                <div className="mb-4 text-sm text-[#B3B3B3]">
                   Jhodge ·{" "}
                   {latest.releaseDate
                     ? new Date(latest.releaseDate).toLocaleDateString(undefined, {
@@ -225,10 +225,10 @@ export function HomeClient({
                       })
                     : ""}
                 </div>
-                <p className="mb-5 line-clamp-2 max-w-2xl text-sm text-white/80">
+                <p className="mb-6 line-clamp-2 max-w-2xl text-sm text-white/80">
                   {latest.description}
                 </p>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-4">
                   <motion.button
                     onClick={() => playFromAlbum(latest)}
                     disabled={!latest.tracks.length}
@@ -254,9 +254,9 @@ export function HomeClient({
       ) : null}
 
       {featuredArtists.length > 0 ? (
-        <section className="pb-10">
+        <section className="pb-10 md:pb-12">
           <motion.div
-            className="mb-4 flex items-baseline justify-between"
+            className="mb-6 md:mb-8 flex items-baseline justify-between"
             initial={animateFirst ? "hidden" : false}
             animate="visible"
             variants={sectionHeader}
@@ -265,7 +265,7 @@ export function HomeClient({
           </motion.div>
           <div className="-mx-4 overflow-x-auto px-4 md:-mx-8 md:px-8">
             <motion.div
-              className="flex snap-x snap-mandatory gap-3 pb-2"
+              className="flex snap-x snap-mandatory gap-4 md:gap-6 pb-2"
               variants={containerStagger}
               initial={animateFirst ? "hidden" : false}
               animate="visible"
@@ -284,9 +284,9 @@ export function HomeClient({
         </section>
       ) : null}
 
-      <section className="pb-10">
+      <section className="pb-10 md:pb-12">
         <motion.div
-          className="mb-4 flex items-baseline justify-between"
+          className="mb-6 md:mb-8 flex items-baseline justify-between"
           initial={animateFirst ? "hidden" : false}
           animate="visible"
           variants={sectionHeader}
@@ -297,7 +297,7 @@ export function HomeClient({
           </span>
         </motion.div>
         <motion.div
-          className="grid grid-cols-2 gap-3 md:grid-cols-2 md:gap-5 lg:grid-cols-3"
+          className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6"
           variants={containerStagger}
           initial={animateFirst ? "hidden" : false}
           animate="visible"
@@ -306,7 +306,7 @@ export function HomeClient({
             <motion.div key={album.id} variants={itemFadeUp}>
               <Link
                 href={`/album/${album.slug}`}
-                className="group flex flex-col gap-2 rounded-md p-2 transition-colors hover:bg-white/5 md:flex-row md:gap-4 md:p-3"
+                className="group flex flex-col gap-3 rounded-md p-3 transition-colors hover:bg-white/5 md:flex-row md:gap-4 md:p-4"
               >
                 {/* Mobile: square responsive cover */}
                 <div
@@ -331,14 +331,14 @@ export function HomeClient({
                     onPlay={() => playFromAlbum(album)}
                   />
                 </div>
-                <div className="min-w-0 flex-1 md:pt-2">
+                  <div className="min-w-0 flex-1 md:pt-3">
                   <div className="truncate text-sm font-semibold text-white md:text-base">
                     {album.title}
                   </div>
-                  <div className="text-xs text-[#B3B3B3]">
+                  <div className="mt-1 text-xs text-[#B3B3B3]">
                     {album.releaseDate?.slice(0, 4)} · {album.tracks.length} songs
                   </div>
-                  <p className="mt-2 hidden line-clamp-3 text-xs text-white/60 md:block">
+                  <p className="mt-3 hidden line-clamp-3 text-xs text-white/60 md:block">
                     {album.description}
                   </p>
                 </div>
