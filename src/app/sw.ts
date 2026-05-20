@@ -14,10 +14,10 @@
 // activate handler below deletes every cache that doesn't carry the
 // current prefix, so stale assets from previous builds never linger.
 //
-// `skipWaiting` is intentionally false — the new SW installs in the
-// background and waits until SWUpdateBanner posts {type: "SKIP_WAITING"}
-// (i.e. the user explicitly accepts the update). `clientsClaim` is true
-// so once the waiting SW activates, it takes control of all open tabs.
+// `skipWaiting: true` — new SW activates immediately; `clientsClaim` takes
+// control of all open tabs, which then reload via the controllerchange event.
+// Cloudinary handlers return silent fallbacks on network failure so Cloudflare
+// blocks (ERR_FAILED) don't surface as loud console errors.
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import {
   CacheFirst,
@@ -44,6 +44,24 @@ const BUILD_ID =
 const CACHE_PREFIX = `ntv-v${SW_MANUAL_VERSION}-${BUILD_ID}`;
 
 const TWENTY_FIVE_MB = 25 * 1024 * 1024;
+
+// Minimal 1×1 transparent PNG returned when a Cloudinary image is unreachable.
+// Using atob keeps the SW bundle small without a separate asset import.
+function transparentPngResponse(): Response {
+  const bytes = Uint8Array.from(
+    atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII='),
+    (c) => c.charCodeAt(0),
+  );
+  return new Response(bytes, { status: 200, headers: { 'Content-Type': 'image/png' } });
+}
+
+function silentAudioResponse(): Response {
+  return new Response(null, { status: 200, headers: { 'Content-Type': 'audio/mpeg' } });
+}
+
+function isCloudinary(url: URL): boolean {
+  return url.hostname === 'res.cloudinary.com' || url.hostname === 'cloudinary.com';
+}
 
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
@@ -78,8 +96,7 @@ const serwist = new Serwist({
     {
       // Cloudinary audio (video resource type covers mp3/wav transcodes).
       matcher: ({ url }) =>
-        url.hostname === "res.cloudinary.com" &&
-        url.pathname.includes("/video/upload/"),
+        isCloudinary(url) && url.pathname.includes("/video/upload/"),
       handler: new CacheFirst({
         cacheName: "audio",
         plugins: [
@@ -98,14 +115,18 @@ const serwist = new Serwist({
               return response.status === 200 ? response : null;
             },
           },
+          {
+            // Network error (e.g. Cloudflare block) with no cached copy —
+            // return an empty 200 so the audio element fails silently.
+            handlerDidError: async () => silentAudioResponse(),
+          },
         ],
       }),
     },
     {
       // Cloudinary images (album covers, etc.).
       matcher: ({ url }) =>
-        url.hostname === "res.cloudinary.com" &&
-        url.pathname.includes("/image/upload/"),
+        isCloudinary(url) && url.pathname.includes("/image/upload/"),
       handler: new CacheFirst({
         cacheName: "images",
         plugins: [
@@ -115,6 +136,11 @@ const serwist = new Serwist({
             maxAgeFrom: "last-fetched",
             purgeOnQuotaError: true,
           }),
+          {
+            // Network error with no cached copy — return a 1×1 transparent
+            // PNG so broken-image icons don't appear in the UI.
+            handlerDidError: async () => transparentPngResponse(),
+          },
         ],
       }),
     },
