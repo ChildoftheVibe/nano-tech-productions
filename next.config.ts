@@ -32,7 +32,7 @@ const csp = [
   "font-src 'self' data: https://fonts.gstatic.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.paypal.com https://us-assets.i.posthog.com https://va.vercel-scripts.com https://static.cloudflareinsights.com",
-  "connect-src 'self' https://*.paypal.com https://us.i.posthog.com https://us-assets.i.posthog.com https://vitals.vercel-insights.com https://*.supabase.co wss://*.supabase.co https://api.cloudinary.com https://cdn.jsdelivr.net https://*.sentry.io https://*.ingest.sentry.io https://cloudflareinsights.com",
+  "connect-src 'self' https://*.paypal.com https://us.i.posthog.com https://us-assets.i.posthog.com https://vitals.vercel-insights.com https://*.supabase.co wss://*.supabase.co https://api.cloudinary.com https://res.cloudinary.com https://cdn.jsdelivr.net https://*.sentry.io https://*.ingest.sentry.io https://cloudflareinsights.com https://static.cloudflareinsights.com",
   "frame-src https://*.paypal.com",
   "worker-src 'self' blob:",
   "upgrade-insecure-requests",
