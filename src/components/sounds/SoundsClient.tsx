@@ -113,7 +113,7 @@ export function SoundsClient({ initial }: Props) {
             type="button"
             onClick={loadMore}
             disabled={loading}
-            className="rounded-full border border-white/20 bg-black/20 px-6 py-2 text-sm font-semibold text-white hover:bg-black/40 disabled:opacity-50"
+            className="rounded-full border border-white/20 bg-black/20 px-6 py-1.5 text-sm font-semibold text-white hover:bg-black/40 disabled:opacity-50"
           >
             {loading ? "Loading…" : "Load More"}
           </button>

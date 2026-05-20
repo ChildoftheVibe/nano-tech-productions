@@ -65,14 +65,14 @@ export default function GlobalRouteError({ error, reset }: Props) {
         <button
           type="button"
           onClick={() => reset()}
-          className="inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-bold text-black transition-transform hover:scale-105"
+          className="inline-flex items-center justify-center rounded-full px-6 py-2 text-sm font-bold text-black transition-transform hover:scale-105"
           style={{ background: "#3DD6C8" }}
         >
           Try Again
         </button>
         <Link
           href="/"
-          className="inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-white/10"
+          className="ntv-btn inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-white/10"
         >
           Return Home
         </Link>

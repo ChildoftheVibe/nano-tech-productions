@@ -79,7 +79,7 @@ export function SWUpdateBanner() {
       // PlayerBar is 90px tall and pinned to the viewport bottom; sit just
       // above it.
       style={{ bottom: 100 }}
-      className="fixed left-1/2 z-50 -translate-x-1/2 rounded-full border border-[#3DD6C8]/50 bg-black/85 px-4 py-2 text-sm font-medium text-[#3DD6C8] shadow-lg backdrop-blur-sm transition-colors hover:bg-black hover:text-white"
+      className="fixed left-1/2 z-50 -translate-x-1/2 rounded-full border border-[#3DD6C8]/50 bg-black/85 px-4 py-1.5 text-sm font-medium text-[#3DD6C8] shadow-lg backdrop-blur-sm transition-colors hover:bg-black hover:text-white"
       aria-label="Reload to apply the latest update"
     >
       Update available — tap to refresh

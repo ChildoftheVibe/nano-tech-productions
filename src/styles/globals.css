@@ -95,7 +95,18 @@ a,
     opacity 0.15s ease,
     transform 0.15s ease,
     background-color 0.15s ease,
-    color 0.15s ease;
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* Drop shadow on all button elements and link-styled buttons */
+button {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+/* Utility class for Link/a elements styled as buttons */
+.ntv-btn {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 
 :focus-visible {

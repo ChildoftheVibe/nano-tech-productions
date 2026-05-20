@@ -232,7 +232,7 @@ export function HomeClient({
                   <motion.button
                     onClick={() => playFromAlbum(latest)}
                     disabled={!latest.tracks.length}
-                    className="flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold text-black disabled:opacity-40"
+                    className="flex items-center gap-2 rounded-full px-5 py-1.5 text-sm font-bold text-black disabled:opacity-40"
                     style={{ background: latest.accentColor }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.96 }}
@@ -242,7 +242,7 @@ export function HomeClient({
                   </motion.button>
                   <Link
                     href={`/album/${latest.slug}`}
-                    className="flex items-center gap-2 rounded-full border border-white/30 px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-white/10"
+                    className="ntv-btn flex items-center gap-2 rounded-full border border-white/30 px-5 py-1.5 text-sm font-bold text-white transition-colors hover:bg-white/10"
                   >
                     View Album
                   </Link>
@@ -331,7 +331,7 @@ export function HomeClient({
                     onPlay={() => playFromAlbum(album)}
                   />
                 </div>
-                  <div className="min-w-0 flex-1 md:pt-3">
+                <div className="min-w-0 flex-1 md:pt-3">
                   <div className="truncate text-sm font-semibold text-white md:text-base">
                     {album.title}
                   </div>
@@ -351,7 +351,7 @@ export function HomeClient({
             <motion.button
               onClick={loadMore}
               disabled={loading}
-              className="rounded-full border border-white/20 bg-black/20 px-6 py-2 text-sm font-semibold text-white hover:bg-black/40 disabled:opacity-50"
+              className="rounded-full border border-white/20 bg-black/20 px-6 py-1.5 text-sm font-semibold text-white hover:bg-black/40 disabled:opacity-50"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.96 }}
             >
@@ -398,7 +398,7 @@ export function HomeClient({
               </div>
               <motion.button
                 onClick={togglePlayPause}
-                className="mt-3 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-black"
+                className="mt-3 flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold text-black"
                 style={{
                   background: currentAlbum?.accentColor ?? "#3DD6C8",
                 }}

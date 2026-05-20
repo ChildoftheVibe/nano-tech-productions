@@ -50,7 +50,7 @@ export function TopBar() {
         >
           <Link
             href="/admin"
-            className="inline-flex h-9 items-center justify-center rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider text-white"
+            className="ntv-btn inline-flex h-9 items-center justify-center rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white"
             style={{ background: "#EB41DF" }}
           >
             Admin

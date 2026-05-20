@@ -179,7 +179,7 @@ export function AlbumDetail({
             {album.description && album.description.length > 140 ? (
               <button
                 onClick={() => setExpanded((v) => !v)}
-                className="-ml-4 mt-1 inline-flex rounded-full px-4 py-2 text-xs font-semibold text-white/60 hover:bg-white/10 hover:text-white"
+                className="-ml-4 mt-1 inline-flex rounded-full px-4 py-1.5 text-xs font-semibold text-white/60 hover:bg-white/10 hover:text-white"
               >
                 {expanded ? "Show less" : "Show more"}
               </button>
@@ -197,7 +197,7 @@ export function AlbumDetail({
                     href={l.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex flex-shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-black/20 px-3 py-2 text-xs font-medium text-white hover:bg-black/40"
+                    className="ntv-btn flex flex-shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-black/20 px-3 py-1.5 text-xs font-medium text-white hover:bg-black/40"
                   >
                     <ExternalLink size={12} />
                     {l.label}
@@ -232,7 +232,7 @@ export function AlbumDetail({
         </motion.button>
         <motion.button
           onClick={handleBuyAlbum}
-          className="ml-2 flex h-14 items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-black"
+          className="ml-2 flex h-12 items-center gap-2 rounded-full px-6 py-2 text-sm font-bold text-black"
           style={{ background: "#EB41DF" }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.96 }}
@@ -325,7 +325,7 @@ export function AlbumDetail({
                   key={name}
                   name={name}
                   slugsByName={artistSlugsByName}
-                  className="rounded-full border border-white/15 px-4 py-2 text-xs text-white"
+                  className="rounded-full border border-white/15 px-4 py-1.5 text-xs text-white"
                 />
               ))}
             </div>

@@ -270,7 +270,7 @@ function CheckoutModalContent({
                       setDiscountError(null);
                       setTotalPulse((n) => n + 1);
                     }}
-                    className="rounded border border-white/20 px-4 py-2 text-sm hover:bg-white/5"
+                    className="rounded border border-white/20 px-4 py-1.5 text-sm hover:bg-white/5"
                   >
                     Remove
                   </button>
@@ -278,7 +278,7 @@ function CheckoutModalContent({
                   <button
                     onClick={applyDiscount}
                     disabled={validating || !discountInput.trim()}
-                    className="rounded bg-[#3DD6C8] px-4 py-2 text-sm font-bold text-black disabled:opacity-50"
+                    className="rounded bg-[#3DD6C8] px-4 py-1.5 text-sm font-bold text-black disabled:opacity-50"
                   >
                     {validating ? "…" : "Apply"}
                   </button>
@@ -597,7 +597,7 @@ function SuccessView({
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block rounded-full px-4 py-2 text-sm font-bold text-black"
+              className="ntv-btn block rounded-full px-4 py-1.5 text-sm font-bold text-black"
               style={{ background: "#3DD6C8" }}
             >
               Download{" "}
@@ -615,7 +615,7 @@ function SuccessView({
       )}
       <button
         onClick={onClose}
-        className="rounded-full border border-white/20 px-5 py-2 text-sm font-bold hover:bg-white/10"
+        className="rounded-full border border-white/20 px-5 py-1.5 text-sm font-bold hover:bg-white/10"
       >
         Continue Listening
       </button>
