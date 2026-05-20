@@ -38,22 +38,12 @@ declare const __NTV_BUILD_ID__: string;
 
 declare const self: ServiceWorkerGlobalScope;
 
-const SW_MANUAL_VERSION = '3';
+const SW_MANUAL_VERSION = '4';
 const BUILD_ID =
   typeof __NTV_BUILD_ID__ !== "undefined" ? __NTV_BUILD_ID__ : "dev";
 const CACHE_PREFIX = `ntv-v${SW_MANUAL_VERSION}-${BUILD_ID}`;
 
 const TWENTY_FIVE_MB = 25 * 1024 * 1024;
-
-// Minimal 1×1 transparent PNG returned when a Cloudinary image is unreachable.
-// Using atob keeps the SW bundle small without a separate asset import.
-function transparentPngResponse(): Response {
-  const bytes = Uint8Array.from(
-    atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII='),
-    (c) => c.charCodeAt(0),
-  );
-  return new Response(bytes, { status: 200, headers: { 'Content-Type': 'image/png' } });
-}
 
 function silentAudioResponse(): Response {
   return new Response(null, { status: 200, headers: { 'Content-Type': 'audio/mpeg' } });
@@ -136,11 +126,6 @@ const serwist = new Serwist({
             maxAgeFrom: "last-fetched",
             purgeOnQuotaError: true,
           }),
-          {
-            // Network error with no cached copy — return a 1×1 transparent
-            // PNG so broken-image icons don't appear in the UI.
-            handlerDidError: async () => transparentPngResponse(),
-          },
         ],
       }),
     },
