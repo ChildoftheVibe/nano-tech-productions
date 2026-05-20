@@ -25,22 +25,40 @@ function uuid(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
+function safeStorageGet(key: string): string | null {
+  if (!isBrowser()) return null;
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeStorageSet(key: string, value: string): void {
+  if (!isBrowser()) return;
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // localStorage may be unavailable or denied, so don't crash.
+  }
+}
+
 export function getSessionId(): string {
   if (!isBrowser()) return "";
-  let id = window.localStorage.getItem(SESSION_KEY);
+  let id = safeStorageGet(SESSION_KEY);
   if (!id) {
     id = uuid();
-    window.localStorage.setItem(SESSION_KEY, id);
+    safeStorageSet(SESSION_KEY, id);
   }
   return id;
 }
 
 export function getAnonymousId(): string {
   if (!isBrowser()) return "";
-  let id = window.localStorage.getItem(ANON_ID_KEY);
+  let id = safeStorageGet(ANON_ID_KEY);
   if (!id) {
     id = uuid();
-    window.localStorage.setItem(ANON_ID_KEY, id);
+    safeStorageSet(ANON_ID_KEY, id);
   }
   return id;
 }
@@ -62,9 +80,14 @@ export function initPostHog(): PostHog | null {
   if (w[POSTHOG_INITIALIZED]) return posthog;
   w[POSTHOG_INITIALIZED] = true;
 
+  const defaultHost = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
+  const flagsHost = process.env.NEXT_PUBLIC_POSTHOG_FLAGS_HOST ?? defaultHost;
+  const uiHost = process.env.NEXT_PUBLIC_POSTHOG_UI_HOST ?? defaultHost;
+
   posthog.init(key, {
-    api_host:
-      process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
+    api_host: defaultHost,
+    flags_api_host: flagsHost,
+    ui_host: uiHost,
     capture_pageview: false,
     capture_pageleave: true,
     autocapture: true,
@@ -81,7 +104,9 @@ export function initPostHog(): PostHog | null {
 
 export function getPostHog(): PostHog | null {
   if (!isBrowser()) return null;
+  const w = window as unknown as Record<string, unknown>;
   if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return null;
+  if (!w[POSTHOG_INITIALIZED]) return null;
   return posthog;
 }
 
