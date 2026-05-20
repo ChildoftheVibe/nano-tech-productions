@@ -158,10 +158,3 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// SWUpdateBanner posts this when the user taps "tap to refresh".
-self.addEventListener("message", (event) => {
-  const data = event.data as { type?: string } | undefined;
-  if (data?.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
-});

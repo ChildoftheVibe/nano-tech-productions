@@ -10,7 +10,6 @@ import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { FullScreenPlayer } from "@/components/layout/FullScreenPlayer";
 import { LyricsModal } from "@/components/layout/LyricsModal";
 import { TapToStartBanner } from "@/components/layout/TapToStartBanner";
-import { SWUpdateBanner } from "@/components/layout/SWUpdateBanner";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -104,7 +103,6 @@ export default async function RootLayout({
               <FullScreenPlayer />
               <LyricsModal />
               <TapToStartBanner />
-              <SWUpdateBanner />
               <SentryErrorBoundary>
                 <CheckoutHost />
               </SentryErrorBoundary>
