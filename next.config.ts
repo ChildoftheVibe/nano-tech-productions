@@ -8,7 +8,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 const BUILD_ID =
   process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) ??
   process.env.GITHUB_SHA?.slice(0, 12) ??
-  `dev-${Date.now()}`;
+  `build-${Date.now()}`;
 
 // Content-Security-Policy. Tight by default; loosened only where vendors require it.
 //

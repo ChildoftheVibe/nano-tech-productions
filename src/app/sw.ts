@@ -38,9 +38,10 @@ declare const __NTV_BUILD_ID__: string;
 
 declare const self: ServiceWorkerGlobalScope;
 
+const SW_MANUAL_VERSION = '3';
 const BUILD_ID =
   typeof __NTV_BUILD_ID__ !== "undefined" ? __NTV_BUILD_ID__ : "dev";
-const CACHE_PREFIX = `ntv-${BUILD_ID}`;
+const CACHE_PREFIX = `ntv-v${SW_MANUAL_VERSION}-${BUILD_ID}`;
 
 const TWENTY_FIVE_MB = 25 * 1024 * 1024;
 
@@ -147,7 +148,10 @@ self.addEventListener("activate", (event) => {
       await Promise.all(
         names
           .filter((name) => !name.startsWith(CACHE_PREFIX))
-          .map((name) => caches.delete(name)),
+          .map((name) => {
+            console.log('[SW] Deleted old cache:', name);
+            return caches.delete(name);
+          }),
       );
       await self.clients.claim();
     })(),
