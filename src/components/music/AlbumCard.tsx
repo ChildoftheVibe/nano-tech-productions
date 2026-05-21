@@ -1,15 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { Music, Play } from "lucide-react";
 import type { Album } from "@/types/music";
-import {
-  getAlbumCover,
-  ALBUM_COVER_BLUR_DATA_URL,
-  type AlbumCoverSize,
-} from "@/lib/albumCover";
+import { getAlbumCover, type AlbumCoverSize } from "@/lib/albumCover";
 
 type Size = "sm" | "md" | "lg";
 
@@ -25,25 +20,13 @@ const coverSizeFor: Record<Size, AlbumCoverSize> = {
   lg: "lg",
 };
 
-// Browser hint for layout; the upstream Cloudinary URL already carries the
-// resolved pixel size, but `sizes` keeps the prop wired up for any future
-// move off `unoptimized`.
-const SIZES_ATTR =
-  "(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 180px";
-
 type Props = {
   album: Album;
   size?: Size;
   href?: string;
   showHoverPlay?: boolean;
   onPlay?: () => void;
-  /**
-   * Mark this card as above-the-fold. Emits the image with `preload`
-   * (Next 16's replacement for the deprecated `priority` prop) so the
-   * browser starts fetching during HTML streaming.
-   */
   priority?: boolean;
-  /** Forwarded to the underlying <img> for LCP candidates. */
   fetchPriority?: "high" | "low" | "auto";
 };
 
@@ -77,17 +60,13 @@ export function AlbumCard({
       transition={{ duration: 0.2, ease: "easeOut" }}
     >
       {optimizedSrc ? (
-        <Image
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
           src={optimizedSrc}
           alt={`${album.title} album cover`}
-          fill
-          sizes={SIZES_ATTR}
-          placeholder="blur"
-          blurDataURL={ALBUM_COVER_BLUR_DATA_URL}
-          preload={priority || undefined}
+          className="absolute inset-0 h-full w-full object-cover transition-[filter] duration-200 group-hover:brightness-[0.7]"
+          loading={priority ? "eager" : "lazy"}
           fetchPriority={fetchPriority}
-          unoptimized
-          className="object-cover transition-[filter] duration-200 group-hover:brightness-[0.7]"
           onError={(e) => {
             const el = e.currentTarget as HTMLImageElement;
             el.style.display = "none";

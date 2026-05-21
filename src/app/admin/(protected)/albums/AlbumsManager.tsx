@@ -153,13 +153,11 @@ export function AlbumsManager({
                           }}
                         >
                           {album.cover_image ? (
-                            <Image
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
                               src={album.cover_image}
                               alt={album.title}
-                              width={40}
-                              height={40}
                               className="h-10 w-10 object-cover"
-                              unoptimized
                             />
                           ) : (
                             <span className="text-[10px] font-bold">

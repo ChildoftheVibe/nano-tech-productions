@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { Music, Pause, Play } from "lucide-react";
 import { getAlbumCover } from "@/lib/albumCover";
 import { useCheckoutStore, instrumentalCheckoutItem } from "@/store/checkoutStore";
@@ -73,13 +72,12 @@ export function PreviewPlayer({ instrumental }: Props) {
           style={{ background: "#1a0838" }}
         >
           {cover ? (
-            <Image
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               src={cover}
               alt={`${instrumental.title} cover`}
-              fill
-              sizes="60px"
-              unoptimized
-              className="object-cover"
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
             />
           ) : (
             <div
