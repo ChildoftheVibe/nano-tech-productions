@@ -6,7 +6,6 @@ import { motion, type Variants } from "framer-motion";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { usePlayer } from "@/context/PlayerContext";
 import type { LibraryAlbum } from "@/lib/queries";
-import { getAlbumCover } from "@/lib/albumCover";
 
 type Sort = "newest" | "oldest" | "az" | "most_played";
 type Filter = "all" | "albums" | "singles";
@@ -147,7 +146,7 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
                   {album.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={getAlbumCover(album.coverImage, "md")}
+                      src={album.coverImage}
                       alt={album.title}
                       className="h-full w-full object-cover"
                     />

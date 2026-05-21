@@ -10,7 +10,6 @@ import {
   usePayPalScriptReducer,
 } from "@paypal/react-paypal-js";
 import { useCheckoutStore, type CheckoutItemRef } from "@/store/checkoutStore";
-import { getAlbumCover } from "@/lib/albumCover";
 
 type Phase =
   | { kind: "form" }
@@ -219,7 +218,7 @@ function CheckoutModalContent({
               {item.coverImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={getAlbumCover(item.coverImage, 56)}
+                  src={item.coverImage}
                   alt={item.name}
                   className="h-14 w-14 flex-shrink-0 rounded object-cover"
                   onError={(e) => {

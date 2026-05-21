@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import type { Artist } from "@/types/music";
-import { getAlbumCover } from "@/lib/albumCover";
 
 type Size = "sm" | "md";
 
@@ -52,7 +51,7 @@ export function ArtistCard({ artist, size = "md" }: Props) {
           {artist.profileImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={getAlbumCover(artist.profileImage, dim)}
+              src={artist.profileImage}
               alt={`${artist.name} profile photo`}
               className="h-full w-full object-cover"
             />

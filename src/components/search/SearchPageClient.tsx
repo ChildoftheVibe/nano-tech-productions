@@ -15,7 +15,6 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SearchResultsSkeleton } from "@/components/ui/skeletons/SearchResultsSkeleton";
 import type { Album } from "@/types/music";
 import type { SearchArtist, SearchResult, SearchTrack } from "@/lib/queries";
-import { getAlbumCover } from "@/lib/albumCover";
 
 type SearchResponse = SearchResult & { query: string; tooShort: boolean };
 
@@ -326,7 +325,7 @@ export function SearchPageClient() {
                           {album.coverImage ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={getAlbumCover(album.coverImage, 48)}
+                              src={album.coverImage}
                               alt={album.title}
                               className="h-full w-full object-cover"
                             />
@@ -424,7 +423,7 @@ export function SearchPageClient() {
                       {artist.profileImage ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={getAlbumCover(artist.profileImage, 32)}
+                          src={artist.profileImage}
                           alt=""
                           aria-hidden
                           className="h-full w-full object-cover"

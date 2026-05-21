@@ -1,7 +1,6 @@
 "use client";
 
 import { Music, Pause, Play } from "lucide-react";
-import { getAlbumCover } from "@/lib/albumCover";
 import { useCheckoutStore, instrumentalCheckoutItem } from "@/store/checkoutStore";
 import {
   usePreviewStore,
@@ -35,9 +34,7 @@ export function PreviewPlayer({ instrumental }: Props) {
   const percent = Math.min(100, (progress / PREVIEW_LIMIT_SECONDS) * 100);
   const remaining = Math.max(0, PREVIEW_LIMIT_SECONDS - progress);
 
-  const cover = instrumental.coverImage
-    ? getAlbumCover(instrumental.coverImage, "sm")
-    : "";
+  const cover = instrumental.coverImage ?? "";
   const previewUrl = instrumental.previewUrl ?? "";
   const canPlay = previewUrl.length > 0;
 

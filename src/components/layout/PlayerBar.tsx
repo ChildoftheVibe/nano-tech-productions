@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
-import { getAlbumCover } from "@/lib/albumCover";
 
 const formatTime = (s: number) => {
   if (!Number.isFinite(s) || s < 0) return "0:00";
@@ -175,7 +174,7 @@ export function PlayerBar() {
               {currentAlbum?.coverImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={getAlbumCover(currentAlbum.coverImage, 60)}
+                  src={currentAlbum.coverImage}
                   alt={currentAlbum.title}
                   className="h-[60px] w-[60px] rounded object-cover"
                 />
@@ -258,7 +257,7 @@ export function PlayerBar() {
                   {currentAlbum?.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={getAlbumCover(currentAlbum.coverImage, 60)}
+                      src={currentAlbum.coverImage}
                       alt={currentAlbum.title}
                       className="h-[60px] w-[60px] flex-shrink-0 rounded object-cover"
                       onError={(e) => {
