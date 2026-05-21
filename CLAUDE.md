@@ -355,6 +355,7 @@ Border:           rgba(255,255,255,0.08)
 7. **Fire-and-forget play counts** — incremented via RPC without blocking UI
 8. **WebAuthn passkey** — optional passwordless admin auth alongside bcrypt fallback
 9. **Token-gated downloads** — single-use tokens issued only after confirmed PayPal payment
+10. **Cover image pipeline** — every `<img>` rendering an album, artist, or instrumental cover MUST use `getAlbumCover(src, size)` from `src/lib/albumCover.ts`. The helper accepts a full Cloudinary URL, a bare publicId, or a local `/assets` path, and inserts `f_auto,q_auto:good,w_N,h_N,c_fill` after `/image/upload/`. Bypassing it serves full-resolution originals (5–10× bandwidth, regresses LCP) and silently breaks any row that stores a bare publicId. Transformations are applied at render time, never persisted to the DB.
 
 ---
 
@@ -653,6 +654,7 @@ Agents must not weaken the following database-level controls:
 - Restrict Cloudinary API key permissions to the minimum: upload and manage in `ntp/` folder only.
 - Enable Cloudinary's "Strict transformations" to prevent on-the-fly URL manipulation that bypasses your signed URL requirement.
 - The `vault/` folder must use `type: "authenticated"` delivery — verify this in Cloudinary account settings, not just application code.
+- The admin uploader stores `secure_url` directly in `cover_image` / `profile_image` columns. Any transformation (resize, format, quality) must be applied at render time via `getAlbumCover`, never persisted to the DB — persisted transforms become unresolvable when target sizes change and double-transform when re-wrapped.
 
 #### PostHog
 - Verify `sendDefaultPii: false` is set in `AnalyticsProvider.tsx`.
@@ -682,6 +684,7 @@ When any agent modifies code in this repository, the following rules are **non-n
 10. **Always validate webhook signatures** before processing webhook payloads — no exceptions for "testing" or "demo" modes.
 11. **Always use parameterized queries** — never use string interpolation inside Supabase `.rpc()`, `.select()`, or `.filter()` calls.
 12. **Run `npm audit` before merging** — CI must block merges with CRITICAL or HIGH unresolved advisories.
+13. **Always render covers through `getAlbumCover()`** — never pass a raw `coverImage` / `profileImage` value directly to `<img src>`. The helper handles full URLs, bare publicIds, and `/assets` paths, and applies right-sized Cloudinary transforms. Skipping it loads multi-MB originals on every thumbnail.
 
 ---
 
