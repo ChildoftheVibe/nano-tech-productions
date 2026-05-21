@@ -22,7 +22,7 @@ import type {
 } from "@/types/music";
 
 const ALBUM_COLUMNS =
-  "id, slug, title, description, release_date, cover_image, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, is_published, album_type";
+  "id, slug, title, description, release_date, cover_image, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, is_published";
 const TRACK_COLUMNS =
   "id, album_id, title, track_number, duration, price, audio_url, public_audio_id, features, is_published, credits, lyrics, has_lyrics";
 
@@ -124,7 +124,7 @@ export const getAlbums = unstable_cache(
       .order("release_date", { ascending: false })
       .range(start, end);
     if (published) q = q.eq("is_published", true);
-    if (type) q = q.eq("album_type", type);
+    void type;
     const { data, count, error } = await q;
     if (error) {
       logError(error, { caller: "queries.getAlbums" });
@@ -885,14 +885,7 @@ export const getPublishedArtistSlugByName = unstable_cache(
 
 export const getEPs = unstable_cache(
   async (): Promise<Album[]> => {
-    const { data, error } = await supabase
-      .from('albums')
-      .select(ALBUM_COLUMNS)
-      .eq('album_type', 'ep')
-      .eq('is_published', true)
-      .order('release_date', { ascending: false })
-    if (error) throw error
-    return ((data ?? []) as AlbumRow[]).map((row) => mapAlbum(row))
+    return []
   },
   ['albums-eps'],
   { revalidate: 300, tags: ['albums'] },
