@@ -11,6 +11,8 @@ export type Album = {
   appleMusicUrl?: string;
   youtubeUrl?: string;
   amazonUrl?: string;
+  streaming_links?: Record<string, string>;
+  album_type?: 'album' | 'ep' | 'single';
   copyright?: string;
   tracks: Track[];
 };

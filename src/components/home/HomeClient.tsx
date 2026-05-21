@@ -57,6 +57,7 @@ type Props = {
   latest: Album | null;
   initialCollection: AlbumListResult;
   featuredArtists: Artist[];
+  eps: Album[];
 };
 
 export function HomeClient({
@@ -64,6 +65,7 @@ export function HomeClient({
   latest,
   initialCollection,
   featuredArtists,
+  eps,
 }: Props) {
   const greeting = useSyncExternalStore(
     subscribeNoop,
@@ -172,6 +174,51 @@ export function HomeClient({
         )}
       </section>
 
+      {eps.length > 0 && (
+        <section className="pb-12 md:pb-16">
+          <motion.div
+            className="mb-6 md:mb-8 flex items-baseline justify-between"
+            initial={animateFirst ? "hidden" : false}
+            animate="visible"
+            variants={sectionHeader}
+          >
+            <h2 className="text-xl font-bold text-white">EPs</h2>
+          </motion.div>
+          <div className="-mx-4 overflow-x-auto px-4 md:-mx-8 md:px-8">
+            <motion.div
+              className="flex snap-x snap-mandatory gap-6 md:gap-8 pb-2"
+              variants={containerStagger}
+              initial={animateFirst ? "hidden" : false}
+              animate="visible"
+            >
+              {eps.map((ep) => (
+                <motion.div
+                  key={ep.id}
+                  className="w-[180px] flex-shrink-0 snap-start"
+                  variants={itemFadeUp}
+                >
+                  <AlbumCard
+                    album={ep}
+                    size="md"
+                    href={`/album/${ep.slug}`}
+                    showHoverPlay
+                    onPlay={() => playFromAlbum(ep)}
+                  />
+                  <div className="mt-2 truncate text-sm font-semibold text-white">
+                    <Link href={`/album/${ep.slug}`} className="hover:underline">
+                      {ep.title}
+                    </Link>
+                  </div>
+                  <div className="text-xs text-[#B3B3B3]">
+                    {ep.releaseDate?.slice(0, 4) ?? ""}
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+      )}
+
       {latest ? (
         <section className="pb-12 md:pb-16">
           <motion.div
@@ -180,7 +227,7 @@ export function HomeClient({
             animate="visible"
             variants={sectionHeader}
           >
-            <h2 className="text-xl font-bold text-white">Latest Release</h2>
+            <h2 className="text-xl font-bold text-white">Latest Releases</h2>
           </motion.div>
           <motion.div
             className="overflow-hidden rounded-xl"

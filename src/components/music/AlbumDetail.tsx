@@ -232,7 +232,7 @@ export function AlbumDetail({
         </motion.button>
         <motion.button
           onClick={handleBuyAlbum}
-          className="ml-2 flex h-12 items-center gap-2 rounded-full px-6 py-2 text-sm font-bold text-black"
+          className="ml-2 flex h-9 items-center gap-2 rounded-full px-6 py-2 text-sm font-bold text-black"
           style={{ background: "#EB41DF" }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.96 }}
@@ -341,6 +341,32 @@ export function AlbumDetail({
         </div>
         {/* TODO: production notes & gear info — not in catalog.ts yet, add when data is available. */}
       </section>
+
+      {album.streaming_links != null &&
+       typeof album.streaming_links === 'object' &&
+       !Array.isArray(album.streaming_links) &&
+       Object.keys(album.streaming_links).length > 0 && (
+        <section className="mt-8 pt-6 border-t border-white/10 px-2">
+          <h3 className="text-sm font-medium text-white/50 mb-3">
+            Stream on
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            {(Object.entries(
+              album.streaming_links as Record<string, string>
+            )).map(([platform, url]) => (
+              <a
+                key={platform}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 text-xs text-white/80 hover:border-[#3DD6C8] hover:text-[#3DD6C8] transition-colors"
+              >
+                {platform}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

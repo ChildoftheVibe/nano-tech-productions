@@ -182,7 +182,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
       <button
         onClick={handleBuy}
         aria-label={`Buy ${track.title} for $${track.price.toFixed(2)}`}
-        className="hidden rounded-full border border-[#3DD6C8] px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#3DD6C8] opacity-0 transition-opacity duration-150 hover:bg-[#3DD6C8]/10 group-hover:opacity-100 md:block"
+        className="hidden rounded-full border border-[#3DD6C8] px-4 py-1 text-xs font-bold uppercase tracking-wider text-[#3DD6C8] opacity-0 transition-opacity duration-150 hover:bg-[#3DD6C8]/10 group-hover:opacity-100 md:block"
       >
         Buy
       </button>

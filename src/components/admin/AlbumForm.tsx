@@ -45,6 +45,7 @@ function emptyForm(): Record<string, string | boolean> {
     youtube_url: "",
     amazon_url: "",
     copyright: "© Nano Tech Productions. All rights reserved.",
+    album_type: 'album',
     is_published: false,
   };
 }
@@ -63,6 +64,7 @@ function fromAlbum(a: Album): Record<string, string | boolean> {
     youtube_url: a.youtube_url ?? "",
     amazon_url: a.amazon_url ?? "",
     copyright: a.copyright ?? "",
+    album_type: a.album_type ?? 'album',
     is_published: a.is_published,
   };
 }
@@ -147,6 +149,21 @@ export function AlbumForm({ initial, onSaved, onCancel }: Props) {
           />
         </label>
       ))}
+
+      <label className="block">
+        <span className="mb-1 block text-sm text-white/70">Release Type</span>
+        <select
+          name="album_type"
+          defaultValue={form.album_type as string ?? 'album'}
+          onChange={(e) => set("album_type", e.target.value)}
+          className="w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-[#3DD6C8]"
+        >
+          <option value="album">Album (full-length)</option>
+          <option value="ep">EP (8 tracks or less)</option>
+          <option value="single">Single</option>
+        </select>
+        <span className="mt-1 block text-xs text-white/50">EPs have 8 tracks or fewer.</span>
+      </label>
 
       <label className="flex items-center gap-2">
         <input

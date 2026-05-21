@@ -11,6 +11,8 @@ export async function GET(req: Request) {
     100,
     Math.max(1, Number(url.searchParams.get("limit") ?? "20") || 20),
   );
-  const result = await getAlbums({ page, limit, published: true });
+  const searchParams = url.searchParams
+  const type = searchParams.get('type')
+  const result = await getAlbums({ page, limit, published: true, ...(type ? { type } : {}) });
   return NextResponse.json(result);
 }

@@ -13,6 +13,7 @@ export type Album = {
   amazon_url: string | null;
   copyright: string | null;
   is_published: boolean;
+  album_type?: 'album' | 'ep' | 'single';
   created_at: string;
   updated_at: string;
 };

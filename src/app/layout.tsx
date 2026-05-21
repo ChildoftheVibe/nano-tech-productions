@@ -19,6 +19,8 @@ import { AnalyticsProvider } from "@/providers/AnalyticsProvider";
 import { RouteChangeFocus } from "@/components/layout/RouteChangeFocus";
 import { SentryErrorBoundary } from "@/components/ui/SentryErrorBoundary";
 import { getAlbums } from "@/lib/queries";
+import InstallPromptBanner from '@/components/layout/InstallPromptBanner'
+import CosmicInterferenceBanner from '@/components/layout/CosmicInterferenceBanner'
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -48,6 +50,10 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  icons: {
+    icon: '/icon-192.png',
+    apple: '/icon-192.png',
   },
 };
 
@@ -87,7 +93,8 @@ export default async function RootLayout({
                     <SiteFooter />
                   </main>
                 </div>
-                <MobileTabBar />
+                <CosmicInterferenceBanner />
+                <InstallPromptBanner />
                 <SentryErrorBoundary
                   fallback={
                     <footer
@@ -99,6 +106,7 @@ export default async function RootLayout({
                 >
                   <PlayerBar />
                 </SentryErrorBoundary>
+                <MobileTabBar />
               </div>
               <FullScreenPlayer />
               <LyricsModal />

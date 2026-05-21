@@ -280,3 +280,30 @@ input[type="range"].ntv-range:focus-visible::-moz-range-thumb {
     animation: none;
   }
 }
+
+/* NTV Player — Waveform bars */
+.ntv-wave-anim {
+  animation-name: ntv-wave;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  transform-origin: bottom center;
+}
+
+/* NTV Player — Single icon pulse */
+.ntv-pulse-anim {
+  animation-name: ntv-pulse;
+  animation-duration: 2s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes ntv-wave {
+  from { transform: scaleY(0.3); opacity: 0.5; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+@keyframes ntv-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.05); }
+}

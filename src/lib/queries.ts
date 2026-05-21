@@ -22,7 +22,7 @@ import type {
 } from "@/types/music";
 
 const ALBUM_COLUMNS =
-  "id, slug, title, description, release_date, cover_image, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, is_published";
+  "id, slug, title, description, release_date, cover_image, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, is_published, album_type";
 const TRACK_COLUMNS =
   "id, album_id, title, track_number, duration, price, audio_url, public_audio_id, features, is_published, credits, lyrics, has_lyrics";
 
@@ -41,6 +41,7 @@ type AlbumRow = {
   amazon_url: string | null;
   copyright: string | null;
   is_published: boolean;
+  album_type?: string | null;
   tracks?: TrackRow[];
 };
 
@@ -103,16 +104,18 @@ const mapAlbum = (row: AlbumRow, tracks: Track[] = []): Album => ({
   amazonUrl: row.amazon_url ?? undefined,
   copyright: row.copyright ?? undefined,
   tracks,
+  album_type: (row.album_type as Album['album_type']) ?? 'album',
 });
 
 export type GetAlbumsOpts = {
   page?: number;
   limit?: number;
   published?: boolean;
+  type?: string;
 };
 
 export const getAlbums = unstable_cache(
-  async ({ page = 1, limit = 20, published = true }: GetAlbumsOpts = {}): Promise<AlbumListResult> => {
+  async ({ page = 1, limit = 20, published = true, type }: GetAlbumsOpts = {}): Promise<AlbumListResult> => {
     const start = (page - 1) * limit;
     const end = start + limit - 1;
     let q = supabase
@@ -121,6 +124,7 @@ export const getAlbums = unstable_cache(
       .order("release_date", { ascending: false })
       .range(start, end);
     if (published) q = q.eq("is_published", true);
+    if (type) q = q.eq("album_type", type);
     const { data, count, error } = await q;
     if (error) {
       logError(error, { caller: "queries.getAlbums" });
@@ -140,7 +144,7 @@ export const getAlbums = unstable_cache(
 
 export const getFeaturedAlbums = unstable_cache(
   async (): Promise<Album[]> => {
-    const { albums } = await getAlbums({ page: 1, limit: 6, published: true });
+    const { albums } = await getAlbums({ page: 1, limit: 3, published: true });
     return albums;
   },
   ["albums-featured"],
@@ -877,4 +881,19 @@ export const getPublishedArtistSlugByName = unstable_cache(
   },
   ["artists-slug-by-name"],
   { revalidate: 300, tags: ["artists"] },
+);
+
+export const getEPs = unstable_cache(
+  async (): Promise<Album[]> => {
+    const { data, error } = await supabase
+      .from('albums')
+      .select(ALBUM_COLUMNS)
+      .eq('album_type', 'ep')
+      .eq('is_published', true)
+      .order('release_date', { ascending: false })
+    if (error) throw error
+    return ((data ?? []) as AlbumRow[]).map((row) => mapAlbum(row))
+  },
+  ['albums-eps'],
+  { revalidate: 300, tags: ['albums'] },
 );

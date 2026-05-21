@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { Music, Play } from "lucide-react";
 import type { Album } from "@/types/music";
 import { getAlbumCover, type AlbumCoverSize } from "@/lib/albumCover";
+import { useState } from 'react'
+import AlbumCoverModal from '@/components/music/AlbumCoverModal'
 
 type Size = "sm" | "md" | "lg";
 
@@ -47,6 +49,9 @@ export function AlbumCard({
   const year = album.releaseDate?.slice(0, 4) ?? "";
   const cardLabel = year ? `${album.title}, ${year}` : album.title;
 
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalImageUrl, setModalImageUrl] = useState('')
+
   const cover = (
     <motion.div
       className={`group relative flex-shrink-0 overflow-hidden ${rounded}`}
@@ -64,7 +69,8 @@ export function AlbumCard({
         <img
           src={optimizedSrc}
           alt={`${album.title} album cover`}
-          className="absolute inset-0 h-full w-full object-cover transition-[filter] duration-200 group-hover:brightness-[0.7]"
+          className="absolute inset-0 h-full w-full object-cover transition-[filter] duration-200 group-hover:brightness-[0.7] cursor-pointer md:cursor-zoom-in w-[130px] h-[130px] md:w-auto md:h-auto"
+          onClick={() => { setModalImageUrl(optimizedSrc); setIsModalOpen(true) }}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={fetchPriority}
           onError={(e) => {
@@ -81,6 +87,11 @@ export function AlbumCard({
       >
         <Music size={Math.max(16, Math.floor(px / 4))} aria-hidden="true" />
       </div>
+      {album.album_type === 'ep' && (
+        <span className="absolute bottom-1.5 left-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#3DD6C8]/15 text-[#3DD6C8] border border-[#3DD6C8]/30 pointer-events-none">
+          EP
+        </span>
+      )}
       {showHoverPlay && onPlay ? (
         <button
           onClick={(e) => {
@@ -98,10 +109,28 @@ export function AlbumCard({
     </motion.div>
   );
 
-  if (!href) return cover;
-  return (
-    <Link href={href} aria-label={cardLabel} className="block">
+  if (!href) return (
+    <>
       {cover}
-    </Link>
+      <AlbumCoverModal
+        isOpen={isModalOpen}
+        imageUrl={modalImageUrl}
+        altText="Album cover"
+        onClose={() => setIsModalOpen(false)}
+      />
+    </>
+  );
+  return (
+    <>
+      <Link href={href} aria-label={cardLabel} className="block">
+        {cover}
+      </Link>
+      <AlbumCoverModal
+        isOpen={isModalOpen}
+        imageUrl={modalImageUrl}
+        altText="Album cover"
+        onClose={() => setIsModalOpen(false)}
+      />
+    </>
   );
 }

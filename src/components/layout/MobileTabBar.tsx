@@ -43,7 +43,7 @@ export function MobileTabBar() {
       aria-label="Main"
       className="flex flex-shrink-0 items-stretch md:hidden"
       style={{
-        height: 60,
+        height: 56,
         background: "#181818",
         borderTop: "1px solid rgba(255,255,255,0.1)",
       }}
@@ -59,7 +59,7 @@ export function MobileTabBar() {
             className="flex flex-1 flex-col items-center justify-center gap-1 transition-colors"
             style={{ color }}
           >
-            <Icon size={22} aria-hidden="true" />
+            <Icon size={20} aria-hidden="true" />
             <span className="text-[10px] font-semibold uppercase tracking-wider">
               {label}
             </span>

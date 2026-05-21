@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BookOpen,
@@ -17,10 +17,14 @@ import {
   SkipForward,
   Volume2,
   VolumeX,
+  Download,
 } from "lucide-react";
+import { getDownloadToken, saveDownloadToken } from '@/lib/downloadTokens'
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { getAlbumCover } from "@/lib/albumCover";
+import { usePathname } from 'next/navigation'
+import PlayerWaveform from '@/components/layout/PlayerWaveform'
 
 const formatTime = (s: number) => {
   if (!Number.isFinite(s) || s < 0) return "0:00";
@@ -51,12 +55,33 @@ export function PlayerBar() {
   const toggleRepeat = usePlayerStore((s) => s.toggleRepeat);
   const openFullScreen = usePlayerStore((s) => s.openFullScreen);
   const toggleLyrics = usePlayerStore((s) => s.toggleLyrics);
+  const isMuted = usePlayerStore((s) => s.isMuted);
+  const toggleMuteStore = usePlayerStore((s) => s.toggleMute);
 
   const showLyricsButton = !!currentTrack?.has_lyrics;
 
   const [liked, setLiked] = useState(false);
   const [likedPulse, setLikedPulse] = useState(0);
   const [prevVolume, setPrevVolume] = useState(0.7);
+
+  const pathname = usePathname()
+  const [isHidden, setIsHidden] = useState(false)
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    const handleVisibility = () => {
+      setIsHidden(document.visibilityState === 'hidden')
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [])
+
+  const albumPagePattern = /^\/album\//
+  const isOnAlbumPage = albumPagePattern.test(pathname)
+  const hasNavigatedAway = currentTrack != null && !isOnAlbumPage
+  const showWaveform = isHidden || hasNavigatedAway
+  const isSingle = currentAlbum?.album_type === 'single'
+  const accentColor = currentAlbum?.accentColor ?? null
 
   const muted = volume === 0;
   const toggleMute = () => {
@@ -135,15 +160,47 @@ export function PlayerBar() {
 
   const percentPlayed = duration > 0 ? (currentTime / duration) * 100 : 0;
 
+  const [dlToken, setDlToken] = useState<string | null>(null)
+  const [showDlInput, setShowDlInput] = useState(false)
+  const [tokenInput, setTokenInput] = useState('')
+
+  useEffect(() => {
+    if (!currentTrack?.id) return
+    setDlToken(getDownloadToken(currentTrack.id))
+    setShowDlInput(false)
+    setTokenInput('')
+  }, [currentTrack?.id])
+
+  const handleSaveToken = () => {
+    if (!currentTrack?.id || !tokenInput.trim()) return
+    saveDownloadToken(currentTrack.id, tokenInput.trim())
+    setDlToken(tokenInput.trim())
+    setShowDlInput(false)
+    setTokenInput('')
+  }
+
+  const touchStartY = useRef<number>(0)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY
+  }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const delta = touchStartY.current - e.changedTouches[0].clientY
+    if (delta > 40) {
+      openFullScreen()
+    }
+  }
+
   return (
     <footer
-      className="relative flex-shrink-0 text-white"
+      className="relative flex-shrink-0 h-14 text-white"
       style={{
-        height: 90,
         background: "#181818",
         borderTop: "1px solid rgba(255,255,255,0.1)",
       }}
       aria-label="Music player"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Mobile: full-width thin progress bar at very top */}
       <input
@@ -175,26 +232,36 @@ export function PlayerBar() {
               {currentAlbum?.coverImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={getAlbumCover(currentAlbum.coverImage, 60)}
+                  src={getAlbumCover(currentAlbum.coverImage, 40)}
                   alt={currentAlbum.title}
-                  className="h-[60px] w-[60px] rounded object-cover"
+                  className="h-10 w-10 rounded object-cover"
                 />
               ) : (
-                <div className="flex h-[60px] w-[60px] items-center justify-center rounded bg-white/5">
+                <div className="flex h-10 w-10 items-center justify-center rounded bg-white/5">
                   <Music size={20} className="text-white/40" />
                 </div>
               )}
             </button>
-            <button
-              onClick={openFullScreen}
-              aria-label="Open full-screen player"
-              className="min-w-0 flex-1 text-left"
-            >
-              <div className="truncate text-sm font-medium text-white">
-                {currentTrack.title}
+            {showWaveform && currentTrack != null ? (
+              <div className="min-w-0 flex-1 text-left h-8 overflow-hidden">
+                <PlayerWaveform
+                  isPlaying={isPlaying}
+                  accentColor={accentColor}
+                  isSingle={isSingle}
+                />
               </div>
-              <div className="truncate text-xs text-[#B3B3B3]">{features}</div>
-            </button>
+            ) : (
+              <button
+                onClick={openFullScreen}
+                aria-label="Open full-screen player"
+                className="min-w-0 flex-1 text-left"
+              >
+                <div className="truncate text-xs font-medium text-white">
+                  {currentTrack.title}
+                </div>
+                <div className="truncate text-xs text-[#B3B3B3]">{features}</div>
+              </button>
+            )}
             <motion.button
               onClick={togglePlayPause}
               aria-label={playLabel}
@@ -202,9 +269,9 @@ export function PlayerBar() {
               whileTap={{ scale: 0.92 }}
             >
               {isPlaying ? (
-                <Pause size={18} fill="currentColor" />
+                <Pause size={16} fill="currentColor" />
               ) : (
-                <Play size={18} fill="currentColor" className="ml-0.5" />
+                <Play size={16} fill="currentColor" className="ml-0.5" />
               )}
             </motion.button>
             {showLyricsButton ? (
@@ -228,12 +295,12 @@ export function PlayerBar() {
               className="flex-shrink-0 p-2 text-[#B3B3B3]"
               whileTap={{ scale: 0.92 }}
             >
-              <SkipForward size={20} fill="currentColor" />
+              <SkipForward size={16} fill="currentColor" />
             </motion.button>
           </>
         ) : (
           <div className="flex w-full items-center gap-3">
-            <div className="flex h-[60px] w-[60px] items-center justify-center rounded bg-gradient-to-br from-[#3DD6C8] to-[#EB41DF]">
+            <div className="flex h-10 w-10 items-center justify-center rounded bg-gradient-to-br from-[#3DD6C8] to-[#EB41DF]">
               <span className="font-mono text-xs font-bold text-black">NTV</span>
             </div>
             <div className="text-sm text-[#B3B3B3]">No track playing</div>
@@ -258,46 +325,56 @@ export function PlayerBar() {
                   {currentAlbum?.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={getAlbumCover(currentAlbum.coverImage, 60)}
+                      src={getAlbumCover(currentAlbum.coverImage, 40)}
                       alt={currentAlbum.title}
-                      className="h-[60px] w-[60px] flex-shrink-0 rounded object-cover"
+                      className="h-10 w-10 flex-shrink-0 rounded object-cover"
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).style.visibility =
                           "hidden";
                       }}
                     />
                   ) : (
-                    <div className="flex h-[60px] w-[60px] flex-shrink-0 items-center justify-center rounded bg-white/5">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded bg-white/5">
                       <Music size={20} className="text-white/40" />
                     </div>
                   )}
                 </motion.div>
               </AnimatePresence>
-              <div className="min-w-0 flex-1 overflow-hidden">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={currentTrack.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.22, ease: "easeOut" }}
-                  >
-                    {currentAlbum ? (
-                      <Link
-                        href={`/album/${currentAlbum.id}`}
-                        className="block truncate text-sm font-medium text-white hover:underline"
-                      >
-                        {currentTrack.title}
-                      </Link>
-                    ) : (
-                      <div className="truncate text-sm font-medium text-white">
-                        {currentTrack.title}
-                      </div>
-                    )}
-                    <div className="truncate text-xs text-[#B3B3B3]">{features}</div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+              {showWaveform && currentTrack != null ? (
+                <div className="min-w-0 flex-1 overflow-hidden h-8">
+                  <PlayerWaveform
+                    isPlaying={isPlaying}
+                    accentColor={accentColor}
+                    isSingle={isSingle}
+                  />
+                </div>
+              ) : (
+                <div className="min-w-0 flex-1 overflow-hidden">
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={currentTrack.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.22, ease: "easeOut" }}
+                    >
+                      {currentAlbum ? (
+                        <Link
+                          href={`/album/${currentAlbum.id}`}
+                          className="block truncate text-xs font-medium text-white hover:underline"
+                        >
+                          {currentTrack.title}
+                        </Link>
+                      ) : (
+                        <div className="truncate text-xs font-medium text-white">
+                          {currentTrack.title}
+                        </div>
+                      )}
+                      <div className="truncate text-xs text-[#B3B3B3]">{features}</div>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              )}
               <motion.button
                 onClick={handleLike}
                 aria-label={liked ? "Unlike" : "Like"}
@@ -326,7 +403,7 @@ export function PlayerBar() {
             </>
           ) : (
             <div className="flex items-center gap-3">
-              <div className="flex h-[60px] w-[60px] items-center justify-center rounded bg-gradient-to-br from-[#3DD6C8] to-[#EB41DF]">
+              <div className="flex h-10 w-10 items-center justify-center rounded bg-gradient-to-br from-[#3DD6C8] to-[#EB41DF]">
                 <span className="font-mono text-xs font-bold text-black">NTV</span>
               </div>
               <div className="text-sm text-[#B3B3B3]">No track playing</div>
@@ -354,7 +431,7 @@ export function PlayerBar() {
               className="p-1 text-[#B3B3B3] transition-colors hover:text-white disabled:opacity-40"
               whileTap={{ scale: 0.92 }}
             >
-              <SkipBack size={20} fill="currentColor" />
+              <SkipBack size={16} fill="currentColor" />
             </motion.button>
             <motion.button
               onClick={togglePlayPause}
@@ -366,9 +443,9 @@ export function PlayerBar() {
               transition={{ duration: 0.15 }}
             >
               {isPlaying ? (
-                <Pause size={18} fill="currentColor" />
+                <Pause size={16} fill="currentColor" />
               ) : (
-                <Play size={18} fill="currentColor" className="ml-0.5" />
+                <Play size={16} fill="currentColor" className="ml-0.5" />
               )}
             </motion.button>
             <motion.button
@@ -378,7 +455,7 @@ export function PlayerBar() {
               className="p-1 text-[#B3B3B3] transition-colors hover:text-white disabled:opacity-40"
               whileTap={{ scale: 0.92 }}
             >
-              <SkipForward size={20} fill="currentColor" />
+              <SkipForward size={16} fill="currentColor" />
             </motion.button>
             <motion.button
               onClick={toggleRepeat}
@@ -449,11 +526,11 @@ export function PlayerBar() {
             <ListMusic size={18} />
           </button>
           <button
-            onClick={toggleMute}
-            aria-label={muted ? "Unmute" : "Mute"}
+            onClick={toggleMuteStore}
+            aria-label={isMuted ? "Unmute" : "Mute"}
             className="p-2 text-[#B3B3B3] transition-colors hover:text-white"
           >
-            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
           </button>
           <input
             type="range"
@@ -470,6 +547,57 @@ export function PlayerBar() {
             aria-valuetext={`${Math.round(volume * 100)} percent`}
             className="ntv-range h-1 w-24 cursor-pointer accent-[#3DD6C8]"
           />
+          {currentTrack?.price != null && Number(currentTrack.price) > 0 && (
+            <div className="relative">
+              {dlToken ? (
+                <a
+                  href={`/api/download/${dlToken}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1.5 rounded text-[#3DD6C8] hover:bg-white/[0.08] transition-colors block"
+                  aria-label="Download track"
+                >
+                  <Download size={16} />
+                </a>
+              ) : (
+                <button
+                  onClick={() => setShowDlInput((v) => !v)}
+                  className="p-1.5 rounded text-white/40 hover:text-white/70 hover:bg-white/[0.08] transition-colors"
+                  aria-label="Download track"
+                >
+                  <Download size={16} />
+                </button>
+              )}
+              {showDlInput && !dlToken && (
+                <div className="absolute bottom-10 right-0 w-64 bg-[#282828] border border-white/10 rounded-lg p-3 shadow-xl z-50">
+                  <p className="text-xs text-white/60 mb-2 leading-relaxed">
+                    Paste your download token from your purchase email:
+                  </p>
+                  <input
+                    type="text"
+                    value={tokenInput}
+                    onChange={(e) => setTokenInput(e.target.value)}
+                    placeholder="Enter token..."
+                    className="w-full bg-white/[0.06] border border-white/10 rounded px-2 py-1.5 text-xs text-white placeholder:text-white/30 mb-2 focus:outline-none focus:border-[#3DD6C8]/50"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSaveToken}
+                      className="flex-1 text-xs py-1 bg-[#3DD6C8] text-black rounded font-medium hover:bg-[#3DD6C8]/90 transition-colors"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setShowDlInput(false)}
+                      className="px-2 text-xs text-white/50 hover:text-white/80 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </footer>

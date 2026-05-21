@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import type { Album, Track } from "@/types/music";
 
 export type RepeatMode = "off" | "all" | "one";
+export type ConnectionStatus = 'ok' | 'reconnecting' | 'interference'
 
 type PlayerState = {
   currentTrack: Track | null;
@@ -17,6 +18,9 @@ type PlayerState = {
   seekRequestId: number;
   fullScreenOpen: boolean;
   lyricsOpen: boolean;
+  isMuted: boolean;
+  connectionStatus: ConnectionStatus;
+  retryCount: number;
 
   playTrack: (track: Track, album?: Album | null) => void;
   playAlbum: (album: Album) => void;
@@ -38,6 +42,10 @@ type PlayerState = {
   openLyrics: () => void;
   closeLyrics: () => void;
   toggleLyrics: () => void;
+  toggleMute: () => void;
+  setConnectionStatus: (status: ConnectionStatus) => void;
+  incrementRetryCount: () => void;
+  resetConnectionState: () => void;
 };
 
 const shuffleArray = <T,>(arr: T[]): T[] => {
@@ -67,6 +75,9 @@ export const usePlayerStore = create<PlayerState>()(
       seekRequestId: 0,
       fullScreenOpen: false,
       lyricsOpen: false,
+      isMuted: false,
+      connectionStatus: 'ok' as ConnectionStatus,
+      retryCount: 0,
 
       playTrack: (track, album = null) => {
         // Refuse to switch to a track that has no audioUrl. Setting it as
@@ -207,6 +218,10 @@ export const usePlayerStore = create<PlayerState>()(
       openLyrics: () => set({ lyricsOpen: true }),
       closeLyrics: () => set({ lyricsOpen: false }),
       toggleLyrics: () => set({ lyricsOpen: !get().lyricsOpen }),
+      toggleMute: () => set((state) => ({ isMuted: !state.isMuted })),
+      setConnectionStatus: (status: ConnectionStatus) => set({ connectionStatus: status }),
+      incrementRetryCount: () => set((state) => ({ retryCount: state.retryCount + 1 })),
+      resetConnectionState: () => set({ connectionStatus: 'ok', retryCount: 0 }),
     }),
     {
       name: "ntv-player",

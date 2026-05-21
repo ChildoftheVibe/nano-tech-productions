@@ -12,6 +12,7 @@ import {
   trackSeek,
 } from "@/lib/analytics";
 import type { Album, Track } from "@/types/music";
+import * as Sentry from '@sentry/nextjs'
 
 type PlayerContextValue = {
   audioRef: React.RefObject<HTMLAudioElement | null>;
@@ -57,6 +58,8 @@ async function fetchPlaylist(): Promise<Track[]> {
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const refetchingRef = useRef(false);
+  const preloadAbortRef = useRef<AbortController | null>(null)
+  const hasPlayedRef = useRef<boolean>(false)
 
   // Track-level analytics state (refs so they don't trigger renders).
   const lastTrackIdRef = useRef<string | null>(null);
@@ -72,6 +75,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const seekRequestId = usePlayerStore((s) => s.seekRequestId);
   const queue = usePlayerStore((s) => s.queue);
   const currentAlbum = usePlayerStore((s) => s.currentAlbum);
+  const isMuted = usePlayerStore((s) => s.isMuted);
+  const setConnectionStatus = usePlayerStore((s) => s.setConnectionStatus);
+  const resetConnectionState = usePlayerStore((s) => s.resetConnectionState);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -322,6 +328,134 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       }
     })();
   }, [currentTrack, queue]);
+
+  useEffect(() => {
+    if (!audioRef.current) return
+    audioRef.current.muted = isMuted
+  }, [isMuted])
+
+  useEffect(() => {
+    preloadAbortRef.current?.abort()
+    preloadAbortRef.current = null
+
+    const idx = queue.findIndex((t) => t.id === currentTrack?.id)
+    const nextTrack = idx >= 0 ? queue[idx + 1] : undefined
+    if (!nextTrack) return
+
+    // SECURITY: Get public audio URL only. Never use vault_audio_id.
+    const audioUrl = nextTrack.audioUrl
+    if (!audioUrl || typeof audioUrl !== 'string') return
+    if (audioUrl.trim() === '') return
+
+    // SECURITY: Skip if URL looks like a vault/signed URL
+    if (audioUrl.includes('s--')) return
+
+    // CONNECTION AWARENESS: Skip prefetch on slow or metered connections
+    if (typeof window !== 'undefined') {
+      const conn = (navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string }
+      }).connection
+      if (conn?.saveData === true) return
+      const slowTypes = ['slow-2g', '2g']
+      if (conn?.effectiveType && slowTypes.includes(conn.effectiveType)) return
+    }
+
+    const delay = setTimeout(() => {
+      try {
+        const controller = new AbortController()
+        preloadAbortRef.current = controller
+        fetch(audioUrl, {
+          method: 'GET',
+          credentials: 'omit',
+          signal: controller.signal,
+        }).catch((err) => {
+          if (err instanceof Error && err.name !== 'AbortError') {
+            Sentry.addBreadcrumb({
+              category: 'audio.prestream',
+              message: 'Prefetch failed silently',
+              level: 'debug',
+              data: { trackId: nextTrack.id },
+            })
+          }
+        })
+      } catch {
+        // Prefetch errors must never surface to UI
+      }
+    }, 5000)
+
+    return () => {
+      clearTimeout(delay)
+      preloadAbortRef.current?.abort()
+      preloadAbortRef.current = null
+    }
+  }, [currentTrack?.id])
+
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    let timer: ReturnType<typeof setTimeout> | null = null
+
+    const clearTimer = () => {
+      if (timer !== null) { clearTimeout(timer); timer = null }
+    }
+
+    const startTimer = (durationMs: number) => {
+      clearTimer()
+      timer = setTimeout(() => {
+        setConnectionStatus('interference')
+      }, durationMs)
+    }
+
+    const handleTimeUpdate = () => {
+      if (audio.currentTime > 2) hasPlayedRef.current = true
+    }
+
+    const handleWaiting = () => {
+      if (!hasPlayedRef.current) return
+      if (audio.seeking) return
+      const status = usePlayerStore.getState().connectionStatus
+      if (status === 'interference') return
+      if (typeof window !== 'undefined' && !navigator.onLine) {
+        setConnectionStatus('interference')
+        return
+      }
+      setConnectionStatus('reconnecting')
+      startTimer(9000)
+    }
+
+    const handleStalled = () => { handleWaiting() }
+    const handleCanPlay = () => { clearTimer(); setConnectionStatus('ok') }
+    const handlePlaying = () => { clearTimer(); setConnectionStatus('ok') }
+    const handleError = () => {
+      if (!hasPlayedRef.current) return
+      clearTimer()
+      startTimer(3000)
+    }
+
+    audio.addEventListener('timeupdate', handleTimeUpdate)
+    audio.addEventListener('waiting', handleWaiting)
+    audio.addEventListener('stalled', handleStalled)
+    audio.addEventListener('canplay', handleCanPlay)
+    audio.addEventListener('playing', handlePlaying)
+    audio.addEventListener('error', handleError)
+
+    return () => {
+      clearTimer()
+      audio.removeEventListener('timeupdate', handleTimeUpdate)
+      audio.removeEventListener('waiting', handleWaiting)
+      audio.removeEventListener('stalled', handleStalled)
+      audio.removeEventListener('canplay', handleCanPlay)
+      audio.removeEventListener('playing', handlePlaying)
+      audio.removeEventListener('error', handleError)
+    }
+  }, [])
+
+  // Reset connection state when track changes:
+  useEffect(() => {
+    hasPlayedRef.current = false
+    resetConnectionState()
+  }, [currentTrack?.id])
 
   // ─────────────────────────────────────────────────────────────────────
   // Synchronous play helpers. Every play-initiating click handler in the app

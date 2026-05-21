@@ -4,6 +4,7 @@ import {
   getAlbum,
   getFeaturedAlbums,
   getFeaturedArtists,
+  getEPs,
 } from "@/lib/queries";
 import { HomeClient } from "@/components/home/HomeClient";
 import { HomeSkeleton } from "@/components/ui/skeletons/HomeSkeleton";
@@ -17,12 +18,13 @@ const PAGE_SIZE =
 export const revalidate = 300;
 
 async function HomeData() {
-  const [featured, latest, initialCollection, featuredArtists] =
+  const [featured, latest, initialCollection, featuredArtists, eps] =
     await Promise.all([
       getFeaturedAlbums(),
       getAlbum("nano-tech-purple"),
       getAlbums({ page: 1, limit: PAGE_SIZE, published: true }),
       getFeaturedArtists(),
+      getEPs(),
     ]);
 
   // Preload the first six above-the-fold cover URLs so the browser can race
@@ -42,6 +44,7 @@ async function HomeData() {
         latest={latest}
         initialCollection={initialCollection}
         featuredArtists={featuredArtists}
+        eps={eps}
       />
     </>
   );
