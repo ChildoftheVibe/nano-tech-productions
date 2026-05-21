@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Music, Play } from "lucide-react";
 import type { Album } from "@/types/music";
+import { getAlbumCover, type AlbumCoverSize } from "@/lib/albumCover";
 
 type Size = "sm" | "md" | "lg";
 
@@ -11,6 +12,12 @@ const dimensions: Record<Size, number> = {
   sm: 40,
   md: 180,
   lg: 230,
+};
+
+const coverSizeFor: Record<Size, AlbumCoverSize> = {
+  sm: "sm",
+  md: "md",
+  lg: "lg",
 };
 
 type Props = {
@@ -34,7 +41,9 @@ export function AlbumCard({
 }: Props) {
   const px = dimensions[size];
   const rounded = size === "sm" ? "rounded" : "rounded-md";
-  const optimizedSrc = album.coverImage ?? "";
+  const optimizedSrc = album.coverImage
+    ? getAlbumCover(album.coverImage, coverSizeFor[size])
+    : "";
   const year = album.releaseDate?.slice(0, 4) ?? "";
   const cardLabel = year ? `${album.title}, ${year}` : album.title;
 

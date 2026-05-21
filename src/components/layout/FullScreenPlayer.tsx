@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
+import { getAlbumCover } from "@/lib/albumCover";
 
 const formatTime = (s: number) => {
   if (!Number.isFinite(s) || s < 0) return "0:00";
@@ -95,7 +96,9 @@ export function FullScreenPlayer() {
     : "Jhodge";
 
   const muted = volume === 0;
-  const cover = currentAlbum?.coverImage ?? null;
+  const cover = currentAlbum?.coverImage
+    ? getAlbumCover(currentAlbum.coverImage, 400)
+    : null;
 
   return (
     <AnimatePresence>

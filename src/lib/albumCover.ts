@@ -36,25 +36,12 @@ export function getAlbumCover(
     const marker = "/image/upload/";
     const idx = input.indexOf(marker);
     if (idx < 0) return input;
-    const tail = input.slice(idx + marker.length).split("/");
-    let i = 0;
-    while (i < tail.length) {
-      const seg = tail[i];
-      if (/^v\d+$/.test(seg)) {
-        i++;
-        continue;
-      }
-      // Strip any existing transformation segment (e.g. "f_auto,q_auto").
-      // Cloudinary transformations are sequences of `<key>_<value>` pairs and
-      // never carry a file extension, so the extension test guards publicIds
-      // that happen to start with two letters and an underscore.
-      if (/^[a-z]{1,3}_[^/]+/i.test(seg) && !/\.[a-zA-Z0-9]+$/.test(seg)) {
-        i++;
-        continue;
-      }
-      break;
-    }
-    return `${input.slice(0, idx)}${marker}${transform}/${tail.slice(i).join("/")}`;
+    const head = input.slice(0, idx + marker.length);
+    const tail = input.slice(idx + marker.length);
+    // If the URL already carries an f_/q_/w_/h_/c_ transform segment, leave it
+    // alone — splicing in a second transform produces an unresolvable URL.
+    if (/^(?:[a-z]_[^/]+,)*[a-z]_[^/]+\//.test(tail)) return input;
+    return `${head}${transform}/${tail}`;
   }
 
   if (input.startsWith("/")) return input;

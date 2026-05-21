@@ -7,6 +7,7 @@ import {
   PREVIEW_LIMIT_SECONDS,
 } from "@/store/previewStore";
 import type { Instrumental } from "@/types/music";
+import { getAlbumCover } from "@/lib/albumCover";
 
 type Props = {
   instrumental: Instrumental;
@@ -34,7 +35,9 @@ export function PreviewPlayer({ instrumental }: Props) {
   const percent = Math.min(100, (progress / PREVIEW_LIMIT_SECONDS) * 100);
   const remaining = Math.max(0, PREVIEW_LIMIT_SECONDS - progress);
 
-  const cover = instrumental.coverImage ?? "";
+  const cover = instrumental.coverImage
+    ? getAlbumCover(instrumental.coverImage, "sm")
+    : "";
   const previewUrl = instrumental.previewUrl ?? "";
   const canPlay = previewUrl.length > 0;
 
