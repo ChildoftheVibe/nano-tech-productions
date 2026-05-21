@@ -10,6 +10,7 @@ import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { usePageEngagement } from "@/lib/usePageEngagement";
 import type { Album, AlbumListResult, Artist } from "@/types/music";
+import { getAlbumCover } from "@/lib/albumCover";
 
 const PAGE_SIZE =
   Number(process.env.NEXT_PUBLIC_ALBUMS_PER_PAGE) > 0
@@ -316,7 +317,7 @@ export function HomeClient({
                   {album.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={album.coverImage}
+                      src={getAlbumCover(album.coverImage, "md")}
                       alt={album.title}
                       className="h-full w-full object-cover"
                     />

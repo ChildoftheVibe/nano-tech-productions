@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Library, Search, Music, Users, Volume2 } from "lucide-react";
 import type { Album } from "@/types/music";
+import { getAlbumCover } from "@/lib/albumCover";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
@@ -106,7 +107,7 @@ export function Sidebar({ initialAlbums }: Props) {
                   {album.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={album.coverImage}
+                      src={getAlbumCover(album.coverImage, 40)}
                       alt={`${album.title} album cover`}
                       className="h-10 w-10 flex-shrink-0 rounded object-cover"
                       onError={(e) => {
