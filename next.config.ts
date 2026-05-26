@@ -174,13 +174,6 @@ export default withSentryConfig(withSerwist(nextConfig), {
   // Only upload source maps when an auth token is present (CI/Vercel).
   // Silent locally to avoid noisy build output when no credentials are set.
   silent: !process.env.SENTRY_AUTH_TOKEN,
-  // Skip source map uploads entirely when there is no auth token so local/CI
-  // builds don't hang retrying network calls to Sentry.
-  sourcemaps: process.env.SENTRY_AUTH_TOKEN ? undefined : { disable: true },
-  // Disable Sentry telemetry and CLI release creation when no auth token is
-  // present — prevents the webpack plugin from making blocking network calls
-  // during compilation in environments without Sentry credentials.
-  telemetry: !!process.env.SENTRY_AUTH_TOKEN,
   disableLogger: true,
   // Treeshake Sentry SDK logger statements in production.
   reactComponentAnnotation: { enabled: true },

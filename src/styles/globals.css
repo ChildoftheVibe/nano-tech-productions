@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
-
 @import "tailwindcss";
 
 @theme {
@@ -11,8 +9,8 @@
   --color-ntv-teal: #3dd6c8;
   --color-ntv-pink: #eb41df;
   --color-ntv-muted: #b3b3b3;
-  --font-sans: 'Inter', sans-serif;
-  --font-mono: 'Space Mono', monospace;
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), 'Space Mono', monospace;
 }
 
 :root {
@@ -38,7 +36,7 @@ html,
 body {
   background: var(--ntv-bg);
   color: var(--ntv-text);
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
   height: 100%;
   overflow: hidden;
 }
@@ -64,7 +62,7 @@ main {
 }
 
 .font-mono {
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-geist-mono), 'Space Mono', monospace;
 }
 
 .ntv-card {

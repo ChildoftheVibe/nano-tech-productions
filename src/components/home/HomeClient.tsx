@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion, type Variants } from "framer-motion";
-import { Pause, Play } from "lucide-react";
+import { Pause, Play, ChevronRight } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { ArtistCard } from "@/components/artist/ArtistCard";
 import { usePlayerStore } from "@/store/playerStore";
@@ -30,25 +30,25 @@ const containerStagger: Variants = {
   hidden: { opacity: 1 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.05 },
+    transition: { staggerChildren: 0.06 },
   },
 };
 
 const itemFadeUp: Variants = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.3, ease: "easeOut" as const },
+    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
   },
 };
 
-const sectionHeader: Variants = {
-  hidden: { opacity: 0, y: 8 },
+const sectionReveal: Variants = {
+  hidden: { opacity: 0, x: -10 },
   visible: {
     opacity: 1,
-    y: 0,
-    transition: { duration: 0.3, ease: "easeOut" as const, delay: 0.1 },
+    x: 0,
+    transition: { duration: 0.35, ease: "easeOut", delay: 0.05 },
   },
 };
 
@@ -57,15 +57,37 @@ type Props = {
   latest: Album | null;
   initialCollection: AlbumListResult;
   featuredArtists: Artist[];
-  eps: Album[];
 };
+
+function SectionLabel({
+  eyebrow,
+  title,
+  count,
+}: {
+  eyebrow: string;
+  title: string;
+  count?: string;
+}) {
+  return (
+    <div className="border-l-2 border-[#3DD6C8] pl-4">
+      <div className="mb-0.5 font-mono text-[10px] uppercase tracking-[0.28em] text-[#3DD6C8]">
+        {eyebrow}
+      </div>
+      <div className="flex items-baseline gap-3">
+        <h2 className="text-xl font-bold text-white">{title}</h2>
+        {count && (
+          <span className="font-mono text-[11px] text-[#B3B3B3]">{count}</span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function HomeClient({
   featured,
   latest,
   initialCollection,
   featuredArtists,
-  eps,
 }: Props) {
   const greeting = useSyncExternalStore(
     subscribeNoop,
@@ -80,7 +102,9 @@ export function HomeClient({
   const currentAlbum = usePlayerStore((s) => s.currentAlbum);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
 
-  const [collection, setCollection] = useState<Album[]>(initialCollection.albums);
+  const [collection, setCollection] = useState<Album[]>(
+    initialCollection.albums,
+  );
   const [hasMore, setHasMore] = useState(initialCollection.hasMore);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -113,24 +137,36 @@ export function HomeClient({
   };
 
   return (
-    <div className="px-4 md:px-8 pt-4 md:pt-6 pb-12 md:pb-16">
+    <div className="px-4 md:px-8 pt-6 md:pt-10 pb-12 md:pb-16">
+
+      {/* ── HERO ── */}
       <motion.section
-        className="pb-8 md:pb-12"
-        initial={animateFirst ? { opacity: 0, y: 8 } : false}
+        className="pb-12 md:pb-16"
+        initial={animateFirst ? { opacity: 0, y: 14 } : false}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
+        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        <h1 className="text-2xl font-bold text-white md:text-4xl">{greeting}</h1>
+        <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#3DD6C8]">
+          Nano Tech Vibe · The Vault
+        </div>
+        <h1 className="text-4xl font-black tracking-tight leading-[0.93] text-white md:text-6xl lg:text-7xl">
+          {greeting}
+          <span className="text-[#3DD6C8]">.</span>
+        </h1>
+        <p className="mt-4 max-w-xs text-sm text-[#B3B3B3] leading-relaxed md:max-w-sm">
+          Music direct from the artist. No algorithm. No filter.
+        </p>
       </motion.section>
 
+      {/* ── FEATURED ── */}
       <section className="pb-12 md:pb-16">
         <motion.div
-          className="mb-6 md:mb-8 flex items-baseline justify-between"
+          className="mb-6 md:mb-8"
           initial={animateFirst ? "hidden" : false}
           animate="visible"
-          variants={sectionHeader}
+          variants={sectionReveal}
         >
-          <h2 className="text-xl font-bold text-white">Featured</h2>
+          <SectionLabel eyebrow="Curated" title="Featured" />
         </motion.div>
         {featured.length === 0 ? (
           <div className="rounded-md border border-white/10 p-6 text-sm text-[#B3B3B3]">
@@ -139,7 +175,7 @@ export function HomeClient({
         ) : (
           <div className="-mx-4 overflow-x-auto px-4 md:-mx-8 md:px-8">
             <motion.div
-              className="flex snap-x snap-mandatory gap-6 md:gap-8 pb-2"
+              className="flex snap-x snap-mandatory gap-5 md:gap-7 pb-2"
               variants={containerStagger}
               initial={animateFirst ? "hidden" : false}
               animate="visible"
@@ -147,7 +183,7 @@ export function HomeClient({
               {featured.map((album, idx) => (
                 <motion.div
                   key={album.id}
-                  className="w-[180px] flex-shrink-0 snap-start"
+                  className="w-[160px] flex-shrink-0 snap-start md:w-[190px]"
                   variants={itemFadeUp}
                 >
                   <AlbumCard
@@ -159,13 +195,18 @@ export function HomeClient({
                     priority={idx < 6}
                     fetchPriority={idx < 3 ? "high" : undefined}
                   />
-                  <div className="mt-2 truncate text-sm font-semibold text-white">
-                    <Link href={`/album/${album.slug}`} className="hover:underline">
-                      {album.title}
-                    </Link>
-                  </div>
-                  <div className="text-xs text-[#B3B3B3]">
-                    {album.releaseDate?.slice(0, 4) ?? ""}
+                  <div className="mt-2.5 space-y-1">
+                    <div className="truncate text-sm font-semibold text-white leading-tight">
+                      <Link
+                        href={`/album/${album.slug}`}
+                        className="hover:text-[#3DD6C8] transition-colors duration-200"
+                      >
+                        {album.title}
+                      </Link>
+                    </div>
+                    <div className="font-mono text-[10px] uppercase tracking-wider text-[#B3B3B3]">
+                      {album.releaseDate?.slice(0, 4) ?? ""}
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -174,125 +215,104 @@ export function HomeClient({
         )}
       </section>
 
-      {eps.length > 0 && (
-        <section className="pb-12 md:pb-16">
-          <motion.div
-            className="mb-6 md:mb-8 flex items-baseline justify-between"
-            initial={animateFirst ? "hidden" : false}
-            animate="visible"
-            variants={sectionHeader}
-          >
-            <h2 className="text-xl font-bold text-white">EPs</h2>
-          </motion.div>
-          <div className="-mx-4 overflow-x-auto px-4 md:-mx-8 md:px-8">
-            <motion.div
-              className="flex snap-x snap-mandatory gap-6 md:gap-8 pb-2"
-              variants={containerStagger}
-              initial={animateFirst ? "hidden" : false}
-              animate="visible"
-            >
-              {eps.map((ep) => (
-                <motion.div
-                  key={ep.id}
-                  className="w-[180px] flex-shrink-0 snap-start"
-                  variants={itemFadeUp}
-                >
-                  <AlbumCard
-                    album={ep}
-                    size="md"
-                    href={`/album/${ep.slug}`}
-                    showHoverPlay
-                    onPlay={() => playFromAlbum(ep)}
-                  />
-                  <div className="mt-2 truncate text-sm font-semibold text-white">
-                    <Link href={`/album/${ep.slug}`} className="hover:underline">
-                      {ep.title}
-                    </Link>
-                  </div>
-                  <div className="text-xs text-[#B3B3B3]">
-                    {ep.releaseDate?.slice(0, 4) ?? ""}
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-      )}
-
+      {/* ── LATEST RELEASE ── */}
       {latest ? (
         <section className="pb-12 md:pb-16">
           <motion.div
-            className="mb-6 md:mb-8 flex items-baseline justify-between"
+            className="mb-6 md:mb-8"
             initial={animateFirst ? "hidden" : false}
             animate="visible"
-            variants={sectionHeader}
+            variants={sectionReveal}
           >
-            <h2 className="text-xl font-bold text-white">Latest Releases</h2>
+            <SectionLabel eyebrow="New Drop" title="Latest Release" />
           </motion.div>
           <motion.div
-            className="overflow-hidden rounded-xl"
-            initial={animateFirst ? { opacity: 0 } : false}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="overflow-hidden rounded-2xl"
+            initial={animateFirst ? { opacity: 0, y: 14 } : false}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
             style={{
-              background: `linear-gradient(135deg, ${latest.bgColor} 0%, #1a0838 60%, #393838 100%)`,
-              border: "1px solid rgba(255,255,255,0.06)",
+              background: `linear-gradient(135deg, ${latest.bgColor}cc 0%, #1a0838 55%, #181818 100%)`,
+              border: "1px solid rgba(255,255,255,0.07)",
             }}
           >
-            <div className="flex flex-col gap-6 p-6 md:flex-row md:items-end md:gap-8 md:p-8 lg:p-12">
+            <div className="relative flex flex-col gap-6 p-6 md:flex-row md:items-end md:gap-10 md:p-10 lg:p-12">
+              {/* subtle grid texture */}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.025]"
+                style={{
+                  backgroundImage: `repeating-linear-gradient(0deg, #fff 0px, #fff 1px, transparent 1px, transparent 48px), repeating-linear-gradient(90deg, #fff 0px, #fff 1px, transparent 1px, transparent 48px)`,
+                }}
+              />
               <motion.div
-                className="hidden md:block"
-                initial={animateFirst ? { scale: 0.95, opacity: 0 } : false}
+                className="relative flex-shrink-0"
+                initial={animateFirst ? { scale: 0.94, opacity: 0 } : false}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
               >
-                <AlbumCard album={latest} size="lg" href={`/album/${latest.slug}`} />
+                <AlbumCard
+                  album={latest}
+                  size="lg"
+                  href={`/album/${latest.slug}`}
+                />
               </motion.div>
-              <motion.div
-                className="md:hidden"
-                initial={animateFirst ? { scale: 0.95, opacity: 0 } : false}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              >
-                <AlbumCard album={latest} size="md" href={`/album/${latest.slug}`} />
-              </motion.div>
-              <div className="min-w-0 flex-1">
-                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#B3B3B3]">
-                  Latest Release
+              <div className="relative min-w-0 flex-1">
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  <span
+                    className="rounded-full px-3 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] font-semibold"
+                    style={{
+                      background: `${latest.accentColor}1a`,
+                      color: latest.accentColor,
+                      border: `1px solid ${latest.accentColor}33`,
+                    }}
+                  >
+                    Latest Release
+                  </span>
+                  {latest.tracks.length > 0 && (
+                    <span className="font-mono text-[10px] text-[#B3B3B3] uppercase tracking-wider">
+                      {latest.tracks.length}{" "}
+                      {latest.tracks.length === 1 ? "Track" : "Tracks"}
+                    </span>
+                  )}
                 </div>
-                <h3 className="mb-3 text-2xl font-extrabold text-white md:text-5xl">
+                <h3 className="mb-3 text-3xl font-black tracking-tight leading-[0.92] text-white md:text-5xl lg:text-6xl">
                   {latest.title}
                 </h3>
-                <div className="mb-4 text-sm text-[#B3B3B3]">
-                  Jhodge ·{" "}
-                  {latest.releaseDate
-                    ? new Date(latest.releaseDate).toLocaleDateString(undefined, {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })
-                    : ""}
+                <div className="mb-5 flex items-center gap-2 font-mono text-xs text-[#B3B3B3]">
+                  <span>Jhodge</span>
+                  <span className="text-white/20">·</span>
+                  <span>
+                    {latest.releaseDate
+                      ? new Date(latest.releaseDate).toLocaleDateString(
+                          undefined,
+                          { year: "numeric", month: "long" },
+                        )
+                      : ""}
+                  </span>
                 </div>
-                <p className="mb-6 line-clamp-2 max-w-2xl text-sm text-white/80">
-                  {latest.description}
-                </p>
-                <div className="flex flex-wrap gap-4">
+                {latest.description && (
+                  <p className="mb-7 line-clamp-2 max-w-lg text-sm text-white/55 leading-relaxed">
+                    {latest.description}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-3">
                   <motion.button
                     onClick={() => playFromAlbum(latest)}
                     disabled={!latest.tracks.length}
-                    className="flex items-center gap-2 rounded-full px-5 py-1.5 text-sm font-bold text-black disabled:opacity-40"
+                    className="flex items-center gap-2 rounded-full px-6 py-2 text-sm font-bold text-black disabled:opacity-40"
                     style={{ background: latest.accentColor }}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.96 }}
                   >
-                    <Play size={16} fill="currentColor" />
-                    Play
+                    <Play size={14} fill="currentColor" />
+                    Play Now
                   </motion.button>
                   <Link
                     href={`/album/${latest.slug}`}
-                    className="ntv-btn flex items-center gap-2 rounded-full border border-white/30 px-5 py-1.5 text-sm font-bold text-white transition-colors hover:bg-white/10"
+                    className="flex items-center gap-1.5 rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
                   >
                     View Album
+                    <ChevronRight size={14} />
                   </Link>
                 </div>
               </div>
@@ -301,19 +321,20 @@ export function HomeClient({
         </section>
       ) : null}
 
+      {/* ── FEATURED ARTISTS ── */}
       {featuredArtists.length > 0 ? (
-        <section className="pb-10 md:pb-12">
+        <section className="pb-12 md:pb-14">
           <motion.div
-            className="mb-6 md:mb-8 flex items-baseline justify-between"
+            className="mb-6 md:mb-8"
             initial={animateFirst ? "hidden" : false}
             animate="visible"
-            variants={sectionHeader}
+            variants={sectionReveal}
           >
-            <h2 className="text-xl font-bold text-white">Featured Artists</h2>
+            <SectionLabel eyebrow="The Roster" title="Featured Artists" />
           </motion.div>
           <div className="-mx-4 overflow-x-auto px-4 md:-mx-8 md:px-8">
             <motion.div
-              className="flex snap-x snap-mandatory gap-4 md:gap-6 pb-2"
+              className="flex snap-x snap-mandatory gap-4 md:gap-5 pb-2"
               variants={containerStagger}
               initial={animateFirst ? "hidden" : false}
               animate="visible"
@@ -321,7 +342,7 @@ export function HomeClient({
               {featuredArtists.map((artist) => (
                 <motion.div
                   key={artist.id}
-                  className="w-[220px] flex-shrink-0 snap-start"
+                  className="w-[200px] flex-shrink-0 snap-start md:w-[220px]"
                   variants={itemFadeUp}
                 >
                   <ArtistCard artist={artist} size="md" />
@@ -332,20 +353,22 @@ export function HomeClient({
         </section>
       ) : null}
 
+      {/* ── THE COLLECTION ── */}
       <section className="pb-10 md:pb-12">
         <motion.div
-          className="mb-6 md:mb-8 flex items-baseline justify-between"
+          className="mb-6 md:mb-8"
           initial={animateFirst ? "hidden" : false}
           animate="visible"
-          variants={sectionHeader}
+          variants={sectionReveal}
         >
-          <h2 className="text-xl font-bold text-white">The Collection</h2>
-          <span className="text-xs text-[#B3B3B3]">
-            {collection.length} of {initialCollection.totalCount}
-          </span>
+          <SectionLabel
+            eyebrow="Full Catalog"
+            title="The Collection"
+            count={`${collection.length} / ${initialCollection.totalCount}`}
+          />
         </motion.div>
         <motion.div
-          className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6"
+          className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4"
           variants={containerStagger}
           initial={animateFirst ? "hidden" : false}
           animate="visible"
@@ -354,11 +377,11 @@ export function HomeClient({
             <motion.div key={album.id} variants={itemFadeUp}>
               <Link
                 href={`/album/${album.slug}`}
-                className="group flex flex-col gap-3 rounded-md p-3 transition-colors hover:bg-white/5 md:flex-row md:gap-4 md:p-4"
+                className="group flex flex-col gap-3 rounded-xl border border-transparent p-3 transition-all hover:border-white/[0.06] hover:bg-white/[0.04] md:flex-row md:gap-4 md:p-4"
               >
-                {/* Mobile: square responsive cover */}
+                {/* Mobile: square cover */}
                 <div
-                  className="aspect-square w-full overflow-hidden rounded-md md:hidden"
+                  className="aspect-square w-full overflow-hidden rounded-lg md:hidden"
                   style={{ background: album.bgColor }}
                 >
                   {album.coverImage ? (
@@ -370,7 +393,7 @@ export function HomeClient({
                     />
                   ) : null}
                 </div>
-                {/* Desktop: AlbumCard with hover play */}
+                {/* Desktop: card with hover play */}
                 <div className="hidden md:block">
                   <AlbumCard
                     album={album}
@@ -379,14 +402,16 @@ export function HomeClient({
                     onPlay={() => playFromAlbum(album)}
                   />
                 </div>
-                <div className="min-w-0 flex-1 md:pt-3">
-                  <div className="truncate text-sm font-semibold text-white md:text-base">
+                <div className="min-w-0 flex-1 md:pt-2">
+                  <div className="truncate text-sm font-semibold text-white transition-colors group-hover:text-[#3DD6C8] md:text-[15px]">
                     {album.title}
                   </div>
-                  <div className="mt-1 text-xs text-[#B3B3B3]">
-                    {album.releaseDate?.slice(0, 4)} · {album.tracks.length} songs
+                  <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-[#B3B3B3]">
+                    {album.releaseDate?.slice(0, 4)} ·{" "}
+                    {album.tracks.length}{" "}
+                    {album.tracks.length === 1 ? "track" : "tracks"}
                   </div>
-                  <p className="mt-3 hidden line-clamp-3 text-xs text-white/60 md:block">
+                  <p className="mt-2.5 hidden line-clamp-2 text-xs text-white/50 leading-relaxed md:block">
                     {album.description}
                   </p>
                 </div>
@@ -395,13 +420,13 @@ export function HomeClient({
           ))}
         </motion.div>
         {hasMore ? (
-          <div className="mt-6 flex justify-center">
+          <div className="mt-8 flex justify-center">
             <motion.button
               onClick={loadMore}
               disabled={loading}
-              className="rounded-full border border-white/20 bg-black/20 px-6 py-1.5 text-sm font-semibold text-white hover:bg-black/40 disabled:opacity-50"
+              className="rounded-full border border-white/15 px-8 py-2 text-sm font-semibold text-white/70 transition-all hover:border-[#3DD6C8]/40 hover:text-[#3DD6C8] disabled:opacity-50"
               whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.96 }}
+              whileTap={{ scale: 0.97 }}
             >
               {loading ? "Loading…" : "Load More"}
             </motion.button>
@@ -409,18 +434,19 @@ export function HomeClient({
         ) : null}
       </section>
 
+      {/* ── NOW PLAYING ── */}
       {currentTrack ? (
         <section className="pb-4">
-          <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="text-xl font-bold text-white">Now Playing</h2>
+          <div className="mb-5">
+            <SectionLabel eyebrow="Active" title="Now Playing" />
           </div>
           <div
-            className="flex items-center gap-4 rounded-xl p-4"
+            className="flex items-center gap-5 rounded-2xl p-5"
             style={{
               background: currentAlbum
-                ? `linear-gradient(135deg, ${currentAlbum.bgColor} 0%, #393838 100%)`
+                ? `linear-gradient(135deg, ${currentAlbum.bgColor}aa 0%, #181818 100%)`
                 : "#282828",
-              border: "1px solid rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.07)",
             }}
           >
             {currentAlbum ? (
@@ -431,13 +457,13 @@ export function HomeClient({
               />
             ) : null}
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-semibold uppercase tracking-[0.2em] text-[#B3B3B3]">
+              <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.25em] text-[#3DD6C8]">
                 Currently Playing
               </div>
-              <div className="mt-1 truncate text-2xl font-bold text-white">
+              <div className="truncate text-xl font-black leading-tight text-white md:text-2xl">
                 {currentTrack.title}
               </div>
-              <div className="text-sm text-[#B3B3B3]">
+              <div className="mt-1 font-mono text-xs text-[#B3B3B3]">
                 Jhodge
                 {currentTrack.features?.length
                   ? ` feat. ${currentTrack.features.join(", ")}`
@@ -446,21 +472,19 @@ export function HomeClient({
               </div>
               <motion.button
                 onClick={togglePlayPause}
-                className="mt-3 flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold text-black"
-                style={{
-                  background: currentAlbum?.accentColor ?? "#3DD6C8",
-                }}
+                className="mt-4 flex items-center gap-2 rounded-full px-5 py-1.5 text-sm font-bold text-black"
+                style={{ background: currentAlbum?.accentColor ?? "#3DD6C8" }}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
               >
                 {isPlaying ? (
                   <>
-                    <Pause size={14} fill="currentColor" />
+                    <Pause size={13} fill="currentColor" />
                     Pause
                   </>
                 ) : (
                   <>
-                    <Play size={14} fill="currentColor" />
+                    <Play size={13} fill="currentColor" />
                     Resume
                   </>
                 )}
