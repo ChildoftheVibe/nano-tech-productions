@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Pause, Play, ChevronRight } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
@@ -16,6 +16,8 @@ const PAGE_SIZE =
   Number(process.env.NEXT_PUBLIC_ALBUMS_PER_PAGE) > 0
     ? Number(process.env.NEXT_PUBLIC_ALBUMS_PER_PAGE)
     : 20;
+
+const PRIMARY_ARTIST = "Jhodge";
 
 const greetingForHour = (h: number) => {
   if (h < 12) return "Good Morning";
@@ -69,7 +71,8 @@ function SectionLabel({
   count?: string;
 }) {
   return (
-    <div className="border-l-2 border-[#3DD6C8] pl-4">
+    <div>
+      <div className="mb-2 h-px w-6 bg-[#3DD6C8]" />
       <div className="mb-0.5 font-mono text-[10px] uppercase tracking-[0.28em] text-[#3DD6C8]">
         {eyebrow}
       </div>
@@ -109,14 +112,8 @@ export function HomeClient({
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const firstLoadRef = useRef(true);
-  const [animateFirst, setAnimateFirst] = useState(false);
-  useEffect(() => {
-    if (firstLoadRef.current) {
-      setAnimateFirst(true);
-      firstLoadRef.current = false;
-    }
-  }, []);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const loadMore = async () => {
     if (loading || !hasMore) return;
@@ -142,8 +139,8 @@ export function HomeClient({
       {/* ── HERO ── */}
       <motion.section
         className="pb-12 md:pb-16"
-        initial={animateFirst ? { opacity: 0, y: 14 } : false}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 14 }}
+        animate={mounted ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#3DD6C8]">
@@ -162,8 +159,8 @@ export function HomeClient({
       <section className="pb-12 md:pb-16">
         <motion.div
           className="mb-6 md:mb-8"
-          initial={animateFirst ? "hidden" : false}
-          animate="visible"
+          initial="hidden"
+          animate={mounted ? "visible" : "hidden"}
           variants={sectionReveal}
         >
           <SectionLabel eyebrow="Curated" title="Featured" />
@@ -177,8 +174,8 @@ export function HomeClient({
             <motion.div
               className="flex snap-x snap-mandatory gap-5 md:gap-7 pb-2"
               variants={containerStagger}
-              initial={animateFirst ? "hidden" : false}
-              animate="visible"
+              initial="hidden"
+              animate={mounted ? "visible" : "hidden"}
             >
               {featured.map((album, idx) => (
                 <motion.div
@@ -220,16 +217,16 @@ export function HomeClient({
         <section className="pb-12 md:pb-16">
           <motion.div
             className="mb-6 md:mb-8"
-            initial={animateFirst ? "hidden" : false}
-            animate="visible"
+            initial="hidden"
+            animate={mounted ? "visible" : "hidden"}
             variants={sectionReveal}
           >
             <SectionLabel eyebrow="New Drop" title="Latest Release" />
           </motion.div>
           <motion.div
             className="overflow-hidden rounded-2xl"
-            initial={animateFirst ? { opacity: 0, y: 14 } : false}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 14 }}
+            animate={mounted ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
             style={{
               background: `linear-gradient(135deg, ${latest.bgColor}cc 0%, #1a0838 55%, #181818 100%)`,
@@ -246,8 +243,8 @@ export function HomeClient({
               />
               <motion.div
                 className="relative flex-shrink-0"
-                initial={animateFirst ? { scale: 0.94, opacity: 0 } : false}
-                animate={{ scale: 1, opacity: 1 }}
+                initial={{ scale: 0.94, opacity: 0 }}
+                animate={mounted ? { scale: 1, opacity: 1 } : { scale: 0.94, opacity: 0 }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
               >
                 <AlbumCard
@@ -279,7 +276,7 @@ export function HomeClient({
                   {latest.title}
                 </h3>
                 <div className="mb-5 flex items-center gap-2 font-mono text-xs text-[#B3B3B3]">
-                  <span>Jhodge</span>
+                  <span>{PRIMARY_ARTIST}</span>
                   <span className="text-white/20">·</span>
                   <span>
                     {latest.releaseDate
@@ -326,8 +323,8 @@ export function HomeClient({
         <section className="pb-12 md:pb-14">
           <motion.div
             className="mb-6 md:mb-8"
-            initial={animateFirst ? "hidden" : false}
-            animate="visible"
+            initial="hidden"
+            animate={mounted ? "visible" : "hidden"}
             variants={sectionReveal}
           >
             <SectionLabel eyebrow="The Roster" title="Featured Artists" />
@@ -336,8 +333,8 @@ export function HomeClient({
             <motion.div
               className="flex snap-x snap-mandatory gap-4 md:gap-5 pb-2"
               variants={containerStagger}
-              initial={animateFirst ? "hidden" : false}
-              animate="visible"
+              initial="hidden"
+              animate={mounted ? "visible" : "hidden"}
             >
               {featuredArtists.map((artist) => (
                 <motion.div
@@ -357,8 +354,8 @@ export function HomeClient({
       <section className="pb-10 md:pb-12">
         <motion.div
           className="mb-6 md:mb-8"
-          initial={animateFirst ? "hidden" : false}
-          animate="visible"
+          initial="hidden"
+          animate={mounted ? "visible" : "hidden"}
           variants={sectionReveal}
         >
           <SectionLabel
@@ -370,8 +367,8 @@ export function HomeClient({
         <motion.div
           className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4"
           variants={containerStagger}
-          initial={animateFirst ? "hidden" : false}
-          animate="visible"
+          initial="hidden"
+          animate={mounted ? "visible" : "hidden"}
         >
           {collection.map((album) => (
             <motion.div key={album.id} variants={itemFadeUp}>
@@ -464,7 +461,7 @@ export function HomeClient({
                 {currentTrack.title}
               </div>
               <div className="mt-1 font-mono text-xs text-[#B3B3B3]">
-                Jhodge
+                {PRIMARY_ARTIST}
                 {currentTrack.features?.length
                   ? ` feat. ${currentTrack.features.join(", ")}`
                   : ""}

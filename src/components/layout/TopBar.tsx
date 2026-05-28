@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Users } from "lucide-react";
 import { SearchBar } from "@/components/search/SearchBar";
 
 export function TopBar() {
@@ -40,20 +40,18 @@ export function TopBar() {
       <div className="flex items-center gap-3">
         <SearchBar mode="navigate" />
         <motion.div
-          whileHover={{
-            scale: 1.03,
-            boxShadow: "0 0 12px rgba(235,65,223,0.4)",
-          }}
+          whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.96 }}
           transition={{ duration: 0.15 }}
           style={{ borderRadius: 9999 }}
         >
           <Link
-            href="/admin"
-            className="ntv-btn inline-flex h-9 items-center justify-center rounded-full px-4 py-1 text-xs font-bold uppercase tracking-wider text-white"
-            style={{ background: "#EB41DF" }}
+            href="/fan-club/login"
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-[#3DD6C8]/25 px-4 py-1 text-xs font-semibold tracking-wide text-[#3DD6C8]/80 transition-colors hover:border-[#3DD6C8]/50 hover:text-[#3DD6C8]"
+            style={{ background: "rgba(61,214,200,0.06)" }}
           >
-            Admin
+            <Users size={12} aria-hidden="true" />
+            Nano Techians
           </Link>
         </motion.div>
       </div>

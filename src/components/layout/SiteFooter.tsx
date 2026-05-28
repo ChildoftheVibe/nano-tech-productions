@@ -33,6 +33,14 @@ export function SiteFooter() {
           </a>
         </nav>
       </div>
+      <div className="mx-auto mt-6 flex max-w-6xl justify-end">
+        <Link
+          href="/admin"
+          className="font-mono text-[10px] tracking-widest text-white/15 transition-colors hover:text-white/35"
+        >
+          admin
+        </Link>
+      </div>
     </footer>
   );
 }

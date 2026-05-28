@@ -69,8 +69,8 @@ export function AlbumCard({
         <img
           src={optimizedSrc}
           alt={`${album.title} album cover`}
-          className="absolute inset-0 h-full w-full object-cover transition-[filter] duration-200 group-hover:brightness-[0.7] cursor-pointer md:cursor-zoom-in w-[130px] h-[130px] md:w-auto md:h-auto"
-          onClick={() => { setModalImageUrl(optimizedSrc); setIsModalOpen(true) }}
+          className={`absolute inset-0 h-full w-full object-cover transition-[filter] duration-200 group-hover:brightness-[0.7]${!href ? ' cursor-pointer md:cursor-zoom-in' : ''}`}
+          onClick={!href ? () => { setModalImageUrl(optimizedSrc); setIsModalOpen(true) } : undefined}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={fetchPriority}
           onError={(e) => {
@@ -121,16 +121,8 @@ export function AlbumCard({
     </>
   );
   return (
-    <>
-      <Link href={href} aria-label={cardLabel} className="block">
-        {cover}
-      </Link>
-      <AlbumCoverModal
-        isOpen={isModalOpen}
-        imageUrl={modalImageUrl}
-        altText="Album cover"
-        onClose={() => setIsModalOpen(false)}
-      />
-    </>
+    <Link href={href} aria-label={cardLabel} className="block">
+      {cover}
+    </Link>
   );
 }
