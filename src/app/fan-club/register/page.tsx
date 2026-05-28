@@ -1,23 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Mail, Lock } from "lucide-react";
+import { ArrowLeft, Mail, Lock, User } from "lucide-react";
 import { createBrowserClient } from "@supabase/auth-helpers-nextjs";
 
-type FormStatus = "idle" | "loading" | "error" | "rate_limited";
+type FormStatus = "idle" | "loading" | "error" | "success";
 
-export default function FanClubLoginPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") ?? "/fan-club";
-  const urlError = searchParams.get("error");
-
-  const safeRedirect =
-    redirectTo.startsWith("/fan-club") ? redirectTo : "/fan-club";
-
+export default function FanClubRegisterPage() {
   const supabase = useMemo(
     () =>
       createBrowserClient(
@@ -27,43 +18,60 @@ export default function FanClubLoginPage() {
     [],
   );
 
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState<FormStatus>("idle");
-  const [errorMsg, setErrorMsg] = useState<string | null>(
-    urlError === "auth_failed" ? "Authentication failed. Try again." : null,
-  );
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setStatus("loading");
     setErrorMsg(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      if (error.status === 429) {
-        setStatus("rate_limited");
-        return;
-      }
-      setErrorMsg(error.message ?? "Invalid credentials.");
+    if (password.length < 8) {
+      setErrorMsg("Password must be at least 8 characters.");
       setStatus("error");
       return;
     }
 
-    router.replace(safeRedirect);
-    router.refresh();
+    if (password !== confirmPassword) {
+      setErrorMsg("Passwords do not match.");
+      setStatus("error");
+      return;
+    }
+
+    setStatus("loading");
+
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "";
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: displayName },
+        emailRedirectTo: `${origin}/fan-club/auth/callback`,
+      },
+    });
+
+    if (error) {
+      setErrorMsg(error.message ?? "Could not create account. Try again.");
+      setStatus("error");
+      return;
+    }
+
+    setStatus("success");
   }
 
   async function onGoogleSignIn() {
     setStatus("loading");
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "";
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/fan-club/auth/callback`,
+        redirectTo: `${origin}/fan-club/auth/callback`,
       },
     });
   }
@@ -73,7 +81,7 @@ export default function FanClubLoginPage() {
       className="fixed inset-0 z-50 overflow-y-auto"
       style={{ background: "#080808" }}
     >
-      {/* atmospheric teal glow — top-center */}
+      {/* atmospheric teal glow */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2"
@@ -120,7 +128,7 @@ export default function FanClubLoginPage() {
           </h1>
           <div className="mx-auto mt-5 h-px w-8 bg-[#3DD6C8]/30" />
           <p className="mt-4 font-mono text-xs tracking-widest text-white/25 uppercase">
-            The inner circle
+            Create Account
           </p>
         </motion.div>
 
@@ -136,9 +144,9 @@ export default function FanClubLoginPage() {
           }}
         >
           <AnimatePresence mode="wait">
-            {status === "rate_limited" ? (
+            {status === "success" ? (
               <motion.div
-                key="rate_limited"
+                key="success"
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.97 }}
@@ -150,20 +158,22 @@ export default function FanClubLoginPage() {
                   className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full border border-[#3DD6C8]/20"
                   style={{ background: "rgba(61,214,200,0.06)" }}
                 >
-                  <span className="font-mono text-lg text-[#3DD6C8]/70">◈</span>
+                  <span className="font-mono text-lg text-[#3DD6C8]/70">✓</span>
                 </div>
                 <h2 className="mb-3 font-mono text-xs font-bold uppercase tracking-[0.25em] text-[#3DD6C8]">
-                  Slow Down
+                  Check Your Email
                 </h2>
                 <p className="text-sm leading-relaxed text-white/40">
-                  Too many attempts. Take a breath and try again in a moment.
+                  We sent a confirmation link to{" "}
+                  <span className="text-white/60">{email}</span>. Click it to
+                  activate your membership.
                 </p>
-                <button
-                  onClick={() => setStatus("idle")}
-                  className="mt-4 block w-full font-mono text-[10px] uppercase tracking-widest text-white/20 transition-colors hover:text-white/45"
+                <Link
+                  href="/fan-club/login"
+                  className="mt-6 inline-block font-mono text-[10px] uppercase tracking-widest text-[#3DD6C8]/40 underline underline-offset-4 transition-colors hover:text-[#3DD6C8]/70"
                 >
-                  ← Back
-                </button>
+                  Back to Sign In
+                </Link>
               </motion.div>
             ) : (
               <motion.div
@@ -174,11 +184,11 @@ export default function FanClubLoginPage() {
                 transition={{ duration: 0.25 }}
                 className="space-y-3"
               >
-                {/* Google OAuth */}
                 <div
                   className="rounded-2xl border border-white/[0.07] p-6 space-y-3"
                   style={{ background: "rgba(255,255,255,0.025)" }}
                 >
+                  {/* Google OAuth */}
                   <motion.button
                     type="button"
                     onClick={onGoogleSignIn}
@@ -187,7 +197,6 @@ export default function FanClubLoginPage() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
                   >
-                    {/* Google icon */}
                     <svg width="17" height="17" viewBox="0 0 18 18" aria-hidden="true">
                       <path
                         d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"
@@ -206,7 +215,7 @@ export default function FanClubLoginPage() {
                         fill="#EA4335"
                       />
                     </svg>
-                    Continue with Google
+                    Sign up with Google
                   </motion.button>
                   <p className="text-center font-mono text-[9px] italic leading-relaxed text-white/25">
                     ⚠ Google sign-in requires setup — owner must configure OAuth
@@ -222,6 +231,22 @@ export default function FanClubLoginPage() {
                   </div>
 
                   <form onSubmit={onSubmit} className="space-y-4">
+                    <label className="block">
+                      <span className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-white/35">
+                        <User size={9} aria-hidden="true" />
+                        Display Name
+                      </span>
+                      <input
+                        type="text"
+                        required
+                        autoComplete="name"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        placeholder="Your name"
+                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#3DD6C8]/40 focus:bg-black/60"
+                      />
+                    </label>
+
                     <label className="block">
                       <span className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-white/35">
                         <Mail size={9} aria-hidden="true" />
@@ -246,16 +271,33 @@ export default function FanClubLoginPage() {
                       <input
                         type="password"
                         required
-                        autoComplete="current-password"
+                        minLength={8}
+                        autoComplete="new-password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••••"
+                        placeholder="Min 8 characters"
+                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#3DD6C8]/40 focus:bg-black/60"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-white/35">
+                        <Lock size={9} aria-hidden="true" />
+                        Confirm Password
+                      </span>
+                      <input
+                        type="password"
+                        required
+                        autoComplete="new-password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Repeat password"
                         className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#3DD6C8]/40 focus:bg-black/60"
                       />
                     </label>
 
                     <AnimatePresence>
-                      {(status === "error" || urlError) && errorMsg && (
+                      {status === "error" && errorMsg && (
                         <motion.p
                           key="err"
                           initial={{ opacity: 0, y: -4 }}
@@ -270,13 +312,19 @@ export default function FanClubLoginPage() {
 
                     <motion.button
                       type="submit"
-                      disabled={status === "loading" || !email || !password}
+                      disabled={
+                        status === "loading" ||
+                        !displayName ||
+                        !email ||
+                        !password ||
+                        !confirmPassword
+                      }
                       className="w-full rounded-full py-3 font-mono text-sm font-bold uppercase tracking-[0.18em] text-black disabled:opacity-40"
                       style={{ background: "#3DD6C8" }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.97 }}
                     >
-                      {status === "loading" ? "Verifying…" : "Enter"}
+                      {status === "loading" ? "Creating…" : "Create Account"}
                     </motion.button>
                   </form>
                 </div>
@@ -285,12 +333,12 @@ export default function FanClubLoginPage() {
           </AnimatePresence>
 
           <p className="mt-7 text-center font-mono text-[10px] tracking-wider text-white/18">
-            New here?{" "}
+            Already a member?{" "}
             <Link
-              href="/fan-club/register"
+              href="/fan-club/login"
               className="text-[#3DD6C8]/35 underline underline-offset-4 transition-colors hover:text-[#3DD6C8]/65"
             >
-              Create an account
+              Sign in
             </Link>
           </p>
         </motion.div>

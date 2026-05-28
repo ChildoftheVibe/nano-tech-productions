@@ -1,3 +1,4 @@
+import { createServerClient } from "@supabase/auth-helpers-nextjs";
 import { NextResponse, type NextRequest } from "next/server";
 
 export const config = {
@@ -9,8 +10,15 @@ export const config = {
     "/api/tracks/:path*",
     "/api/playlist/:path*",
     "/api/albums/:path*",
+    "/fan-club/:path*",
+    "/api/fan-club/:path*",
   ],
 };
+
+const PUBLIC_FAN_CLUB_PATHS = new Set([
+  "/fan-club/login",
+  "/fan-club/register",
+]);
 
 const ADMIN_COOKIE = "ntv_admin_session";
 
@@ -132,6 +140,9 @@ export async function proxy(req: NextRequest) {
       action = "api_admin_login";
       max = 5;
       win = 15;
+    } else if (pathname.startsWith("/api/fan-club/")) {
+      action = "api_fan_club";
+      max = 60;
     }
 
     const allowed = await checkRateLimit(ip, action, max, win);
@@ -168,6 +179,54 @@ export async function proxy(req: NextRequest) {
     }
     // Real verification (DB lookup) happens in the admin layout / route. The
     // proxy is the cheap presence check; deep verify is fail-closed there.
+  }
+
+  // ── Fan Club auth guard ──────────────────────────────────────────────────
+  // Public fan-club pages (login / register / OAuth callback) pass through.
+  // All other /fan-club/* routes require a valid Supabase session.
+  if (
+    pathname.startsWith("/fan-club") &&
+    !pathname.startsWith("/fan-club/auth/") &&
+    !PUBLIC_FAN_CLUB_PATHS.has(pathname)
+  ) {
+    let fanRes = NextResponse.next({
+      request: { headers: req.headers },
+    });
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return req.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) =>
+              req.cookies.set(name, value),
+            );
+            fanRes = NextResponse.next({ request: { headers: req.headers } });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              fanRes.cookies.set(name, value, options),
+            );
+          },
+        },
+      },
+    );
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      const loginUrl = new URL("/fan-club/login", req.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    fanRes.headers.set("x-client-ip", ip);
+    if (ctx.country) fanRes.headers.set("x-client-country", ctx.country);
+    return fanRes;
   }
 
   // Forward the resolved client IP and country to downstream handlers so they
