@@ -193,10 +193,11 @@ export function PlayerBar() {
 
   return (
     <footer
-      className="relative flex-shrink-0 h-14 text-white"
+      className="relative flex-shrink-0 min-h-14 text-white"
       style={{
         background: "#181818",
         borderTop: "1px solid rgba(255,255,255,0.1)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
       }}
       aria-label="Music player"
       onTouchStart={handleTouchStart}

@@ -201,6 +201,23 @@ input[type="range"].ntv-range:focus-visible::-moz-range-thumb {
   opacity: 1;
 }
 
+/* ─── Mobile scroll clearance ────────────────────────────────────────────────
+   On mobile the PlayerBar (56px) and MobileTabBar (56px) sit in the normal
+   flex column below <main>. Without extra padding-bottom the last ~128px of
+   page content is unreachable: the scroll container stops at the right height
+   but nothing pushes the final content above the bars.
+
+   We add padding equal to both bars + 16px breathing room + the iPhone home-
+   indicator safe area so the very last content row can always be scrolled into
+   view above every bottom chrome element.
+
+   This only fires below the md breakpoint (768px). Desktop is unaffected. ── */
+@media (max-width: 767px) {
+  .main-scroll {
+    padding-bottom: calc(56px + 56px + 16px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
 .ntv-logo {
   transition: text-shadow 0.2s ease;
 }

@@ -87,6 +87,7 @@ export default async function RootLayout({
                   <main
                     id="main-content"
                     tabIndex={-1}
+                    className="main-scroll"
                     style={{
                       flex: 1,
                       overflowY: "auto",
