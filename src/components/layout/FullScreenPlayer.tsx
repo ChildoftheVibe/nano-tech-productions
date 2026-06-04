@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import {
   ChevronDown,
@@ -10,6 +11,7 @@ import {
   Play,
   Repeat,
   Repeat1,
+  ShoppingBag,
   Shuffle,
   SkipBack,
   SkipForward,
@@ -18,6 +20,7 @@ import {
 } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
+import { useCheckoutStore } from "@/store/checkoutStore";
 import { getAlbumCover } from "@/lib/albumCover";
 
 const formatTime = (s: number) => {
@@ -40,9 +43,34 @@ export function FullScreenPlayer() {
   const repeat = usePlayerStore((s) => s.repeat);
   const queueLen = usePlayerStore((s) => s.queue.length);
 
+  const openCheckout = useCheckoutStore((s) => s.open);
+  const router = useRouter();
+
   // Use the PlayerContext helpers so audio.play() runs synchronously in the
   // click handler and the user-gesture token survives.
   const { togglePlayPause, nextAndPlay, previousAndPlay } = usePlayer();
+
+  const handleBuyTrack = () => {
+    if (!currentTrack) return;
+    close();
+    openCheckout({
+      id: currentTrack.id,
+      kind: "track",
+      name: currentTrack.title,
+      price: currentTrack.price,
+      coverImage: currentAlbum?.coverImage,
+      bgColor: currentAlbum?.bgColor,
+      accentColor: currentAlbum?.accentColor,
+      trackIds: [currentTrack.id],
+      albumId: currentAlbum?.id,
+    });
+  };
+
+  const handleViewAlbum = () => {
+    if (!currentAlbum) return;
+    close();
+    router.push(`/album/${currentAlbum.slug}`);
+  };
   const seekTo = usePlayerStore((s) => s.seekTo);
   const setVolume = usePlayerStore((s) => s.setVolume);
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
@@ -179,11 +207,53 @@ export function FullScreenPlayer() {
               </div>
             </div>
 
-            {/* Title + artist */}
-            <div className="pb-4">
+            {/* Album context + title + artist */}
+            <div className="pb-3">
+              {currentAlbum && (
+                <div className="mb-1 truncate text-xs font-semibold uppercase tracking-[0.15em] text-white/40">
+                  {currentAlbum.title}
+                </div>
+              )}
               <div className="truncate text-2xl font-bold">{currentTrack.title}</div>
               <div className="mt-1 truncate text-sm text-white/70">{features}</div>
             </div>
+
+            {/* Buy Track + View Album — animate when track changes */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentTrack.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="mb-4 flex flex-col items-center gap-3"
+                style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+              >
+                {currentTrack.price > 0 && (
+                  <motion.button
+                    onClick={handleBuyTrack}
+                    aria-label={`Buy ${currentTrack.title} for $${currentTrack.price.toFixed(2)}`}
+                    className="flex items-center gap-2 rounded-full px-8 py-3 text-sm font-bold text-white"
+                    style={{ background: "#3DD6C8" }}
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
+                  >
+                    <ShoppingBag size={16} aria-hidden="true" />
+                    Buy Track · ${currentTrack.price.toFixed(2)}
+                  </motion.button>
+                )}
+                {currentAlbum && (
+                  <motion.button
+                    onClick={handleViewAlbum}
+                    aria-label={`View ${currentAlbum.title}`}
+                    className="rounded-full border border-[#3DD6C8] px-8 py-3 text-sm font-semibold text-[#3DD6C8] transition-colors hover:bg-[#3DD6C8]/10"
+                    whileTap={{ scale: 0.96 }}
+                  >
+                    View Album →
+                  </motion.button>
+                )}
+              </motion.div>
+            </AnimatePresence>
 
             {/* Seek bar */}
             <div>
