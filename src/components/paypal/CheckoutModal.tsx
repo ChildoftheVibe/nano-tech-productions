@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { SkeletonPulse } from "@/components/ui/skeletons/SkeletonPulse";
 import { logError } from "@/lib/logger";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Loader2, Lock, Music, X } from "lucide-react";
+import { AlertTriangle, Lock, Music, X } from "lucide-react";
 import {
   PayPalButtons,
   PayPalScriptProvider,
@@ -51,6 +52,18 @@ function CheckoutModalContent({
   const [discountError, setDiscountError] = useState<string | null>(null);
   const [validating, setValidating] = useState(false);
   const [totalPulse, setTotalPulse] = useState(0);
+
+  // Pre-create order cache — populated on hover/focus/touch before the PayPal
+  // button is clicked, so createOrder can return immediately.
+  const prefetchedOrderRef = useRef<{ orderId: string; key: string } | null>(null);
+  const prefetchInFlightRef = useRef<Promise<void> | null>(null);
+  // Key encodes the parameters that affect the order; changing discount invalidates
+  // any cached order so a stale one is never used.
+  const orderKey = `${item.id}:${item.kind}:${discount.applied ? discount.code : "_"}`;
+
+  useEffect(() => {
+    prefetchedOrderRef.current = null;
+  }, [discount]);
 
   const subtotal = item.price;
   const total = useMemo(
@@ -147,6 +160,29 @@ function CheckoutModalContent({
     ],
     discountCode: discount.applied ? discount.code : undefined,
   });
+
+  const prefetchOrder = () => {
+    const key = orderKey;
+    if (prefetchedOrderRef.current?.key === key) return;
+    if (prefetchInFlightRef.current) return;
+    const promise = (async () => {
+      try {
+        const res = await fetch("/api/paypal/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(orderRequestBody()),
+        });
+        if (!res.ok) return;
+        const { orderId } = (await res.json()) as { orderId: string };
+        if (orderId) prefetchedOrderRef.current = { orderId, key };
+      } catch {
+        // silent — fall back to creating on click
+      } finally {
+        prefetchInFlightRef.current = null;
+      }
+    })();
+    prefetchInFlightRef.current = promise;
+  };
 
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? "";
   const paypalReady = !!clientId;
@@ -331,6 +367,11 @@ function CheckoutModalContent({
                 in your environment.
               </div>
             ) : (
+              <div
+                onMouseEnter={prefetchOrder}
+                onFocus={prefetchOrder}
+                onTouchStart={prefetchOrder}
+              >
               <PayPalScriptProvider
                 options={{ clientId, currency: "USD", intent: "capture" }}
               >
@@ -342,6 +383,23 @@ function CheckoutModalContent({
                 <PayPalCheckoutPanel
                   submitting={phase.kind === "submitting"}
                   onCreateOrder={async () => {
+                    const key = orderKey;
+                    // Use pre-created order if available and discount hasn't changed.
+                    const cached = prefetchedOrderRef.current;
+                    if (cached?.key === key) {
+                      prefetchedOrderRef.current = null;
+                      return cached.orderId;
+                    }
+                    // Await an in-flight prefetch and use it if still valid.
+                    if (prefetchInFlightRef.current) {
+                      await prefetchInFlightRef.current;
+                      const fresh = prefetchedOrderRef.current;
+                      if (fresh?.key === key) {
+                        prefetchedOrderRef.current = null;
+                        return fresh.orderId;
+                      }
+                    }
+                    // Fall back to creating a new order synchronously.
                     const res = await fetch("/api/paypal/create-order", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
@@ -414,11 +472,24 @@ function CheckoutModalContent({
                 />
                 {phase.kind === "submitting" ? (
                   <div role="status" className="mt-3 flex items-center justify-center gap-2 text-xs text-white/70">
-                    <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+                    <svg
+                      aria-hidden="true"
+                      className="animate-spin"
+                      width={14}
+                      height={14}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
                     Verifying payment…
                   </div>
                 ) : null}
               </PayPalScriptProvider>
+              </div>
             )}
 
             <p className="mt-4 text-center text-[10px] uppercase tracking-wider text-white/40">
@@ -471,6 +542,7 @@ function PayPalCheckoutPanel({
 }) {
   const [{ isPending, isRejected, isResolved }] = usePayPalScriptReducer();
   const [timedOut, setTimedOut] = useState(false);
+  const [buttonReady, setButtonReady] = useState(false);
 
   useEffect(() => {
     if (!isPending) return;
@@ -498,38 +570,53 @@ function PayPalCheckoutPanel({
     );
   }
 
-  if (isPending) {
-    return (
-      <div role="status" className="flex items-center justify-center gap-2 rounded border border-white/10 bg-black/20 px-3 py-6 text-xs text-white/60">
-        <Loader2 size={14} className="animate-spin" aria-hidden="true" />
-        Loading PayPal checkout…
-      </div>
-    );
-  }
-
-  if (!isResolved) return null;
-
   return (
-    <div className={submitting ? "pointer-events-none opacity-50" : ""}>
-      <PayPalButtons
-        style={{ layout: "vertical", color: "gold", shape: "pill" }}
-        disabled={submitting}
-        createOrder={async () => {
-          try {
-            return await onCreateOrder();
-          } catch (err) {
-            logError(err, { caller: "checkout" });
-            throw err;
-          }
-        }}
-        onApprove={async (data) => {
-          await onApprove(data.orderID);
-        }}
-        onError={(err) => {
-          logError(err, { caller: "checkout" });
-          onPayPalError();
-        }}
-      />
+    <div style={{ position: "relative", minHeight: 55 }}>
+      <AnimatePresence>
+        {(!isResolved || !buttonReady) && (
+          <motion.div
+            key="paypal-skeleton"
+            role="status"
+            aria-label="Loading payment options"
+            style={{ position: "absolute", inset: 0, zIndex: 1 }}
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <SkeletonPulse height={55} rounded={27} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: buttonReady ? 1 : 0 }}
+        transition={{ duration: 0.3 }}
+        className={submitting ? "pointer-events-none opacity-50" : ""}
+      >
+        {isResolved && (
+          <PayPalButtons
+            style={{ layout: "vertical", color: "gold", shape: "pill" }}
+            disabled={submitting}
+            onInit={() => setButtonReady(true)}
+            createOrder={async () => {
+              try {
+                return await onCreateOrder();
+              } catch (err) {
+                logError(err, { caller: "checkout" });
+                throw err;
+              }
+            }}
+            onApprove={async (data) => {
+              await onApprove(data.orderID);
+            }}
+            onError={(err) => {
+              logError(err, { caller: "checkout" });
+              onPayPalError();
+            }}
+          />
+        )}
+      </motion.div>
     </div>
   );
 }

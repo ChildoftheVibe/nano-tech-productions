@@ -64,6 +64,12 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <head>
+        <link rel="dns-prefetch" href="https://www.paypalobjects.com" />
+        <link rel="dns-prefetch" href="https://www.paypal.com" />
+        <link rel="preconnect" href="https://www.paypalobjects.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.paypal.com" crossOrigin="anonymous" />
+      </head>
       <body className="bg-[#393838] text-white">
         <a
           href="#main-content"
