@@ -1,5 +1,17 @@
 @AGENTS.md
 
+---
+
+## Startup Directive — Read This First
+
+This file is the **complete application knowledge base**. It covers the tech stack, directory layout, every database table, all API routes, design tokens, security rules, and architectural patterns.
+
+**Do not explore the codebase at session start.** Everything needed to orient yourself is already here. Only open a file when a specific task requires reading or editing it. Do not scan directories, list files, or read files speculatively to "understand the codebase" — that work has already been done and is captured below.
+
+When a task references a file or symbol that isn't covered here, open that specific file directly. If a task involves a component, route, or helper not described below, use `grep` for the exact symbol rather than browsing directory trees.
+
+---
+
 # NTV Vault — Full Application Knowledge Base
 
 ## Overview
