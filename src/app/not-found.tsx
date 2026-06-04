@@ -25,7 +25,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="ntv-btn mt-8 inline-flex items-center justify-center rounded-full px-6 py-2 text-sm font-bold text-black transition-transform hover:scale-105"
+        className="ntv-btn mt-8 inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-bold text-black transition-transform hover:scale-105"
         style={{ background: "#3DD6C8" }}
       >
         Return to Vault

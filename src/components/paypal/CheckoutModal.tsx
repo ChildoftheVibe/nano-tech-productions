@@ -685,7 +685,7 @@ function SuccessView({
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="ntv-btn block rounded-full px-4 py-1.5 text-sm font-bold text-black"
+              className="ntv-btn block rounded-full px-5 py-2 text-sm font-bold text-black"
               style={{ background: "#3DD6C8" }}
             >
               Download{" "}
@@ -703,7 +703,7 @@ function SuccessView({
       )}
       <button
         onClick={onClose}
-        className="rounded-full border border-white/20 px-5 py-1.5 text-sm font-bold hover:bg-white/10"
+        className="rounded-full border border-white/20 px-5 py-2 text-sm font-bold hover:bg-white/10"
       >
         Continue Listening
       </button>

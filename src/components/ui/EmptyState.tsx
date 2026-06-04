@@ -42,7 +42,7 @@ export function EmptyState({
       {actionLabel && actionHref ? (
         <Link
           href={actionHref}
-          className="ntv-btn mt-4 inline-flex items-center justify-center rounded-full px-5 py-1.5 text-xs font-bold text-black transition-transform hover:scale-105"
+          className="ntv-btn mt-4 inline-flex items-center justify-center rounded-full px-5 py-2 text-xs font-bold text-black transition-transform hover:scale-105"
           style={{ background: "#3DD6C8" }}
         >
           {actionLabel}

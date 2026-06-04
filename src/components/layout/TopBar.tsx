@@ -47,7 +47,7 @@ export function TopBar() {
         >
           <Link
             href="/fan-club/login"
-            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-[#3DD6C8]/25 px-4 py-1 text-xs font-semibold tracking-wide text-[#3DD6C8]/80 transition-colors hover:border-[#3DD6C8]/50 hover:text-[#3DD6C8]"
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-[#3DD6C8]/25 px-5 py-1 text-xs font-semibold tracking-wide text-[#3DD6C8]/80 transition-colors hover:border-[#3DD6C8]/50 hover:text-[#3DD6C8]"
             style={{ background: "rgba(61,214,200,0.06)" }}
           >
             <Users size={12} aria-hidden="true" />

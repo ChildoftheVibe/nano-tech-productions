@@ -296,7 +296,7 @@ export function HomeClient({
                   <motion.button
                     onClick={() => playFromAlbum(latest)}
                     disabled={!latest.tracks.length}
-                    className="flex items-center gap-2 rounded-full px-6 py-2 text-sm font-bold text-black disabled:opacity-40"
+                    className="flex items-center gap-2 rounded-full px-8 py-3 text-sm font-bold text-black disabled:opacity-40"
                     style={{ background: latest.accentColor }}
                     whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.96 }}
@@ -306,7 +306,7 @@ export function HomeClient({
                   </motion.button>
                   <Link
                     href={`/album/${latest.slug}`}
-                    className="flex items-center gap-1.5 rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
+                    className="flex items-center gap-1.5 rounded-full border border-white/20 px-8 py-3 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
                   >
                     View Album
                     <ChevronRight size={14} />
@@ -421,7 +421,7 @@ export function HomeClient({
             <motion.button
               onClick={loadMore}
               disabled={loading}
-              className="rounded-full border border-white/15 px-8 py-2 text-sm font-semibold text-white/70 transition-all hover:border-[#3DD6C8]/40 hover:text-[#3DD6C8] disabled:opacity-50"
+              className="rounded-full border border-white/15 px-8 py-2.5 text-sm font-semibold text-white/70 transition-all hover:border-[#3DD6C8]/40 hover:text-[#3DD6C8] disabled:opacity-50"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
             >
@@ -469,7 +469,7 @@ export function HomeClient({
               </div>
               <motion.button
                 onClick={togglePlayPause}
-                className="mt-4 flex items-center gap-2 rounded-full px-5 py-1.5 text-sm font-bold text-black"
+                className="mt-4 flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold text-black"
                 style={{ background: currentAlbum?.accentColor ?? "#3DD6C8" }}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}

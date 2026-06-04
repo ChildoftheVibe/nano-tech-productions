@@ -232,7 +232,7 @@ export function AlbumDetail({
         </motion.button>
         <motion.button
           onClick={handleBuyAlbum}
-          className="ml-2 flex h-9 items-center gap-2 rounded-full px-6 py-2 text-sm font-bold text-black"
+          className="ml-2 flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold text-black"
           style={{ background: "#EB41DF" }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.96 }}
