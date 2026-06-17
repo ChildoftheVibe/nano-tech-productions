@@ -617,7 +617,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
-      <audio ref={audioRef} preload="metadata" />
+      <audio ref={audioRef} preload="metadata" crossOrigin="anonymous" />
     </PlayerContext.Provider>
   );
 }

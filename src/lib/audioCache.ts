@@ -13,6 +13,7 @@ const KEEP_BEHIND = 2;
 const create = (url: string): HTMLAudioElement => {
   const a = new Audio();
   a.preload = "auto";
+  a.crossOrigin = "anonymous";
   a.src = url;
   a.load();
   return a;
