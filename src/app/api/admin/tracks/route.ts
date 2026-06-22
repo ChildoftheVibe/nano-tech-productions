@@ -2,6 +2,7 @@ import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logError, logInfo } from "@/lib/logger";
+import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
 import type { TrackInput } from "@/lib/db-types";
 
 function revalidateTrackTags() {
@@ -93,6 +94,15 @@ export async function POST(request: Request) {
   }
 
   logInfo("admin/tracks POST saved", { id: data.id });
+
+  await logAuditEvent({
+    eventType: "admin_track_created",
+    performedBy: "admin",
+    ipAddress: clientIpFromHeaders(request.headers),
+    entityType: "track",
+    entityId: data.id,
+    metadata: { title: input.title, album_id: input.album_id },
+  });
 
   revalidateTrackTags();
   return Response.json({ track: data }, { status: 201 });

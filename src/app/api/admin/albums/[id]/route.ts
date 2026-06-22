@@ -2,6 +2,7 @@ import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logError } from "@/lib/logger";
+import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
 import type { AlbumInput } from "@/lib/db-types";
 
 const ALBUM_FIELDS = [
@@ -61,23 +62,50 @@ export async function PATCH(
     logError(error, { caller: "admin/albums PATCH" });
     return Response.json({ error: "operation_failed" }, { status: 400 });
   }
+
+  await logAuditEvent({
+    eventType: "admin_album_updated",
+    performedBy: "admin",
+    ipAddress: clientIpFromHeaders(request.headers),
+    entityType: "album",
+    entityId: id,
+    metadata: { fields: Object.keys(input) },
+  });
+
   revalidateTag("albums", { expire: 0 });
   return Response.json({ album: data });
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
 
   const { id } = await params;
+
+  const { data: existing } = await supabaseAdmin
+    .from("albums")
+    .select("slug, title")
+    .eq("id", id)
+    .maybeSingle();
+
   const { error } = await supabaseAdmin.from("albums").delete().eq("id", id);
   if (error) {
     logError(error, { caller: "admin/albums DELETE" });
     return Response.json({ error: "operation_failed" }, { status: 400 });
   }
+
+  await logAuditEvent({
+    eventType: "admin_album_deleted",
+    performedBy: "admin",
+    ipAddress: clientIpFromHeaders(request.headers),
+    entityType: "album",
+    entityId: id,
+    metadata: existing ?? undefined,
+  });
+
   revalidateTag("albums", { expire: 0 });
   return Response.json({ ok: true });
 }

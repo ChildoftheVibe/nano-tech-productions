@@ -11,6 +11,7 @@
   --color-ntv-muted: #b3b3b3;
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), 'Space Mono', monospace;
+  --font-display: var(--font-bungee), 'Bungee', sans-serif;
 }
 
 :root {
@@ -24,6 +25,11 @@
   --ntv-text: #ffffff;
   --ntv-muted: #b3b3b3;
   --ntv-border: rgba(255, 255, 255, 0.08);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 400;
 }
 
 * {

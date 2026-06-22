@@ -1,4 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { clientIpFromHeaders } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,6 +45,15 @@ function uuidOrNull(v: unknown): string | null {
 }
 
 export async function POST(req: Request) {
+  const ip = clientIpFromHeaders(req.headers);
+  const allowed = await checkRateLimit({
+    identifier: ip,
+    action: "analytics_event",
+    maxAttempts: 120,
+    windowMinutes: 1,
+  });
+  if (!allowed) return Response.json({ error: "rate_limited" }, { status: 429 });
+
   let body: Body = {};
   try {
     body = (await req.json()) as Body;
@@ -83,7 +94,7 @@ export async function POST(req: Request) {
     metadata,
   });
 
-  if (error) return Response.json({ error: error.message }, { status: 500 });
+  if (error) return Response.json({ error: "internal_error" }, { status: 500 });
 
   // Bump session totals on completion-style events.
   if (

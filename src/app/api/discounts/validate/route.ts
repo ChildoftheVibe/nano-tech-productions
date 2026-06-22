@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { validateDiscount, type DiscountCheckItem } from "@/lib/discounts";
+import { checkRateLimitStrict } from "@/lib/rateLimit";
+import { clientIpFromHeaders } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,6 +15,20 @@ type Body = {
 };
 
 export async function POST(req: Request) {
+  const ip = clientIpFromHeaders(req.headers);
+  const allowed = await checkRateLimitStrict({
+    identifier: ip,
+    action: "discount_validate",
+    maxAttempts: 10,
+    windowMinutes: 1,
+  });
+  if (!allowed) {
+    return NextResponse.json(
+      { valid: false, discountPercent: 0, discountAmount: 0, message: "Too many attempts." },
+      { status: 429, headers: { ...noStore, "Retry-After": "60" } },
+    );
+  }
+
   let body: Body = {};
   try {
     body = (await req.json()) as Body;

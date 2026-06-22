@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { createSession, setAdminCookie } from "@/lib/auth";
 import { clientIpFromHeaders } from "@/lib/audit";
 import { logError } from "@/lib/logger";
+import { checkRateLimitStrict } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,6 +17,17 @@ function getRpConfig() {
 }
 
 export async function POST(req: Request) {
+  const ip = clientIpFromHeaders(req.headers);
+  const allowed = await checkRateLimitStrict({
+    identifier: ip,
+    action: "webauthn_auth",
+    maxAttempts: 5,
+    windowMinutes: 15,
+  });
+  if (!allowed) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
+
   const jar = await cookies();
   const challenge = jar.get("webauthn_auth_challenge")?.value;
   if (!challenge) {
@@ -79,7 +91,6 @@ export async function POST(req: Request) {
     .update({ counter: authenticationInfo?.newCounter ?? stored.counter })
     .eq("credential_id", credentialId);
 
-  const ip = clientIpFromHeaders(req.headers);
   const token = await createSession(ip);
   await setAdminCookie(token);
 

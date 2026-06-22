@@ -34,7 +34,6 @@ export async function GET(
 ) {
   const { trackId } = await params;
   const hasRange = req.headers.has("range");
-  logInfo("[wav/stream] GET", { trackId, range: hasRange });
 
   if (!(await isAdmin())) {
     return NextResponse.json(
@@ -42,6 +41,8 @@ export async function GET(
       { status: 401, headers: { "cache-control": "no-store" } },
     );
   }
+
+  logInfo("[wav/stream] GET", { trackId, range: hasRange });
 
   const { data: track, error } = await supabaseAdmin
     .from("tracks")

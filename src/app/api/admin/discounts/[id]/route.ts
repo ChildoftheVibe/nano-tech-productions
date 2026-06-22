@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logError } from "@/lib/logger";
+import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
 import type { DiscountInput } from "@/lib/db-types";
 
 const DISCOUNT_FIELDS = [
@@ -54,17 +55,34 @@ export async function PATCH(
     logError(error, { caller: "admin/discounts PATCH" });
     return Response.json({ error: "operation_failed" }, { status: 400 });
   }
+
+  await logAuditEvent({
+    eventType: "admin_discount_updated",
+    performedBy: "admin",
+    ipAddress: clientIpFromHeaders(request.headers),
+    entityType: "discount_code",
+    entityId: id,
+    metadata: { fields: Object.keys(input) },
+  });
+
   return Response.json({ discount: data });
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
 
   const { id } = await params;
+
+  const { data: existing } = await supabaseAdmin
+    .from("discount_codes")
+    .select("code")
+    .eq("id", id)
+    .maybeSingle();
+
   const { error } = await supabaseAdmin
     .from("discount_codes")
     .delete()
@@ -73,5 +91,15 @@ export async function DELETE(
     logError(error, { caller: "admin/discounts DELETE" });
     return Response.json({ error: "operation_failed" }, { status: 400 });
   }
+
+  await logAuditEvent({
+    eventType: "admin_discount_deleted",
+    performedBy: "admin",
+    ipAddress: clientIpFromHeaders(request.headers),
+    entityType: "discount_code",
+    entityId: id,
+    metadata: existing ? { code: existing.code } : undefined,
+  });
+
   return Response.json({ ok: true });
 }

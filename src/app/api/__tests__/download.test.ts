@@ -62,7 +62,7 @@ const tokenRow = {
   is_used: false,
 };
 const orderRow = { id: "ord-1", status: "completed" };
-const trackRow = { id: "trk-1", public_audio_id: "ntp/audio/track1" };
+const trackRow: { id: string; public_audio_id: string | null } = { id: "trk-1", public_audio_id: "ntp/audio/track1" };
 
 /** Wire up supabaseAdmin.from to return per-table data. */
 function setupDb(

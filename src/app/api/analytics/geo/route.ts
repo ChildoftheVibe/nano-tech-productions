@@ -1,4 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { clientIpFromHeaders } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,6 +40,15 @@ function decodeHeader(value: string | null): string | null {
 }
 
 export async function POST(req: Request) {
+  const ip = clientIpFromHeaders(req.headers);
+  const allowed = await checkRateLimit({
+    identifier: ip,
+    action: "analytics_geo",
+    maxAttempts: 10,
+    windowMinutes: 5,
+  });
+  if (!allowed) return Response.json({ error: "rate_limited" }, { status: 429 });
+
   let body: GeoBody = {};
   try {
     body = (await req.json()) as GeoBody;
@@ -74,7 +85,7 @@ export async function POST(req: Request) {
         page_views: (existing.page_views ?? 0) + 1,
       })
       .eq("id", existing.id);
-    if (error) return Response.json({ error: error.message }, { status: 500 });
+    if (error) return Response.json({ error: "internal_error" }, { status: 500 });
     return Response.json({ ok: true, returning: true });
   }
 

@@ -2,6 +2,7 @@ import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logError, logInfo } from "@/lib/logger";
+import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
 import type { TrackInput } from "@/lib/db-types";
 
 function revalidateTrackTags() {
@@ -83,23 +84,49 @@ export async function PATCH(
     return Response.json({ error: "operation_failed" }, { status: 400 });
   }
 
+  await logAuditEvent({
+    eventType: "admin_track_updated",
+    performedBy: "admin",
+    ipAddress: clientIpFromHeaders(request.headers),
+    entityType: "track",
+    entityId: id,
+    metadata: { fields: Object.keys(input) },
+  });
+
   revalidateTrackTags();
   return Response.json({ track: data });
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
 
   const { id } = await params;
+
+  const { data: existing } = await supabaseAdmin
+    .from("tracks")
+    .select("title, album_id")
+    .eq("id", id)
+    .maybeSingle();
+
   const { error } = await supabaseAdmin.from("tracks").delete().eq("id", id);
   if (error) {
     logError(error, { caller: "admin/tracks DELETE", id });
     return Response.json({ error: "operation_failed" }, { status: 400 });
   }
+
+  await logAuditEvent({
+    eventType: "admin_track_deleted",
+    performedBy: "admin",
+    ipAddress: clientIpFromHeaders(request.headers),
+    entityType: "track",
+    entityId: id,
+    metadata: existing ?? undefined,
+  });
+
   revalidateTrackTags();
   return Response.json({ ok: true });
 }

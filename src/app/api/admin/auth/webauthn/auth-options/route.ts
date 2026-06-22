@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { checkRateLimitStrict } from "@/lib/rateLimit";
+import { clientIpFromHeaders } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +12,17 @@ function getRpConfig() {
   return { rpID: new URL(siteUrl).hostname };
 }
 
-export async function POST() {
+export async function POST(req: Request) {
+  const ip = clientIpFromHeaders(req.headers);
+  const allowed = await checkRateLimitStrict({
+    identifier: ip,
+    action: "webauthn_auth",
+    maxAttempts: 5,
+    windowMinutes: 15,
+  });
+  if (!allowed) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
   const { rpID } = getRpConfig();
 
   const { data: credentials } = await supabaseAdmin

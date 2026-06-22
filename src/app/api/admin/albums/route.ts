@@ -2,6 +2,7 @@ import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logError } from "@/lib/logger";
+import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
 import type { AlbumInput } from "@/lib/db-types";
 
 const ALBUM_FIELDS = [
@@ -78,6 +79,16 @@ export async function POST(request: Request) {
     logError(error, { caller: "admin/albums POST" });
     return Response.json({ error: "operation_failed" }, { status: 400 });
   }
+
+  await logAuditEvent({
+    eventType: "admin_album_created",
+    performedBy: "admin",
+    ipAddress: clientIpFromHeaders(request.headers),
+    entityType: "album",
+    entityId: data.id,
+    metadata: { slug: input.slug, title: input.title },
+  });
+
   revalidateTag("albums", { expire: 0 });
   return Response.json({ album: data }, { status: 201 });
 }
