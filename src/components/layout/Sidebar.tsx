@@ -148,7 +148,14 @@ export function Sidebar({ initialAlbums }: Props) {
         className="flex-shrink-0 px-5 py-3 text-[11px] text-[#B3B3B3]"
         style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
       >
-        © 2025 Nano Tech Vibe
+        <div className="mb-1.5 flex flex-wrap gap-x-2 gap-y-1">
+          <Link href="/privacy" className="hover:text-white transition-colors duration-150">Privacy</Link>
+          <span aria-hidden="true">·</span>
+          <Link href="/terms" className="hover:text-white transition-colors duration-150">Terms</Link>
+          <span aria-hidden="true">·</span>
+          <Link href="/admin" className="hover:text-white transition-colors duration-150">Admin</Link>
+        </div>
+        © 2026 Nano Tech Vibe
       </div>
     </aside>
   );
