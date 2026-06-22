@@ -9,7 +9,7 @@ export const ADMIN_COOKIE = "ntv_admin_session";
 const SESSION_HOURS = 8;
 
 function adminPasswordHash(): string | null {
-  const h = process.env.ADMIN_PASSWORD_HASH;
+  const h = process.env.ADMIN_PASSWORD_HASH?.trim();
   return h && h.length > 0 ? h : null;
 }
 
