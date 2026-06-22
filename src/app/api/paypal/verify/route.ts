@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from "crypto";
+import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase";
 import {
   capturePayPalOrder,
@@ -74,6 +76,27 @@ export async function POST(req: Request) {
       { status: 400, headers: noStore },
     );
   }
+
+  // H6: Verify the orderId was issued by our server via HMAC-signed cookie.
+  const jar = await cookies();
+  const cookieNonce = jar.get("ntv-co-nonce")?.value;
+  if (cookieNonce) {
+    const expected = createHmac("sha256", process.env.SUPABASE_SERVICE_ROLE_KEY ?? "")
+      .update(body.orderId)
+      .digest("hex");
+    const a = Buffer.from(cookieNonce, "hex");
+    const b = Buffer.from(expected, "hex");
+    const nonceValid = a.length === b.length && timingSafeEqual(a, b);
+    if (!nonceValid) {
+      return NextResponse.json(
+        { verified: false, error: "nonce_invalid" },
+        { status: 400, headers: noStore },
+      );
+    }
+    // Clear the nonce — single-use.
+    jar.delete("ntv-co-nonce");
+  }
+
   const ip = clientIpFromHeaders(req.headers);
 
   // Idempotency: if we already saved this PayPal order, surface the same tokens.

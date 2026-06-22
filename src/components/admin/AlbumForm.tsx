@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Album } from "@/lib/db-types";
+import { adminFetch } from "@/lib/adminFetch";
 import { CloudinaryUploader } from "./CloudinaryUploader";
 
 type Props = {
@@ -89,7 +90,7 @@ export function AlbumForm({ initial, onSaved, onCancel }: Props) {
         ? `/api/admin/albums/${initial.id}`
         : "/api/admin/albums";
       const method = initial ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
         headers: { "content-type": "application/json" },
         body: JSON.stringify(form),

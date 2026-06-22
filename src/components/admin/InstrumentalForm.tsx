@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Lock } from "lucide-react";
+import { adminFetch } from "@/lib/adminFetch";
 import type { Album, Instrumental } from "@/lib/db-types";
 import { CloudinaryUploader } from "./CloudinaryUploader";
 
@@ -145,7 +146,7 @@ export function InstrumentalForm({
         ? `/api/admin/instrumentals/${initial.id}`
         : "/api/admin/instrumentals";
       const method = initial ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),

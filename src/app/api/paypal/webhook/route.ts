@@ -8,13 +8,53 @@ export const dynamic = "force-dynamic";
 
 const noStore = { "cache-control": "no-store", pragma: "no-cache" };
 
+// PayPal's published webhook source IP ranges (H5).
+// Verify current list at https://developer.paypal.com/api/rest/webhooks/#link-ipaddresswhitelist
+const PAYPAL_IP_RANGES = [
+  "173.0.80.0/20",
+  "64.4.240.0/21",
+  "66.211.168.0/22",
+  "91.243.72.0/22",
+  "212.79.100.0/22",
+];
+
+function ipToInt(ip: string): number {
+  return ip.split(".").reduce((acc, octet) => (acc << 8) | parseInt(octet, 10), 0) >>> 0;
+}
+
+function isIpInCidr(ip: string, cidr: string): boolean {
+  const [network, prefixLen] = cidr.split("/");
+  const mask = ~((1 << (32 - parseInt(prefixLen, 10))) - 1) >>> 0;
+  return (ipToInt(ip) & mask) === (ipToInt(network) & mask);
+}
+
+function isPayPalIp(ip: string): boolean {
+  if (!ip || ip === "unknown") return false;
+  return PAYPAL_IP_RANGES.some((cidr) => isIpInCidr(ip, cidr));
+}
+
 /**
  * PayPal webhook receiver.  All events are signature-verified before any
  * processing occurs. Register this URL in the PayPal dashboard and set
  * PAYPAL_WEBHOOK_ID in env to the resulting webhook ID.
  */
 export async function POST(req: Request) {
+  // H5: Reject requests that don't originate from PayPal's IP ranges before
+  // any expensive processing. Sandbox IPs bypass the check in non-prod.
+  const ip = clientIpFromHeaders(req.headers);
+  const isSandbox = process.env.PAYPAL_ENV !== "live";
+  if (!isSandbox && !isPayPalIp(ip)) {
+    await logAuditEvent({
+      eventType: "paypal_webhook_ip_blocked",
+      performedBy: ip,
+      ipAddress: ip,
+      metadata: { ip },
+    });
+    return NextResponse.json({ error: "forbidden" }, { status: 403, headers: noStore });
+  }
+
   // Read the raw body before parsing — PayPal signs the exact bytes.
+  // (ip is already declared above; reused below in logAuditEvent calls)
   let rawBody: string;
   try {
     rawBody = await req.text();
@@ -51,7 +91,6 @@ export async function POST(req: Request) {
   }
 
   const eventType = typeof event.event_type === "string" ? event.event_type : "unknown";
-  const ip = clientIpFromHeaders(req.headers);
 
   await logAuditEvent({
     eventType: "paypal_webhook_received",

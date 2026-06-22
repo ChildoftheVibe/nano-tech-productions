@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   createSession,
   setAdminCookie,
+  setCsrfCookie,
   verifyPassword,
 } from "@/lib/auth";
 import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
@@ -60,6 +61,7 @@ export async function POST(req: Request) {
   }
 
   await setAdminCookie(token);
+  await setCsrfCookie();
   await logAuditEvent({
     eventType: "admin_login_success",
     performedBy: ip,

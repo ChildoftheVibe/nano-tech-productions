@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Download, Plus, X } from "lucide-react";
+import { adminFetch } from "@/lib/adminFetch";
 import type { Album, Track } from "@/lib/db-types";
 import type { TrackCredits } from "@/types/music";
 import { CloudinaryUploader } from "./CloudinaryUploader";
@@ -294,16 +295,11 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
         is_downloadable: form.is_downloadable,
         is_published: form.is_published,
       };
-      console.log("[TrackForm] submit payload audio fields:", {
-        audio_url: payload.audio_url,
-        public_audio_id: payload.public_audio_id,
-        vault_audio_id: payload.vault_audio_id,
-      });
       const url = initial
         ? `/api/admin/tracks/${initial.id}`
         : "/api/admin/tracks";
       const method = initial ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),

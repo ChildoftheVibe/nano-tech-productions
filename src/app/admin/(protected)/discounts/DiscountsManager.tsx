@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { adminFetch } from "@/lib/adminFetch";
 import { DiscountForm } from "@/components/admin/DiscountForm";
 import type { Album, DiscountCode } from "@/lib/db-types";
 
@@ -45,7 +46,7 @@ export function DiscountsManager({ initialDiscounts, albums }: Props) {
   async function onToggleActive(discount: DiscountCode) {
     setPendingId(discount.id);
     try {
-      const res = await fetch(`/api/admin/discounts/${discount.id}`, {
+      const res = await adminFetch(`/api/admin/discounts/${discount.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ is_active: !discount.is_active }),
@@ -70,7 +71,7 @@ export function DiscountsManager({ initialDiscounts, albums }: Props) {
     if (!confirm(`Delete code "${discount.code}"?`)) return;
     setPendingId(discount.id);
     try {
-      const res = await fetch(`/api/admin/discounts/${discount.id}`, {
+      const res = await adminFetch(`/api/admin/discounts/${discount.id}`, {
         method: "DELETE",
       });
       if (!res.ok) {

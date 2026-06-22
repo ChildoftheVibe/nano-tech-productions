@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
-import { isAdmin } from "@/lib/auth";
+import { isAdmin, validateCsrf } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,6 +55,9 @@ function isAllowedFolder(folder: string): boolean {
 export async function POST(req: Request) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401, headers: noStore });
+  }
+  if (!(await validateCsrf(req.headers))) {
+    return NextResponse.json({ error: "csrf_invalid" }, { status: 403, headers: noStore });
   }
 
   if (!cloudName || !apiKey || !apiSecret) {

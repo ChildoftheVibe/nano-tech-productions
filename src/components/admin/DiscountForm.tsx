@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
+import { adminFetch } from "@/lib/adminFetch";
 import type {
   Album,
   DiscountAppliesTo,
@@ -99,7 +100,7 @@ export function DiscountForm({ initial, albums, onSaved, onCancel }: Props) {
         ? `/api/admin/discounts/${initial.id}`
         : "/api/admin/discounts";
       const method = initial ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),

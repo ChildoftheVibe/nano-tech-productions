@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { adminFetch } from "@/lib/adminFetch";
 import { GripVertical, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ArtistForm, type AdminAlbumOption, type AdminTrackOption } from "./ArtistForm";
@@ -50,7 +51,7 @@ export function ArtistsManager({ initialArtists, allTracks, allAlbums }: Props) 
   );
 
   async function patchArtist(id: string, body: Record<string, unknown>) {
-    const res = await fetch(`/api/admin/artists/${id}`, {
+    const res = await adminFetch(`/api/admin/artists/${id}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
@@ -116,7 +117,7 @@ export function ArtistsManager({ initialArtists, allTracks, allAlbums }: Props) 
     setPendingId(artist.id);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/artists/${artist.id}`, {
+      const res = await adminFetch(`/api/admin/artists/${artist.id}`, {
         method: "DELETE",
       });
       if (!res.ok) {

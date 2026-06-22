@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, validateCsrf } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logError } from "@/lib/logger";
 import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
@@ -33,6 +33,7 @@ export async function PATCH(
 ) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
+  if (!(await validateCsrf(request.headers))) return Response.json({ error: "csrf_invalid" }, { status: 403 });
 
   const { id } = await params;
   let body: unknown;
@@ -74,6 +75,7 @@ export async function DELETE(
 ) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
+  if (!(await validateCsrf(request.headers))) return Response.json({ error: "csrf_invalid" }, { status: 403 });
 
   const { id } = await params;
 

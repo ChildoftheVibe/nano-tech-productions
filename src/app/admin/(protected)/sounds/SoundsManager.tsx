@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Music, Plus } from "lucide-react";
+import { adminFetch } from "@/lib/adminFetch";
 import { InstrumentalForm } from "@/components/admin/InstrumentalForm";
 import type { Album, Instrumental } from "@/lib/db-types";
 
@@ -48,7 +49,7 @@ export function SoundsManager({
   async function onTogglePublish(row: Instrumental) {
     setPendingId(row.id);
     try {
-      const res = await fetch(`/api/admin/instrumentals/${row.id}`, {
+      const res = await adminFetch(`/api/admin/instrumentals/${row.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ is_published: !row.is_published }),
@@ -73,7 +74,7 @@ export function SoundsManager({
     if (!confirm(`Delete "${row.title}"?`)) return;
     setPendingId(row.id);
     try {
-      const res = await fetch(`/api/admin/instrumentals/${row.id}`, {
+      const res = await adminFetch(`/api/admin/instrumentals/${row.id}`, {
         method: "DELETE",
       });
       if (!res.ok) {

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createHmac } from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 import {
   createPayPalOrder,
@@ -176,15 +177,22 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json(
-      {
-        orderId: order.id,
-        subtotal,
-        total,
-        discountApplied,
-      },
+    // H6: Sign the orderId so /api/paypal/verify can confirm it was server-issued.
+    const nonceSig = createHmac("sha256", process.env.SUPABASE_SERVICE_ROLE_KEY ?? "")
+      .update(order.id)
+      .digest("hex");
+    const response = NextResponse.json(
+      { orderId: order.id, subtotal, total, discountApplied },
       { headers: noStore },
     );
+    response.cookies.set("ntv-co-nonce", nonceSig, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 30 * 60,
+      path: "/",
+    });
+    return response;
   } catch (err) {
     const message = err instanceof PayPalError ? err.code : "create_failed";
     await logAuditEvent({

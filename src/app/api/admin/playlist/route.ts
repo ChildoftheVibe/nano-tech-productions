@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, validateCsrf } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logError } from "@/lib/logger";
 
@@ -24,6 +24,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
+  if (!(await validateCsrf(request.headers))) return Response.json({ error: "csrf_invalid" }, { status: 403 });
 
   let body: unknown;
   try {

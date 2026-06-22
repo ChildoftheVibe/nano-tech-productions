@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyAuthenticationResponse } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase";
-import { createSession, setAdminCookie } from "@/lib/auth";
+import { createSession, setAdminCookie, setCsrfCookie } from "@/lib/auth";
 import { clientIpFromHeaders } from "@/lib/audit";
 import { logError } from "@/lib/logger";
 import { checkRateLimitStrict } from "@/lib/rateLimit";
@@ -93,6 +93,7 @@ export async function POST(req: Request) {
 
   const token = await createSession(ip);
   await setAdminCookie(token);
+  await setCsrfCookie();
 
   const res = NextResponse.json({ ok: true });
   res.cookies.delete("webauthn_auth_challenge");

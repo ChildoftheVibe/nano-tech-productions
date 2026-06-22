@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Apple, Globe, Search, X } from "lucide-react";
+import { adminFetch } from "@/lib/adminFetch";
 import { CloudinaryUploader } from "@/components/admin/CloudinaryUploader";
 
 export type AdminTrackOption = {
@@ -261,7 +262,7 @@ export function ArtistForm({
         ? `/api/admin/artists/${artistId}`
         : "/api/admin/artists";
       const method = artistId ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),

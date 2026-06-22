@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GripVertical, Plus, Trash2, X } from "lucide-react";
+import { adminFetch } from "@/lib/adminFetch";
 
 export type PlaylistEntry = {
   id: string;
@@ -64,7 +65,7 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/admin/playlist", {
+      const res = await adminFetch("/api/admin/playlist", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
@@ -141,7 +142,7 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/playlist/${entry.id}`, {
+      const res = await adminFetch(`/api/admin/playlist/${entry.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ is_active: !entry.isActive }),
@@ -164,7 +165,7 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/playlist/${entry.id}`, {
+      const res = await adminFetch(`/api/admin/playlist/${entry.id}`, {
         method: "DELETE",
       });
       if (!res.ok) {

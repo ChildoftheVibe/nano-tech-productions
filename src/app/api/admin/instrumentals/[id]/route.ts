@@ -1,5 +1,5 @@
 import { revalidateTag } from "next/cache";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, validateCsrf } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
 import { logError } from "@/lib/logger";
@@ -75,6 +75,7 @@ export async function PATCH(
 ) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
+  if (!(await validateCsrf(request.headers))) return Response.json({ error: "csrf_invalid" }, { status: 403 });
 
   const { id } = await params;
   let body: unknown;
@@ -121,6 +122,7 @@ export async function DELETE(
 ) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
+  if (!(await validateCsrf(request.headers))) return Response.json({ error: "csrf_invalid" }, { status: 403 });
 
   const { id } = await params;
   const { error } = await supabaseAdmin

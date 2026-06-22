@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { adminFetch } from "@/lib/adminFetch";
 import { useState } from "react";
 import { AlbumForm } from "@/components/admin/AlbumForm";
 import type { Album } from "@/lib/db-types";
@@ -39,7 +40,7 @@ export function AlbumsManager({
   async function onTogglePublish(album: AlbumWithTrackCount) {
     setPendingId(album.id);
     try {
-      const res = await fetch(`/api/admin/albums/${album.id}`, {
+      const res = await adminFetch(`/api/admin/albums/${album.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ is_published: !album.is_published }),
@@ -69,7 +70,7 @@ export function AlbumsManager({
       return;
     setPendingId(album.id);
     try {
-      const res = await fetch(`/api/admin/albums/${album.id}`, {
+      const res = await adminFetch(`/api/admin/albums/${album.id}`, {
         method: "DELETE",
       });
       if (!res.ok) {

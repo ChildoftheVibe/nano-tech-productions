@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Upload, X } from "lucide-react";
+import { adminFetch } from "@/lib/adminFetch";
 
 type ResourceType = "image" | "video" | "raw";
 
@@ -65,7 +66,7 @@ export function CloudinaryUploader({
     setError(null);
     setProgress(0);
     try {
-      const signRes = await fetch("/api/admin/cloudinary-sign", {
+      const signRes = await adminFetch("/api/admin/cloudinary-sign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ folder, resourceType }),

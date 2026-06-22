@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { adminFetch } from "@/lib/adminFetch";
 import { TrackForm } from "@/components/admin/TrackForm";
 import type { Album, Track } from "@/lib/db-types";
 
@@ -46,7 +47,7 @@ export function TracksManager({
   async function onTogglePublish(track: Track) {
     setPendingId(track.id);
     try {
-      const res = await fetch(`/api/admin/tracks/${track.id}`, {
+      const res = await adminFetch(`/api/admin/tracks/${track.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ is_published: !track.is_published }),
@@ -71,7 +72,7 @@ export function TracksManager({
     if (!confirm(`Delete "${track.title}"?`)) return;
     setPendingId(track.id);
     try {
-      const res = await fetch(`/api/admin/tracks/${track.id}`, {
+      const res = await adminFetch(`/api/admin/tracks/${track.id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
