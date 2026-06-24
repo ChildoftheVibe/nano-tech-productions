@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { motion, type Variants } from "framer-motion";
-import { Pause, Play, ChevronRight } from "lucide-react";
+import { Pause, Play } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { ArtistCard } from "@/components/artist/ArtistCard";
 import { usePlayerStore } from "@/store/playerStore";
@@ -143,16 +143,68 @@ export function HomeClient({
         animate={mounted ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#3DD6C8]">
-          Nano Tech Vibe · The Vault
-        </div>
-        <h1 className="font-[family-name:var(--font-bungee)] text-4xl leading-[0.93] text-white md:text-6xl lg:text-7xl">
-          {greeting}
-          <span className="text-[#3DD6C8]">.</span>
-        </h1>
-        <p className="mt-4 max-w-xs text-sm text-[#B3B3B3] leading-relaxed md:max-w-sm">
-          Music direct from the artist. No algorithm. No filter.
-        </p>
+        {latest ? (
+          <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-xl group cursor-pointer">
+            {/* Background cover image */}
+            <div
+              className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
+              style={{
+                backgroundImage: `url(${getAlbumCover(latest.coverImage, "lg")})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            />
+            {/* Dark overlay */}
+            <div className="absolute inset-0 bg-black/50" />
+            {/* Gradient overlay at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-2/3 bg-gradient-to-t from-black/90 to-transparent" />
+            {/* Content */}
+            <div className="absolute bottom-0 left-0 p-8 md:p-12 z-10">
+              <div className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-[0.3em] text-[#ffabef] mb-3">
+                New Release
+              </div>
+              <h1 className="font-[family-name:var(--font-bungee)] text-4xl md:text-6xl text-white leading-none mb-3">
+                {latest.title}
+              </h1>
+              {latest.description && (
+                <p className="text-sm text-white/70 max-w-md mb-6 line-clamp-2">
+                  {latest.description}
+                </p>
+              )}
+              <div className="flex gap-3 flex-wrap">
+                <motion.button
+                  onClick={() => playFromAlbum(latest)}
+                  disabled={!latest.tracks.length}
+                  className="bg-[#3DD6C8] text-black px-8 py-3 rounded-full font-bold text-sm flex items-center gap-2 disabled:opacity-40"
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                >
+                  <Play size={14} fill="currentColor" />
+                  Play Now
+                </motion.button>
+                <Link
+                  href={`/album/${latest.slug}`}
+                  className="glass-panel px-8 py-3 rounded-full font-bold text-sm text-white hover:bg-white/10 transition-colors"
+                >
+                  View Album
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#3DD6C8]">
+              Nano Tech Vibe · The Vault
+            </div>
+            <h1 className="font-[family-name:var(--font-bungee)] text-4xl leading-[0.93] text-white md:text-6xl lg:text-7xl">
+              {greeting}
+              <span className="text-[#3DD6C8]">.</span>
+            </h1>
+            <p className="mt-4 max-w-xs text-sm text-[#B3B3B3] leading-relaxed md:max-w-sm">
+              Music direct from the artist. No algorithm. No filter.
+            </p>
+          </>
+        )}
       </motion.section>
 
       {/* ── FEATURED ── */}
@@ -170,153 +222,44 @@ export function HomeClient({
             No albums yet. Run the seed script to populate the catalog.
           </div>
         ) : (
-          <div className="-mx-4 overflow-x-auto px-4 md:-mx-8 md:px-8">
-            <motion.div
-              className="flex snap-x snap-mandatory gap-5 md:gap-7 pb-2"
-              variants={containerStagger}
-              initial="hidden"
-              animate={mounted ? "visible" : "hidden"}
-            >
-              {featured.map((album, idx) => (
-                <motion.div
-                  key={album.id}
-                  className="w-[160px] flex-shrink-0 snap-start md:w-[190px]"
-                  variants={itemFadeUp}
-                >
-                  <AlbumCard
-                    album={album}
-                    size="md"
-                    href={`/album/${album.slug}`}
-                    showHoverPlay
-                    onPlay={() => playFromAlbum(album)}
-                    priority={idx < 6}
-                    fetchPriority={idx < 3 ? "high" : undefined}
-                  />
-                  <div className="mt-2.5 space-y-1">
-                    <div className="truncate text-sm font-semibold text-white leading-tight">
-                      <Link
-                        href={`/album/${album.slug}`}
-                        className="hover:text-[#3DD6C8] transition-colors duration-200"
-                      >
-                        {album.title}
-                      </Link>
-                    </div>
-                    <div className="font-mono text-[10px] uppercase tracking-wider text-[#B3B3B3]">
-                      {album.releaseDate?.slice(0, 4) ?? ""}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        )}
-      </section>
-
-      {/* ── LATEST RELEASE ── */}
-      {latest ? (
-        <section className="pb-12 md:pb-16">
           <motion.div
-            className="mb-6 md:mb-8"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6"
+            variants={containerStagger}
             initial="hidden"
             animate={mounted ? "visible" : "hidden"}
-            variants={sectionReveal}
           >
-            <SectionLabel eyebrow="New Drop" title="Latest Release" />
-          </motion.div>
-          <motion.div
-            className="overflow-hidden rounded-2xl"
-            initial={{ opacity: 0, y: 14 }}
-            animate={mounted ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
-            style={{
-              background: `linear-gradient(135deg, ${latest.bgColor}cc 0%, #1a0838 55%, #181818 100%)`,
-              border: "1px solid rgba(255,255,255,0.07)",
-            }}
-          >
-            <div className="relative flex flex-col gap-6 p-6 md:flex-row md:items-end md:gap-10 md:p-10 lg:p-12">
-              {/* subtle grid texture */}
-              <div
-                className="pointer-events-none absolute inset-0 opacity-[0.025]"
-                style={{
-                  backgroundImage: `repeating-linear-gradient(0deg, #fff 0px, #fff 1px, transparent 1px, transparent 48px), repeating-linear-gradient(90deg, #fff 0px, #fff 1px, transparent 1px, transparent 48px)`,
-                }}
-              />
+            {featured.map((album, idx) => (
               <motion.div
-                className="relative flex-shrink-0"
-                initial={{ scale: 0.94, opacity: 0 }}
-                animate={mounted ? { scale: 1, opacity: 1 } : { scale: 0.94, opacity: 0 }}
-                transition={{ duration: 0.45, ease: "easeOut" }}
+                key={album.id}
+                variants={itemFadeUp}
               >
                 <AlbumCard
-                  album={latest}
-                  size="lg"
-                  href={`/album/${latest.slug}`}
+                  album={album}
+                  size="md"
+                  href={`/album/${album.slug}`}
+                  showHoverPlay
+                  onPlay={() => playFromAlbum(album)}
+                  priority={idx < 6}
+                  fetchPriority={idx < 3 ? "high" : undefined}
                 />
+                <div className="mt-2.5 space-y-1">
+                  <div className="truncate text-sm font-semibold text-white leading-tight">
+                    <Link
+                      href={`/album/${album.slug}`}
+                      className="hover:text-[#3DD6C8] transition-colors duration-200"
+                    >
+                      {album.title}
+                    </Link>
+                  </div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-[#B3B3B3]">
+                    {album.releaseDate?.slice(0, 4) ?? ""}
+                  </div>
+                </div>
               </motion.div>
-              <div className="relative min-w-0 flex-1">
-                <div className="mb-4 flex flex-wrap items-center gap-2">
-                  <span
-                    className="rounded-full px-3 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] font-semibold"
-                    style={{
-                      background: `${latest.accentColor}1a`,
-                      color: latest.accentColor,
-                      border: `1px solid ${latest.accentColor}33`,
-                    }}
-                  >
-                    Latest Release
-                  </span>
-                  {latest.tracks.length > 0 && (
-                    <span className="font-mono text-[10px] text-[#B3B3B3] uppercase tracking-wider">
-                      {latest.tracks.length}{" "}
-                      {latest.tracks.length === 1 ? "Track" : "Tracks"}
-                    </span>
-                  )}
-                </div>
-                <h3 className="mb-3 text-3xl font-black tracking-tight leading-[0.92] text-white md:text-5xl lg:text-6xl">
-                  {latest.title}
-                </h3>
-                <div className="mb-5 flex items-center gap-2 font-mono text-xs text-[#B3B3B3]">
-                  <span>{PRIMARY_ARTIST}</span>
-                  <span className="text-white/20">·</span>
-                  <span>
-                    {latest.releaseDate
-                      ? new Date(latest.releaseDate).toLocaleDateString(
-                          undefined,
-                          { year: "numeric", month: "long" },
-                        )
-                      : ""}
-                  </span>
-                </div>
-                {latest.description && (
-                  <p className="mb-7 line-clamp-2 max-w-lg text-sm text-white/55 leading-relaxed">
-                    {latest.description}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-3">
-                  <motion.button
-                    onClick={() => playFromAlbum(latest)}
-                    disabled={!latest.tracks.length}
-                    className="flex items-center gap-2 rounded-full px-8 py-3 text-sm font-bold text-black disabled:opacity-40"
-                    style={{ background: latest.accentColor }}
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
-                  >
-                    <Play size={14} fill="currentColor" />
-                    Play Now
-                  </motion.button>
-                  <Link
-                    href={`/album/${latest.slug}`}
-                    className="flex items-center gap-1.5 rounded-full border border-white/20 px-8 py-3 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
-                  >
-                    View Album
-                    <ChevronRight size={14} />
-                  </Link>
-                </div>
-              </div>
-            </div>
+            ))}
           </motion.div>
-        </section>
-      ) : null}
+        )}
+      </section>
 
       {/* ── FEATURED ARTISTS ── */}
       {featuredArtists.length > 0 ? (
@@ -365,20 +308,16 @@ export function HomeClient({
           />
         </motion.div>
         <motion.div
-          className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
           variants={containerStagger}
           initial="hidden"
           animate={mounted ? "visible" : "hidden"}
         >
           {collection.map((album) => (
             <motion.div key={album.id} variants={itemFadeUp}>
-              <Link
-                href={`/album/${album.slug}`}
-                className="group flex flex-col gap-3 rounded-xl border border-transparent p-3 transition-all hover:border-white/[0.06] hover:bg-white/[0.04] md:flex-row md:gap-4 md:p-4"
-              >
-                {/* Mobile: square cover */}
+              <Link href={`/album/${album.slug}`} className="group block">
                 <div
-                  className="aspect-square w-full overflow-hidden rounded-lg md:hidden"
+                  className="aspect-square w-full overflow-hidden rounded-lg mb-2"
                   style={{ background: album.bgColor }}
                 >
                   {album.coverImage ? (
@@ -386,31 +325,16 @@ export function HomeClient({
                     <img
                       src={getAlbumCover(album.coverImage, "md")}
                       alt={album.title}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : null}
                 </div>
-                {/* Desktop: card with hover play */}
-                <div className="hidden md:block">
-                  <AlbumCard
-                    album={album}
-                    size="md"
-                    showHoverPlay
-                    onPlay={() => playFromAlbum(album)}
-                  />
+                <div className="truncate text-sm font-semibold text-[#dde4e2] mb-1 transition-colors group-hover:text-[#3DD6C8]">
+                  {album.title}
                 </div>
-                <div className="min-w-0 flex-1 md:pt-2">
-                  <div className="truncate text-sm font-semibold text-white transition-colors group-hover:text-[#3DD6C8] md:text-[15px]">
-                    {album.title}
-                  </div>
-                  <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-[#B3B3B3]">
-                    {album.releaseDate?.slice(0, 4)} ·{" "}
-                    {album.tracks.length}{" "}
-                    {album.tracks.length === 1 ? "track" : "tracks"}
-                  </div>
-                  <p className="mt-2.5 hidden line-clamp-2 text-xs text-white/50 leading-relaxed md:block">
-                    {album.description}
-                  </p>
+                <div className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-wider text-[#b3b3b3]">
+                  {album.releaseDate?.slice(0, 4)} · {album.tracks.length}{" "}
+                  {album.tracks.length === 1 ? "track" : "tracks"}
                 </div>
               </Link>
             </motion.div>

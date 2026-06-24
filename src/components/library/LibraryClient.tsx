@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion, type Variants } from "framer-motion";
-import { AlbumCard } from "@/components/music/AlbumCard";
-import { usePlayer } from "@/context/PlayerContext";
 import type { LibraryAlbum } from "@/lib/queries";
 import { getAlbumCover } from "@/lib/albumCover";
 
@@ -49,8 +47,6 @@ const compareDate = (a: string, b: string) => {
 export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
   const [sort, setSort] = useState<Sort>("newest");
   const [filter, setFilter] = useState<Filter>("all");
-  const { playFromAlbum } = usePlayer();
-
   const visible = useMemo(() => {
     const filtered = albums.filter((a) => {
       if (filter === "all") return true;
@@ -80,7 +76,9 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
   return (
     <div className="px-4 pt-2 pb-12 md:px-8">
       <div className="pb-4 pt-1 md:pt-2 md:pb-6">
-        <h1 className="font-[family-name:var(--font-bungee)] text-2xl text-white md:text-4xl">Library</h1>
+        <h1 className="font-[family-name:var(--font-bungee)] text-2xl text-white uppercase md:text-4xl">
+          Your Collection
+        </h1>
         <p className="mt-1 text-sm text-[#bbcac6]">
           {albums.length} releases · browse the full catalog
         </p>
@@ -129,7 +127,7 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
         </div>
       ) : (
         <motion.div
-          className="grid grid-cols-2 gap-3 md:grid-cols-2 md:gap-5 lg:grid-cols-3"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           variants={containerStagger}
           initial="hidden"
           animate="visible"
@@ -138,43 +136,35 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
             <motion.div key={album.id} variants={itemFadeUp}>
               <Link
                 href={`/album/${album.slug}`}
-                className="group flex flex-col gap-2 rounded-md p-2 transition-colors hover:bg-white/5 md:flex-row md:gap-4 md:p-3"
+                className="glass-card rounded-xl p-4 group cursor-pointer block"
               >
-                <div
-                  className="aspect-square w-full overflow-hidden rounded-md md:hidden"
-                  style={{ background: album.bgColor }}
-                >
+                <div className="relative aspect-square rounded-lg overflow-hidden mb-3">
                   {album.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={getAlbumCover(album.coverImage, "md")}
                       alt={album.title}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
-                  ) : null}
+                  ) : (
+                    <div
+                      className="h-full w-full"
+                      style={{ background: album.bgColor }}
+                    />
+                  )}
                 </div>
-                <div className="hidden md:block">
-                  <AlbumCard
-                    album={album}
-                    size="md"
-                    showHoverPlay
-                    onPlay={() => playFromAlbum(album)}
-                  />
+                <div className="font-semibold text-[#dde4e2] truncate mb-1">
+                  {album.title}
                 </div>
-                <div className="min-w-0 flex-1 md:pt-2">
-                  <div className="truncate text-sm font-semibold text-white md:text-base">
-                    {album.title}
+                <div className="font-[family-name:var(--font-geist-mono)] text-[10px] text-[#b3b3b3] uppercase tracking-wider">
+                  {album.releaseDate?.slice(0, 4) || "—"} · {album.trackCount}{" "}
+                  {album.trackCount === 1 ? "song" : "songs"}
+                </div>
+                {sort === "most_played" && album.totalPlayCount > 0 ? (
+                  <div className="mt-1 text-[11px] text-white/50">
+                    {album.totalPlayCount.toLocaleString()} plays
                   </div>
-                  <div className="text-xs text-[#B3B3B3]">
-                    {album.releaseDate?.slice(0, 4) || "—"} · {album.trackCount}{" "}
-                    {album.trackCount === 1 ? "song" : "songs"}
-                  </div>
-                  {sort === "most_played" && album.totalPlayCount > 0 ? (
-                    <div className="mt-1 text-[11px] text-white/50">
-                      {album.totalPlayCount.toLocaleString()} plays
-                    </div>
-                  ) : null}
-                </div>
+                ) : null}
               </Link>
             </motion.div>
           ))}

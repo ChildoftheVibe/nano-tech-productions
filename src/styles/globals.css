@@ -108,6 +108,19 @@ main {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.glass-card {
+  background: rgba(26, 33, 32, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease-out;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border-color: rgba(98, 243, 228, 0.3);
+}
+
 @keyframes subtle-drift {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
