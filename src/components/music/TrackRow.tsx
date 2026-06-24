@@ -64,8 +64,10 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
 
   return (
     <div
-      className={`group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-md px-3 py-2 transition-colors duration-150 hover:bg-white/[0.04] md:grid-cols-[40px_1fr_120px_80px_60px] md:gap-4 md:px-4 ${
-        isActive ? "bg-white/[0.04]" : ""
+      className={`group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-lg px-3 py-2 transition-all duration-150 md:grid-cols-[40px_1fr_120px_80px_60px] md:gap-4 md:px-4 ${
+        isActive
+          ? "bg-[#3DD6C8]/10 border border-[#3DD6C8]/20"
+          : "hover:bg-white/[0.04] border border-transparent"
       }`}
       aria-label={`Track ${track.trackNumber}: ${track.title}`}
     >

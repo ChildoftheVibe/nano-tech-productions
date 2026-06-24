@@ -59,7 +59,8 @@ export function AlbumCard({
         width: px,
         height: px,
         background: album.bgColor,
-        boxShadow: size === "lg" ? "0 8px 24px rgba(0,0,0,0.5)" : undefined,
+        boxShadow: size === "lg" ? "0 8px 24px rgba(0,0,0,0.5)" : "0 4px 12px rgba(0,0,0,0.4)",
+        border: "1px solid rgba(255,255,255,0.08)",
       }}
       whileHover={size !== "sm" ? { scale: 1.04 } : undefined}
       transition={{ duration: 0.2, ease: "easeOut" }}

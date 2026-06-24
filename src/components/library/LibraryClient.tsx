@@ -80,23 +80,23 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
   return (
     <div className="px-4 pt-2 pb-12 md:px-8">
       <div className="pb-4 pt-1 md:pt-2 md:pb-6">
-        <h1 className="text-2xl font-bold text-white md:text-4xl">Library</h1>
-        <p className="mt-1 text-sm text-[#B3B3B3]">
+        <h1 className="font-[family-name:var(--font-bungee)] text-2xl text-white md:text-4xl">Library</h1>
+        <p className="mt-1 text-sm text-[#bbcac6]">
           {albums.length} releases · browse the full catalog
         </p>
       </div>
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1 rounded-full border border-white/10 bg-black/30 p-1">
+        <div className="flex items-center gap-1">
           {FILTER_OPTIONS.map((opt) => (
             <button
               key={opt.key}
               type="button"
               onClick={() => setFilter(opt.key)}
-              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
+              className={`rounded-full px-4 py-1.5 font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-widest transition-colors ${
                 filter === opt.key
-                  ? "bg-white text-black"
-                  : "text-white/70 hover:text-white"
+                  ? "border-b-2 border-[#3DD6C8] text-[#3DD6C8] pb-[5px]"
+                  : "text-[#bbcac6] hover:text-white pb-[7px]"
               }`}
             >
               {opt.label}

@@ -71,7 +71,7 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://www.paypalobjects.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.paypal.com" crossOrigin="anonymous" />
       </head>
-      <body className="bg-[#393838] text-white">
+      <body className="bg-[#090f0e] text-white">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[1000] focus:rounded focus:bg-[#3DD6C8] focus:px-4 focus:py-2 focus:font-semibold focus:text-black focus:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
@@ -92,7 +92,7 @@ export default async function RootLayout({
                     style={{
                       flex: 1,
                       overflowY: "auto",
-                      background: "#393838",
+                      background: "#090f0e",
                       position: "relative",
                     }}
                   >

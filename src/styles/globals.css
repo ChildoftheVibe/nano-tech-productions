@@ -1,25 +1,38 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ntv-bg: #393838;
-  --color-ntv-sidebar: #2a2929;
-  --color-ntv-card: #282828;
-  --color-ntv-player: #181818;
-  --color-ntv-hover: #3e3e3e;
+  --color-ntv-bg: #090f0e;
+  --color-ntv-sidebar: #1a2120;
+  --color-ntv-card: #161d1c;
+  --color-ntv-player: #090f0e;
+  --color-ntv-hover: #242b2a;
   --color-ntv-teal: #3dd6c8;
   --color-ntv-pink: #eb41df;
   --color-ntv-muted: #b3b3b3;
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), 'Space Mono', monospace;
   --font-display: var(--font-bungee), 'Bungee', sans-serif;
+  /* design-system surface tokens */
+  --color-surface-container-lowest: #090f0e;
+  --color-surface-container-low: #161d1c;
+  --color-surface-container: #1a2120;
+  --color-surface-container-high: #242b2a;
+  --color-surface-container-highest: #2f3635;
+  --color-surface-variant: #2f3635;
+  --color-surface-dim: #0e1514;
+  --color-on-surface: #dde4e2;
+  --color-on-surface-variant: #bbcac6;
+  --color-outline-variant: #3c4947;
+  --color-secondary: #ffabef;
+  --color-primary: #3dd6c8;
 }
 
 :root {
-  --ntv-bg: #393838;
-  --ntv-sidebar: #2a2929;
-  --ntv-card: #282828;
-  --ntv-player: #181818;
-  --ntv-hover: #3e3e3e;
+  --ntv-bg: #090f0e;
+  --ntv-sidebar: #1a2120;
+  --ntv-card: #161d1c;
+  --ntv-player: #090f0e;
+  --ntv-hover: #242b2a;
   --ntv-teal: #3dd6c8;
   --ntv-pink: #eb41df;
   --ntv-text: #ffffff;
@@ -45,6 +58,7 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   height: 100%;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 #__next,
@@ -64,7 +78,7 @@ main {
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: #3dd6c8;
 }
 
 .font-mono {
@@ -86,6 +100,17 @@ main {
 }
 .pink-glow {
   box-shadow: 0 0 20px rgba(235, 65, 223, 0.3);
+}
+
+.glass-panel {
+  background: rgba(26, 33, 32, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@keyframes subtle-drift {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 html {

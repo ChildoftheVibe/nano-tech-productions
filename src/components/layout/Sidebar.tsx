@@ -28,13 +28,13 @@ export function Sidebar({ initialAlbums }: Props) {
     <aside
       aria-label="Sidebar"
       className="hidden flex-shrink-0 flex-col text-white md:flex"
-      style={{ width: 240, background: "#2a2929" }}
+      style={{ width: 240, background: "#1a2120", borderRight: "1px solid rgba(255,255,255,0.08)" }}
     >
-      <div className="flex-shrink-0 px-5 pt-5 pb-3">
+      <div className="flex-shrink-0 px-5 pt-5 pb-4">
         <Link
           href="/"
           aria-label="NTV Vault home"
-          className="ntv-logo font-mono text-2xl font-bold tracking-wider text-[#3DD6C8]"
+          className="ntv-logo font-[family-name:var(--font-bungee)] text-2xl tracking-tight text-[#3DD6C8]"
         >
           NTV
         </Link>
@@ -48,10 +48,10 @@ export function Sidebar({ initialAlbums }: Props) {
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
                 active
-                  ? "bg-white/10 text-white"
-                  : "text-[#B3B3B3] hover:bg-white/5 hover:text-white"
+                  ? "bg-[#2f3635] text-[#3DD6C8] font-bold"
+                  : "text-[#bbcac6] hover:bg-[#242b2a] hover:text-white"
               }`}
             >
               <Icon size={20} aria-hidden="true" />
@@ -69,7 +69,7 @@ export function Sidebar({ initialAlbums }: Props) {
       <div className="flex-shrink-0 px-5 pb-2 pt-1">
         <h2
           id="sidebar-collection-heading"
-          className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#B3B3B3]"
+          className="font-[family-name:var(--font-geist-mono)] text-[10px] font-semibold uppercase tracking-[0.2em] text-[#bbcac6]"
         >
           Your Collection
         </h2>
@@ -95,7 +95,7 @@ export function Sidebar({ initialAlbums }: Props) {
                   href={`/album/${album.slug}`}
                   aria-label={year ? `${album.title}, ${year}` : album.title}
                   aria-current={active ? "page" : undefined}
-                  className="group flex items-center gap-3 rounded-md py-2 pr-2 transition-colors duration-150 hover:bg-white/[0.06]"
+                  className="group flex items-center gap-3 rounded-lg py-2 pr-2 transition-colors duration-150 hover:bg-[#242b2a]"
                   style={{
                     borderLeft: active
                       ? "3px solid #3DD6C8"
@@ -145,8 +145,7 @@ export function Sidebar({ initialAlbums }: Props) {
       </ul>
 
       <div
-        className="flex-shrink-0 px-5 py-3 text-[11px] text-[#B3B3B3]"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+        className="glass-panel mx-2 mb-3 flex-shrink-0 rounded-lg px-4 py-3 text-[11px] text-[#bbcac6]"
       >
         <div className="mb-1.5 flex flex-wrap gap-x-2 gap-y-1">
           <Link href="/privacy" className="hover:text-white transition-colors duration-150">Privacy</Link>

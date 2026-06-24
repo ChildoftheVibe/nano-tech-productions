@@ -73,13 +73,13 @@ function SectionLabel({
   return (
     <div>
       <div className="mb-2 h-px w-6 bg-[#3DD6C8]" />
-      <div className="mb-0.5 font-mono text-[10px] uppercase tracking-[0.28em] text-[#3DD6C8]">
+      <div className="mb-0.5 font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-[0.28em] text-[#3DD6C8]">
         {eyebrow}
       </div>
       <div className="flex items-baseline gap-3">
-        <h2 className="text-xl font-bold text-white">{title}</h2>
+        <h2 className="font-[family-name:var(--font-bungee)] text-xl text-white">{title}</h2>
         {count && (
-          <span className="font-mono text-[11px] text-[#B3B3B3]">{count}</span>
+          <span className="font-[family-name:var(--font-geist-mono)] text-[11px] text-[#B3B3B3]">{count}</span>
         )}
       </div>
     </div>
@@ -146,7 +146,7 @@ export function HomeClient({
         <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#3DD6C8]">
           Nano Tech Vibe · The Vault
         </div>
-        <h1 className="text-4xl font-black tracking-tight leading-[0.93] text-white md:text-6xl lg:text-7xl">
+        <h1 className="font-[family-name:var(--font-bungee)] text-4xl leading-[0.93] text-white md:text-6xl lg:text-7xl">
           {greeting}
           <span className="text-[#3DD6C8]">.</span>
         </h1>

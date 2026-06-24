@@ -180,16 +180,19 @@ export function FullScreenPlayer() {
               </button>
               <div
                 aria-hidden
-                className="h-1 w-10 rounded-full bg-white/30"
+                className="h-1 w-10 rounded-full bg-white/40"
               />
               <div className="w-10" />
             </div>
 
             {/* Album art */}
-            <div className="flex flex-1 items-center justify-center py-6">
+            <div className="flex flex-1 items-center justify-center py-4">
               <div
-                className="relative aspect-square w-[60%] overflow-hidden rounded-2xl shadow-2xl"
-                style={{ background: "rgba(255,255,255,0.05)" }}
+                className="relative aspect-square w-[80%] overflow-hidden rounded-2xl shadow-2xl"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  animation: "subtle-drift 20s ease-in-out infinite",
+                }}
               >
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -210,12 +213,14 @@ export function FullScreenPlayer() {
             {/* Album context + title + artist */}
             <div className="pb-3">
               {currentAlbum && (
-                <div className="mb-1 truncate text-xs font-semibold uppercase tracking-[0.15em] text-white/40">
+                <div className="mb-1 truncate font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-[0.2em] text-white/50">
                   {currentAlbum.title}
                 </div>
               )}
-              <div className="truncate text-2xl font-bold">{currentTrack.title}</div>
-              <div className="mt-1 truncate text-sm text-white/70">{features}</div>
+              <div className="truncate font-[family-name:var(--font-bungee)] text-2xl leading-tight text-[#3DD6C8]">
+                {currentTrack.title}
+              </div>
+              <div className="mt-1 truncate text-sm text-white/60">{features}</div>
             </div>
 
             {/* Buy Track + View Album — animate when track changes */}
@@ -303,7 +308,8 @@ export function FullScreenPlayer() {
               <motion.button
                 onClick={togglePlayPause}
                 aria-label={isPlaying ? "Pause" : "Play"}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-black"
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-[#3DD6C8] text-black"
+              style={{ boxShadow: "0 0 24px rgba(61, 214, 200, 0.4)" }}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.94 }}
               >

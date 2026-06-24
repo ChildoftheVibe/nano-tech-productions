@@ -195,8 +195,8 @@ export function PlayerBar() {
     <footer
       className="relative flex-shrink-0 min-h-14 text-white"
       style={{
-        background: "#181818",
-        borderTop: "1px solid rgba(255,255,255,0.1)",
+        background: "#090f0e",
+        borderTop: "1px solid rgba(255,255,255,0.08)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
       }}
       aria-label="Music player"
@@ -266,7 +266,8 @@ export function PlayerBar() {
             <motion.button
               onClick={togglePlayPause}
               aria-label={playLabel}
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white text-black"
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#3DD6C8] text-black"
+              style={{ boxShadow: "0 0 15px rgba(61, 214, 200, 0.3)" }}
               whileTap={{ scale: 0.92 }}
             >
               {isPlaying ? (
@@ -438,7 +439,8 @@ export function PlayerBar() {
               onClick={togglePlayPause}
               aria-label={playLabel}
               disabled={!currentTrack}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black disabled:opacity-40"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#3DD6C8] text-black disabled:opacity-40"
+            style={{ boxShadow: "0 0 15px rgba(61, 214, 200, 0.3)" }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.92 }}
               transition={{ duration: 0.15 }}

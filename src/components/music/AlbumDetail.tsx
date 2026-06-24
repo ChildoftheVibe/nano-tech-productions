@@ -158,10 +158,10 @@ export function AlbumDetail({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut", delay: 0.1 }}
           >
-            <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+            <div className="mb-2 font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-[0.2em] text-white/60">
               Album
             </div>
-            <h1 className="mb-3 text-4xl font-extrabold leading-tight md:text-6xl">
+            <h1 className="mb-3 font-[family-name:var(--font-bungee)] text-3xl leading-tight text-[#3DD6C8] md:text-5xl">
               {album.title}
             </h1>
             <div className="mb-3 text-sm text-white/80">

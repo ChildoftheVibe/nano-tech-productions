@@ -44,8 +44,8 @@ export function MobileTabBar() {
       className="flex flex-shrink-0 items-stretch md:hidden"
       style={{
         height: 56,
-        background: "#181818",
-        borderTop: "1px solid rgba(255,255,255,0.1)",
+        background: "#090f0e",
+        borderTop: "1px solid rgba(255,255,255,0.08)",
       }}
     >
       {TABS.map(({ href, label, Icon, match }) => {
