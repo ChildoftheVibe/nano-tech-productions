@@ -320,7 +320,7 @@ export function AlbumDetail({
         {/* ── RIGHT: Tracklist ── */}
         <div
           className="flex-1 flex flex-col min-h-0"
-          style={{ background: "#242b2a", padding: "32px 32px 24px" }}
+          style={{ background: "#090f0e", padding: "32px 32px 24px" }}
         >
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -336,11 +336,10 @@ export function AlbumDetail({
             }}
           >
             <h2
+              className="font-[family-name:var(--font-bungee)] tracking-tight"
               style={{
                 fontSize: 22,
-                fontWeight: 700,
-                color: "#ffffff",
-                letterSpacing: "-0.01em",
+                color: accent,
                 margin: 0,
               }}
             >
