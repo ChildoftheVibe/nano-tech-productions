@@ -45,7 +45,7 @@ src/
     api/
       admin/               # Protected admin APIs (CRUD, vault, Cloudinary, WebAuthn, audit)
       albums/ artists/ instrumentals/ playlist/ search/  # Public reads
-      paypal/              # create-order + webhook
+      paypal/              # create-order + verify + webhook
       download/            # Token-gated MP3 + instrumental downloads
       discounts/validate/  # Discount code validation
       tracks/played/       # Play count tracking
@@ -120,8 +120,9 @@ RLS: public read on published content; service role has full access.
 | GET | `/api/search?q=` | Full-text search albums/tracks/artists |
 | GET | `/api/instrumentals` | List beats/sounds (paginated) |
 | POST | `/api/discounts/validate` | Validate discount code |
-| POST | `/api/paypal/create-order` | Create PayPal order (server validates price) |
-| POST | `/api/paypal/webhook` | PayPal IPN webhook |
+| POST | `/api/paypal/create-order` | Create PayPal order (server validates price), set nonce cookie |
+| POST | `/api/paypal/verify` | Capture payment, validate nonce, mint download tokens |
+| POST | `/api/paypal/webhook` | PayPal IPN webhook (reliability net) |
 | GET | `/api/download/[token]` | Token-gated MP3 320k download |
 | GET | `/api/download/instrumental/[token]` | Token-gated instrumental download |
 | POST | `/api/tracks/played` | Increment play count (fire-and-forget) |
@@ -141,23 +142,61 @@ CRUD for albums/tracks/artists/instrumentals/discounts; WAV vault streaming (5mi
 4. **PlayerContext** — audio element ref, play/pause/next/prev/seek, analytics hooks
 5. **SW (Serwist)** — navigate+`/api/*` → NetworkOnly; `/_next/static/*` → CacheFirst; Cloudinary images → CacheFirst 20MB; audio → CacheFirst 25MB/entry 50MB bucket; namespaced by `BUILD_ID` for auto-cleanup
 6. **Cloudinary pipeline** — MP3 320k on-the-fly transcode for streaming; signed vault URLs for WAV masters
-7. **PayPal checkout** — order created server-side (authoritative price), discount applied before order, webhook completes purchase, single-use download tokens issued only after confirmed payment
+7. **PayPal checkout** — order created server-side (authoritative price), nonce cookie set on `create-order` and validated on `verify` (prevents replay), discount applied before order, webhook restricted to PayPal IP allowlist, single-use download tokens issued only after confirmed capture
 8. **Discounts** — percentage-based, per-code expiry + max uses, scoped to track/album/all
-9. **Admin auth** — bcrypt password OR WebAuthn/passkey (SimpleWebAuthn), 8-hour sessions, IP audit log
+9. **Admin auth** — bcrypt password OR WebAuthn/passkey (SimpleWebAuthn), 8-hour sessions, IP binding, CSRF double-submit cookie on all mutations
 10. **Dual analytics** — PostHog (autocapture, heatmaps, replay, custom events) + first-party endpoints; Sentry for errors
 11. **Fire-and-forget play counts** — incremented via RPC without blocking UI
 12. **FTS** — Supabase full-text search across albums/tracks/artists; revalidates every 60s
 13. **Cover image pipeline** — every `<img>` for an album, artist, or instrumental cover MUST use `getAlbumCover(src, size)` from `src/lib/albumCover.ts`. Accepts a full Cloudinary URL, bare publicId, or local `/assets` path; inserts `f_auto,q_auto:good,w_N,h_N,c_fill` after `/image/upload/`. Bypassing it serves full-resolution originals (5–10× bandwidth, breaks LCP, silently fails bare publicIds).
+14. **Audio CORS** — all `<audio>` elements carry `crossOrigin="anonymous"` to prevent `ERR_BLOCKED_BY_RESPONSE` on Cloudinary-served audio.
+15. **Cron auth** — `/api/cron/*` routes validate `Authorization: Bearer <CRON_SECRET>` from `vercel.json` cron config; reject requests without it.
 
 ---
 
 ## Design System
 
-**Colors**: Primary `#3DD6C8` (teal) · Secondary `#EB41DF` (pink) · BG `#393838` · Surface `#282828` · Text `#FFFFFF` · Muted `#B3B3B3` · Border `rgba(255,255,255,0.08)`
+Source of truth: `2027DESIGN.md`. All tokens below are live in production.
 
-**Typography**: Body Inter 300–700 · Mono Space Mono · Display 48/700 · H1 32/700 · H2 24/600 · Body 16/400
+**Core Colors**
 
-**Sizing**: Album cards 180px(md)/230px(lg), 8px radius, scale-on-hover · Track rows grid `[40px|1fr|60px]` · Buttons 8px radius, teal CTAs · Spacing 4/8/16/24/32/48px
+| Token | Value | Usage |
+|-------|-------|-------|
+| `primary` | `#62f3e4` | CTAs, active states, teal glows |
+| `secondary` | `#ffabef` | Contrast accents, badges |
+| `on-primary` | `#003733` | Text on teal buttons (never `text-black`) |
+| `surface-container-lowest` | `#090f0e` | Page background |
+| `surface-container` | `#1a2120` | Sidebar, elevated panels |
+| `surface-container-high` | `#242b2a` | Cards, inputs |
+| `surface-container-highest` | `#2f3635` | Progress tracks, scrubbers |
+| `on-surface` | `#dde4e2` | Primary text (replaces `#ffffff`) |
+| `on-surface-variant` | `#bbcac6` | Secondary text, inactive nav |
+| `text-muted` | `#b3b3b3` | Hints, timestamps |
+| `border` | `rgba(255,255,255,0.08)` | Dividers |
+
+**Typography**
+
+- **Body**: Geist Sans (Inter-compatible) 300–700
+- **Mono**: Geist Mono / Space Mono — timestamps, metadata labels
+- **Display/Headings**: Bungee (`var(--font-bungee)`) — used **only** for: brand wordmark, hero titles, section labels (`New Horizons`, `YOUR COLLECTION`), album title on detail/now-playing pages, Sounds/Artists/Library page headings. Never on body text, track titles, nav items, or metadata.
+- Class: `font-[family-name:var(--font-bungee)]` with `tracking-tight`
+
+**CSS Utilities** (defined in `src/styles/globals.css`)
+
+- `.glass-panel` — `rgba(26,33,32,0.7)` + `backdrop-filter:blur(12px)` + border
+- `.glass-card` — `rgba(255,255,255,0.03)` + blur + hover: translateY(-4px) + teal border
+- `.teal-glow` — `box-shadow: 0 0 20px rgba(98,243,228,0.3)`
+- `.teal-glow-hover` — teal glow, intensifies to 35px on hover
+- `.pink-glow` — `box-shadow: 0 0 20px rgba(255,171,239,0.3)`
+- `.bg-gradient-mesh` — radial teal gradient for FullScreenPlayer bg
+- `.animate-drift` — 20s slow scale 1→1.05 loop for blurred bg art
+- `.no-scrollbar` — hide scrollbar on overflow containers
+
+**Sizing**: Album cards 180px(md)/230px(lg) · Track rows grid `[40px|1fr|60px]` · Sidebar 280px · PlayerBar 56px (mobile) / 80px (desktop) · Spacing xs/sm/md/lg/xl/2xl = 4/8/16/24/32/48px
+
+**AlbumCard play overlay**: Full-card centered teal circle (not bottom-right corner) — dark scrim + teal glow shadow.
+
+**PWA**: Icons at `/public/icons/icon-192.png` and `/public/icons/icon-512.png`. Manifest at `/public/manifest.json`. `InstallPromptBanner` references `/icons/icon-192.png`.
 
 ---
 
