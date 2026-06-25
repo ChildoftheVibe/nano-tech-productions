@@ -75,6 +75,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
         onClick={handleClick}
         aria-label={isThisPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
         className="flex h-6 w-6 items-center justify-center"
+        style={{ boxShadow: "none" }}
       >
         {isActive ? (
           isThisPlaying ? (
@@ -130,7 +131,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
         <button
           onClick={handleClick}
           className="block w-full truncate text-left text-sm font-medium transition-none"
-          style={{ color: isActive ? accent : "#dde4e2" }}
+          style={{ color: isActive ? accent : "#dde4e2", boxShadow: "none" }}
         >
           {track.title}
         </button>
