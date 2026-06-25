@@ -54,9 +54,9 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
 
   return (
     <div
-      className="group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-lg px-3 py-4 transition-colors duration-150"
+      className="group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-lg px-3 py-3 transition-colors duration-150"
       style={{
-        background: isActive ? `${accent}4d` : "transparent",
+        background: isActive ? `${accent}33` : "transparent",
       }}
       onMouseEnter={(e) => {
         if (!isActive) {
@@ -113,7 +113,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
                 lineHeight: 1,
               }}
             >
-              {track.trackNumber}
+              {String(track.trackNumber).padStart(2, "0")}
             </span>
             {/* Play icon — fades in on row hover */}
             <Play
@@ -138,15 +138,28 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
           <div className="truncate text-xs text-yellow-300/90" role="status" aria-live="polite">
             Audio not yet available
           </div>
-        ) : track.features?.length ? (
-          <div className="truncate text-xs" style={{ color: "#6b7c79" }}>
-            feat.{" "}
-            <MaybeArtistLinkList
-              names={track.features}
-              slugsByName={artistSlugsByName}
-            />
+        ) : (
+          <div
+            className="truncate"
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              color: "#6b7c79",
+            }}
+          >
+            Jhodge
+            {track.features?.length ? (
+              <>
+                {" · feat "}
+                <MaybeArtistLinkList
+                  names={track.features}
+                  slugsByName={artistSlugsByName}
+                />
+              </>
+            ) : null}
           </div>
-        ) : null}
+        )}
       </div>
 
       {/* Duration */}
