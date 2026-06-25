@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { SearchBar } from "@/components/search/SearchBar";
+import { usePlayerStore } from "@/store/playerStore";
 
 export function TopBar() {
   const router = useRouter();
+  const openFullScreen = usePlayerStore((s) => s.openFullScreen);
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
 
   return (
     <header
@@ -49,6 +52,16 @@ export function TopBar() {
       </div>
 
       <div className="flex items-center gap-3">
+        {currentTrack && (
+          <motion.button
+            onClick={openFullScreen}
+            aria-label="Open Now Playing"
+            className="hidden md:flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-[#62f3e4] border border-[#62f3e4]/30 hover:bg-[#62f3e4]/10 transition-colors"
+            whileTap={{ scale: 0.95 }}
+          >
+            Now Playing
+          </motion.button>
+        )}
         <SearchBar mode="navigate" />
         {/* Avatar / profile pill */}
         <div
