@@ -54,9 +54,9 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
 
   return (
     <div
-      className="group grid grid-cols-[40px_1fr_60px] items-center gap-3 px-3 py-3 transition-colors duration-150"
+      className="group grid grid-cols-[40px_1fr_60px] items-center gap-3 px-3 py-4 transition-colors duration-150"
       style={{
-        background: isActive ? `${accent}40` : "transparent",
+        background: isActive ? `${accent}66` : "transparent",
       }}
       onMouseEnter={(e) => {
         if (!isActive) {
@@ -109,7 +109,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
               className="absolute inset-0 flex items-center justify-center group-hover:opacity-0 transition-opacity duration-100"
               style={{
                 fontFamily: "var(--font-geist-mono), monospace",
-                fontSize: 12,
+                fontSize: 13,
                 color: "#6b7c79",
                 lineHeight: 1,
               }}
@@ -130,8 +130,8 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
       <div className="min-w-0">
         <button
           onClick={handleClick}
-          className="block w-full truncate text-left text-sm font-medium transition-none"
-          style={{ color: isActive ? accent : "#dde4e2", boxShadow: "none" }}
+          className="block w-full truncate text-left font-medium transition-none"
+          style={{ fontSize: 15, color: isActive ? accent : "#dde4e2", boxShadow: "none" }}
         >
           {track.title}
         </button>
@@ -143,7 +143,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
           <div
             className="truncate"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               letterSpacing: "0.04em",
               textTransform: "uppercase",
               color: "#6b7c79",
