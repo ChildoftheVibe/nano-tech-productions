@@ -81,7 +81,7 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
           className="font-[family-name:var(--font-bungee)] uppercase leading-none tracking-tight"
           style={{ fontSize: "clamp(2.5rem,6vw,4.5rem)", color: "#62f3e4" }}
         >
-          Your Collection
+          Nano Tech Vault
         </h1>
       </div>
 

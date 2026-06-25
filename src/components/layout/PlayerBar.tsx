@@ -82,6 +82,11 @@ export function PlayerBar() {
   const showWaveform = isHidden || hasNavigatedAway
   const isSingle = currentAlbum?.album_type === 'single'
   const accentColor = currentAlbum?.accentColor ?? null
+  // Play button takes the current album cover's accent; teal when no cover.
+  const playAccent =
+    currentAlbum?.coverImage && currentAlbum.accentColor
+      ? currentAlbum.accentColor
+      : "#62f3e4"
 
   const muted = volume === 0;
   const toggleMute = () => {
@@ -266,8 +271,8 @@ export function PlayerBar() {
             <motion.button
               onClick={togglePlayPause}
               aria-label={playLabel}
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#62f3e4] text-[#003733]"
-              style={{ boxShadow: "0 0 15px rgba(98, 243, 228, 0.3)" }}
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
+              style={{ background: playAccent, color: "#0d1412", boxShadow: `0 0 15px ${playAccent}4d` }}
               whileTap={{ scale: 0.92 }}
             >
               {isPlaying ? (
@@ -439,8 +444,8 @@ export function PlayerBar() {
               onClick={togglePlayPause}
               aria-label={playLabel}
               disabled={!currentTrack}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#62f3e4] text-[#003733] disabled:opacity-40"
-            style={{ boxShadow: "0 0 15px rgba(98, 243, 228, 0.3)" }}
+              className="flex h-9 w-9 items-center justify-center rounded-full disabled:opacity-40"
+            style={{ background: playAccent, color: "#0d1412", boxShadow: `0 0 15px ${playAccent}4d` }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.92 }}
               transition={{ duration: 0.15 }}

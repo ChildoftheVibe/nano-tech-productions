@@ -220,47 +220,51 @@ export function AlbumDetail({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, ease: "easeOut", delay: 0.14 }}
           >
-            {/* Shuffle — outline circle */}
+            {/* Shuffle — outline rounded-rect pill */}
             <button
               onClick={handleShuffle}
               disabled={!album.tracks.length}
               aria-label="Shuffle play"
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: "50%",
-                background: "transparent",
-                border: `1px solid ${shuffle ? "#62f3e4" : "rgba(255,255,255,0.22)"}`,
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
+                gap: 8,
+                borderRadius: 8,
+                padding: "10px 16px",
+                fontSize: 12,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                background: "transparent",
                 cursor: "pointer",
+                flexShrink: 0,
                 opacity: album.tracks.length ? 1 : 0.4,
-                color: shuffle ? "#62f3e4" : "rgba(255,255,255,0.75)",
+                border: `1px solid ${shuffle ? accent : "rgba(255,255,255,0.22)"}`,
+                color: shuffle ? accent : "rgba(255,255,255,0.80)",
               }}
             >
-              <Shuffle size={16} />
+              <Shuffle size={14} />
+              Shuffle
             </button>
 
-            {/* Buy — filled accent pill (primary CTA, themed to album cover) */}
+            {/* Buy — outline rounded-rect pill, tinted to album accent */}
             <button
               onClick={handleBuyAlbum}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                borderRadius: 9999,
-                padding: "10px 20px",
+                borderRadius: 8,
+                padding: "10px 16px",
                 fontSize: 12,
-                fontWeight: 700,
-                color: "#0d1412",
-                background: accent,
-                border: "none",
-                cursor: "pointer",
-                flexShrink: 0,
+                fontWeight: 600,
                 textTransform: "uppercase",
                 letterSpacing: "0.06em",
+                background: "transparent",
+                cursor: "pointer",
+                flexShrink: 0,
+                border: `1px solid ${accent}`,
+                color: accent,
               }}
             >
               <ShoppingBag size={14} />

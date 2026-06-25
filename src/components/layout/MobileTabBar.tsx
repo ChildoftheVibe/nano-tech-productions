@@ -28,7 +28,7 @@ const TABS: Tab[] = [
   },
   {
     href: "/library",
-    label: "Library",
+    label: "The Vault",
     Icon: Library,
     match: (p) => p.startsWith("/library"),
   },

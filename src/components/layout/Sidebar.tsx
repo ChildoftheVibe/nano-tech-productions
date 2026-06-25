@@ -7,7 +7,7 @@ import type { Album } from "@/types/music";
 
 const primaryNav = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/library", label: "Your Library", icon: Library },
+  { href: "/library", label: "The Vault", icon: Library },
   { href: "/sounds", label: "Sounds", icon: Volume2 },
   { href: "/search", label: "Search", icon: Search },
   { href: "/artists", label: "Artists", icon: Users },

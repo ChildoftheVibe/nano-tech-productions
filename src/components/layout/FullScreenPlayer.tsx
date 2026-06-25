@@ -129,6 +129,11 @@ export function FullScreenPlayer() {
   const cover = currentAlbum?.coverImage
     ? getAlbumCover(currentAlbum.coverImage, 400)
     : null;
+  // Play button takes the current album cover's accent; teal when no cover.
+  const playAccent =
+    currentAlbum?.coverImage && currentAlbum.accentColor
+      ? currentAlbum.accentColor
+      : "#62f3e4";
 
   return (
     <AnimatePresence>
@@ -311,8 +316,8 @@ export function FullScreenPlayer() {
               <motion.button
                 onClick={togglePlayPause}
                 aria-label={isPlaying ? "Pause" : "Play"}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#090f0e]"
-                style={{ boxShadow: "0 0 24px rgba(255,255,255,0.25)" }}
+                className="flex h-16 w-16 items-center justify-center rounded-full"
+                style={{ background: playAccent, color: "#0d1412", boxShadow: `0 0 24px ${playAccent}40` }}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.94 }}
               >
