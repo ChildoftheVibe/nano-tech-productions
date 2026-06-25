@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { SearchBar } from "@/components/search/SearchBar";
 
 export function TopBar() {
@@ -50,21 +50,14 @@ export function TopBar() {
 
       <div className="flex items-center gap-3">
         <SearchBar mode="navigate" />
-        <motion.div
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.96 }}
-          transition={{ duration: 0.15 }}
-          style={{ borderRadius: 9999 }}
+        {/* Avatar / profile pill */}
+        <div
+          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
+          style={{ background: "linear-gradient(135deg, #62f3e4 0%, #ffabef 100%)" }}
+          aria-hidden="true"
         >
-          <Link
-            href="/fan-club/login"
-            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-[#62f3e4]/25 px-5 py-1 text-xs font-semibold tracking-wide text-[#62f3e4]/80 transition-colors hover:border-[#62f3e4]/50 hover:text-[#62f3e4]"
-            style={{ background: "rgba(98,243,228,0.06)" }}
-          >
-            <Users size={12} aria-hidden="true" />
-            Nano Techians
-          </Link>
-        </motion.div>
+          <span className="font-[family-name:var(--font-bungee)] text-[10px] font-bold text-[#003733]">NTV</span>
+        </div>
       </div>
     </header>
   );

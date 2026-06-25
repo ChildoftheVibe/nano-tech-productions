@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion, type Variants } from "framer-motion";
-import { ExternalLink, Play, Shuffle, ShoppingBag } from "lucide-react";
-import { AlbumCard } from "@/components/music/AlbumCard";
+import { ExternalLink, Music, Play, Shuffle, ShoppingBag } from "lucide-react";
+import { getAlbumCover } from "@/lib/albumCover";
 import { TrackRow } from "@/components/music/TrackRow";
 import { MaybeArtistLink, MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
 import { usePlayerStore } from "@/store/playerStore";
@@ -153,8 +153,28 @@ export function AlbumDetail({
               initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
+              className="w-full max-w-[360px] mx-auto md:mx-0"
+              style={{
+                borderRadius: 12,
+                overflow: "hidden",
+                boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                aspectRatio: "1 / 1",
+                background: album.bgColor || "#1a2120",
+              }}
             >
-              <AlbumCard album={album} size="lg" />
+              {album.coverImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={getAlbumCover(album.coverImage, "lg")}
+                  alt={`${album.title} album cover`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Music size={64} style={{ color: album.accentColor || "#62f3e4", opacity: 0.5 }} />
+                </div>
+              )}
             </motion.div>
             <motion.div
               className="min-w-0 mt-4"
