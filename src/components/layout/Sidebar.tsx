@@ -34,26 +34,27 @@ export function Sidebar({ initialAlbums: _ }: Props) {
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "12px",
+          gap: "14px",
           borderRadius: "8px",
-          padding: "11px 16px",
+          padding: "13px 16px 13px 14px",
           fontSize: "14px",
-          fontWeight: active ? 600 : 500,
+          fontWeight: active ? 600 : 400,
           textDecoration: "none",
           transition: "background 150ms ease-out, color 150ms ease-out",
-          background: active ? "#242b2a" : "transparent",
-          color: active ? "#dde4e2" : "#bbcac6",
+          background: active ? "rgba(98,243,228,0.08)" : "transparent",
+          color: active ? "#62f3e4" : "#8a9e9a",
+          borderLeft: active ? "3px solid #62f3e4" : "3px solid transparent",
         }}
         onMouseEnter={(e) => {
           if (!active) {
-            (e.currentTarget as HTMLAnchorElement).style.background = "#1e2726";
+            (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.04)";
             (e.currentTarget as HTMLAnchorElement).style.color = "#dde4e2";
           }
         }}
         onMouseLeave={(e) => {
           if (!active) {
             (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
-            (e.currentTarget as HTMLAnchorElement).style.color = "#bbcac6";
+            (e.currentTarget as HTMLAnchorElement).style.color = "#8a9e9a";
           }
         }}
       >
@@ -73,12 +74,12 @@ export function Sidebar({ initialAlbums: _ }: Props) {
       className="hidden md:flex flex-col flex-shrink-0"
       style={{
         width: 260,
-        background: "#1a2120",
-        borderRight: "1px solid rgba(255,255,255,0.08)",
+        background: "#090f0e",
+        borderRight: "1px solid rgba(255,255,255,0.05)",
       }}
     >
       {/* Brand */}
-      <div style={{ padding: "28px 20px 24px" }}>
+      <div style={{ padding: "32px 20px 28px" }}>
         <Link
           href="/"
           aria-label="NTV Vault home"
@@ -92,31 +93,31 @@ export function Sidebar({ initialAlbums: _ }: Props) {
       {/* Primary nav */}
       <nav
         aria-label="Primary"
-        style={{ padding: "0 8px", display: "flex", flexDirection: "column", gap: 2 }}
+        style={{ padding: "0 10px", display: "flex", flexDirection: "column", gap: 2 }}
       >
         {primaryNav.map(({ href, label, icon: Icon }) => navLink(href, label, Icon))}
       </nav>
 
       {/* Section label */}
-      <div style={{ padding: "28px 20px 10px" }}>
+      <div style={{ padding: "32px 20px 10px" }}>
         <p
           style={{
             fontFamily: "var(--font-geist-mono), monospace",
             fontSize: 10,
             textTransform: "uppercase",
             letterSpacing: "0.22em",
-            color: "rgba(187,202,198,0.45)",
+            color: "rgba(138,158,154,0.5)",
             margin: 0,
           }}
         >
-          Personal Space
+          Personal
         </p>
       </div>
 
       {/* Secondary nav */}
       <nav
         aria-label="Personal"
-        style={{ padding: "0 8px", display: "flex", flexDirection: "column", gap: 2 }}
+        style={{ padding: "0 10px", display: "flex", flexDirection: "column", gap: 2 }}
       >
         {secondaryNav.map(({ href, label, icon: Icon }) => navLink(href, label, Icon))}
       </nav>
@@ -127,11 +128,11 @@ export function Sidebar({ initialAlbums: _ }: Props) {
       {/* Bottom brand panel */}
       <div
         style={{
-          margin: "0 8px 12px",
+          margin: "0 10px 16px",
           borderRadius: 8,
           padding: 16,
           background: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          border: "1px solid rgba(255,255,255,0.06)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
