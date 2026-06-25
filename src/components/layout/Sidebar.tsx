@@ -70,15 +70,12 @@ export function Sidebar({ initialAlbums: _ }: Props) {
   return (
     <aside
       aria-label="Sidebar"
+      className="hidden md:flex flex-col flex-shrink-0"
       style={{
         width: 260,
         background: "#1a2120",
         borderRight: "1px solid rgba(255,255,255,0.08)",
-        display: "none",
-        flexShrink: 0,
-        flexDirection: "column",
       }}
-      className="md:flex"
     >
       {/* Brand */}
       <div style={{ padding: "28px 20px 24px" }}>
