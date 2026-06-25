@@ -31,14 +31,37 @@ export function Sidebar({ initialAlbums: _ }: Props) {
         key={href}
         href={href}
         aria-current={active ? "page" : undefined}
-        style={active ? { background: "rgba(98,243,228,0.18)", color: "#62f3e4" } : undefined}
-        className={`flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium transition-all duration-150 ${
-          active
-            ? ""
-            : "text-[#bbcac6] hover:bg-white/5 hover:text-[#dde4e2]"
-        }`}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          borderRadius: "8px",
+          padding: "11px 16px",
+          fontSize: "14px",
+          fontWeight: active ? 600 : 500,
+          textDecoration: "none",
+          transition: "background 150ms ease-out, color 150ms ease-out",
+          background: active ? "#242b2a" : "transparent",
+          color: active ? "#dde4e2" : "#bbcac6",
+        }}
+        onMouseEnter={(e) => {
+          if (!active) {
+            (e.currentTarget as HTMLAnchorElement).style.background = "#1e2726";
+            (e.currentTarget as HTMLAnchorElement).style.color = "#dde4e2";
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!active) {
+            (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
+            (e.currentTarget as HTMLAnchorElement).style.color = "#bbcac6";
+          }
+        }}
       >
-        <Icon size={18} aria-hidden="true" />
+        <Icon
+          size={18}
+          aria-hidden="true"
+          style={{ color: active ? "#62f3e4" : "currentColor", flexShrink: 0 }}
+        />
         <span>{label}</span>
       </Link>
     );
@@ -47,61 +70,120 @@ export function Sidebar({ initialAlbums: _ }: Props) {
   return (
     <aside
       aria-label="Sidebar"
-      className="hidden flex-shrink-0 flex-col md:flex"
-      style={{ width: 260, background: "#0d1412", borderRight: "1px solid rgba(255,255,255,0.07)" }}
+      style={{
+        width: 260,
+        background: "#1a2120",
+        borderRight: "1px solid rgba(255,255,255,0.08)",
+        display: "none",
+        flexShrink: 0,
+        flexDirection: "column",
+      }}
+      className="md:flex"
     >
       {/* Brand */}
-      <div className="flex-shrink-0 px-5 pt-7 pb-7">
+      <div style={{ padding: "28px 20px 24px" }}>
         <Link
           href="/"
           aria-label="NTV Vault home"
-          className="ntv-logo font-[family-name:var(--font-bungee)] text-[22px] tracking-tighter text-[#62f3e4] leading-none"
+          className="ntv-logo font-[family-name:var(--font-bungee)] leading-none"
+          style={{ fontSize: 22, letterSpacing: "-0.03em", color: "#62f3e4", textDecoration: "none" }}
         >
           NTV
         </Link>
       </div>
 
       {/* Primary nav */}
-      <nav aria-label="Primary" className="flex-shrink-0 px-3 flex flex-col gap-1">
+      <nav
+        aria-label="Primary"
+        style={{ padding: "0 8px", display: "flex", flexDirection: "column", gap: 2 }}
+      >
         {primaryNav.map(({ href, label, icon: Icon }) => navLink(href, label, Icon))}
       </nav>
 
-      {/* Secondary nav */}
-      <div className="flex-shrink-0 px-5 pt-7 pb-2.5">
-        <p className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-[0.22em]" style={{ color: "rgba(187,202,198,0.4)" }}>
+      {/* Section label */}
+      <div style={{ padding: "28px 20px 10px" }}>
+        <p
+          style={{
+            fontFamily: "var(--font-geist-mono), monospace",
+            fontSize: 10,
+            textTransform: "uppercase",
+            letterSpacing: "0.22em",
+            color: "rgba(187,202,198,0.45)",
+            margin: 0,
+          }}
+        >
           Personal Space
         </p>
       </div>
-      <nav aria-label="Personal" className="flex-shrink-0 px-3 flex flex-col gap-1">
+
+      {/* Secondary nav */}
+      <nav
+        aria-label="Personal"
+        style={{ padding: "0 8px", display: "flex", flexDirection: "column", gap: 2 }}
+      >
         {secondaryNav.map(({ href, label, icon: Icon }) => navLink(href, label, Icon))}
       </nav>
 
       {/* Spacer */}
-      <div className="flex-1" />
+      <div style={{ flex: 1 }} />
 
-      {/* Bottom glass brand panel */}
-      <div className="glass-panel mx-2 mb-3 flex-shrink-0 rounded-lg p-4">
-        <div className="flex items-center gap-3 mb-3">
+      {/* Bottom brand panel */}
+      <div
+        style={{
+          margin: "0 8px 12px",
+          borderRadius: 8,
+          padding: 16,
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
           <div
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
-            style={{ background: "linear-gradient(135deg, #62f3e4 0%, #ffabef 100%)" }}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #62f3e4 0%, #ffabef 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
             aria-hidden="true"
           >
-            <span className="font-[family-name:var(--font-bungee)] text-xs font-bold text-[#003733]">NTV</span>
+            <span
+              className="font-[family-name:var(--font-bungee)]"
+              style={{ fontSize: 10, fontWeight: 700, color: "#003733" }}
+            >
+              NTV
+            </span>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-[#dde4e2]">Nano Tech Vibe</p>
-            <p className="font-[family-name:var(--font-geist-mono)] text-[10px] text-[#62f3e4] uppercase tracking-widest">The Vault</p>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#dde4e2", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              Nano Tech Vibe
+            </p>
+            <p
+              style={{
+                fontFamily: "var(--font-geist-mono), monospace",
+                fontSize: 10,
+                color: "#62f3e4",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                margin: 0,
+              }}
+            >
+              The Vault
+            </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#bbcac6]">
-          <Link href="/privacy" className="hover:text-white transition-colors duration-150">Privacy</Link>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px", fontSize: 11, color: "#bbcac6" }}>
+          <Link href="/privacy" style={{ color: "inherit", textDecoration: "none" }} className="hover:text-white transition-colors">Privacy</Link>
           <span aria-hidden="true">·</span>
-          <Link href="/terms" className="hover:text-white transition-colors duration-150">Terms</Link>
+          <Link href="/terms" style={{ color: "inherit", textDecoration: "none" }} className="hover:text-white transition-colors">Terms</Link>
           <span aria-hidden="true">·</span>
-          <Link href="/admin" className="hover:text-white transition-colors duration-150">Admin</Link>
+          <Link href="/admin" style={{ color: "inherit", textDecoration: "none" }} className="hover:text-white transition-colors">Admin</Link>
         </div>
-        <p className="mt-1 text-[10px] text-[#bbcac6]/50">© 2026 Nano Tech Productions</p>
+        <p style={{ marginTop: 4, fontSize: 10, color: "rgba(187,202,198,0.5)" }}>© 2026 Nano Tech Productions</p>
       </div>
     </aside>
   );

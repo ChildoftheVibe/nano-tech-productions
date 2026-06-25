@@ -37,7 +37,6 @@ const itemFadeUp: Variants = {
 };
 
 const compareDate = (a: string, b: string) => {
-  // Empty release_date sorts last regardless of direction.
   if (!a && !b) return 0;
   if (!a) return 1;
   if (!b) return -1;
@@ -74,33 +73,40 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
   }, [albums, sort, filter]);
 
   return (
-    <div className="px-4 pt-2 pb-12 md:px-8">
-      <div className="pb-6 pt-2 md:pt-4 md:pb-8">
-        <h1 className="font-[family-name:var(--font-bungee)] text-4xl text-[#62f3e4] tracking-tight uppercase leading-none md:text-6xl lg:text-7xl">
-          YOUR COLLECTION
+    <div className="px-6 pt-6 pb-16 md:px-8 md:pt-8">
+
+      {/* Heading */}
+      <div className="mb-8">
+        <h1
+          className="font-[family-name:var(--font-bungee)] uppercase leading-none tracking-tight"
+          style={{ fontSize: "clamp(2.5rem,6vw,4.5rem)", color: "#62f3e4" }}
+        >
+          Your Collection
         </h1>
-        <p className="mt-2 text-sm text-[#bbcac6] md:text-base">
-          Curated experiences and saved moments.
-        </p>
-        <p className="mt-0.5 font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-widest text-[#bbcac6]/50">
-          {albums.length} releases · browse the full catalog
-        </p>
       </div>
 
-      {/* Tab bar — border-b-2 active indicator per 2027 design spec */}
-      <div className="mb-6 border-b border-white/[0.08]">
+      {/* Tab bar + Sort */}
+      <div style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", marginBottom: 32 }}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-xl">
+          <div className="flex items-center gap-6">
             {FILTER_OPTIONS.map((opt) => (
               <button
                 key={opt.key}
                 type="button"
                 onClick={() => setFilter(opt.key)}
-                className={`pb-3 font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-widest transition-all duration-150 border-b-2 -mb-px ${
-                  filter === opt.key
-                    ? "border-[#62f3e4] text-[#62f3e4]"
-                    : "border-transparent text-[#bbcac6] hover:text-[#dde4e2]"
-                }`}
+                style={{
+                  paddingBottom: 14,
+                  marginBottom: -1,
+                  fontSize: 13,
+                  fontWeight: filter === opt.key ? 600 : 400,
+                  color: filter === opt.key ? "#dde4e2" : "#b3b3b3",
+                  background: "none",
+                  border: "none",
+                  borderBottom: filter === opt.key ? "2px solid #62f3e4" : "2px solid transparent",
+                  cursor: "pointer",
+                  transition: "color 150ms ease-out",
+                  letterSpacing: "0.01em",
+                }}
               >
                 {opt.label}
               </button>
@@ -108,14 +114,24 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
           </div>
 
           <div className="flex items-center gap-2 pb-3">
-            <label htmlFor="library-sort" className="text-xs text-[#B3B3B3]">
+            <label htmlFor="library-sort" style={{ fontSize: 12, color: "#b3b3b3" }}>
               Sort
             </label>
             <select
               id="library-sort"
               value={sort}
               onChange={(e) => setSort(e.target.value as Sort)}
-              className="rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs font-semibold text-white outline-none focus:border-[#62f3e4]"
+              style={{
+                background: "rgba(0,0,0,0.3)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: 20,
+                padding: "4px 12px",
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#dde4e2",
+                outline: "none",
+                cursor: "pointer",
+              }}
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.key} value={opt.key}>
@@ -127,13 +143,23 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
         </div>
       </div>
 
+      {/* Grid */}
       {visible.length === 0 ? (
-        <div className="rounded-md border border-white/10 p-6 text-sm text-[#B3B3B3]">
+        <div
+          style={{
+            borderRadius: 8,
+            border: "1px solid rgba(255,255,255,0.08)",
+            padding: 24,
+            fontSize: 14,
+            color: "#b3b3b3",
+          }}
+        >
           No releases match this filter.
         </div>
       ) : (
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+          style={{ gap: 24 }}
           variants={containerStagger}
           initial="hidden"
           animate="visible"
@@ -142,34 +168,64 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
             <motion.div key={album.id} variants={itemFadeUp}>
               <Link
                 href={`/album/${album.slug}`}
-                className="glass-card rounded-xl p-4 group cursor-pointer block"
+                className="group block"
+                style={{ textDecoration: "none" }}
               >
-                <div className="relative aspect-square rounded-lg overflow-hidden mb-3">
+                {/* Cover art */}
+                <div
+                  style={{
+                    aspectRatio: "1 / 1",
+                    borderRadius: 8,
+                    overflow: "hidden",
+                    marginBottom: 12,
+                    background: album.bgColor || "#1a2120",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+                  }}
+                >
                   {album.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={getAlbumCover(album.coverImage, "md")}
                       alt={album.title}
-                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
-                    <div
-                      className="h-full w-full"
-                      style={{ background: album.bgColor }}
-                    />
+                    <div className="h-full w-full" />
                   )}
                 </div>
-                <div className="font-semibold text-[#dde4e2] truncate mb-1">
+
+                {/* Metadata */}
+                <p
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: "#dde4e2",
+                    margin: "0 0 4px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  className="group-hover:text-white transition-colors"
+                >
                   {album.title}
-                </div>
-                <div className="font-[family-name:var(--font-geist-mono)] text-[10px] text-[#b3b3b3] uppercase tracking-wider">
+                </p>
+                <p
+                  style={{
+                    fontFamily: "var(--font-geist-mono), monospace",
+                    fontSize: 11,
+                    color: "#b3b3b3",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    margin: 0,
+                  }}
+                >
                   {album.releaseDate?.slice(0, 4) || "—"} · {album.trackCount}{" "}
-                  {album.trackCount === 1 ? "song" : "songs"}
-                </div>
+                  {album.trackCount === 1 ? "track" : "tracks"}
+                </p>
                 {sort === "most_played" && album.totalPlayCount > 0 ? (
-                  <div className="mt-1 text-[11px] text-white/50">
+                  <p style={{ marginTop: 2, fontSize: 11, color: "rgba(255,255,255,0.4)", margin: 0 }}>
                     {album.totalPlayCount.toLocaleString()} plays
-                  </div>
+                  </p>
                 ) : null}
               </Link>
             </motion.div>
