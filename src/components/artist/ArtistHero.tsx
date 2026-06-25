@@ -154,7 +154,7 @@ export function ArtistHero({ artist }: { artist: Artist }) {
           <span className="inline-block rounded-full bg-white/10 px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">
             {ROLE_BADGE[artist.role] ?? "Featured Artist"}
           </span>
-          <h1 className="mt-2 text-3xl font-bold text-white md:text-5xl">
+          <h1 className="mt-2 font-[family-name:var(--font-bungee)] text-3xl tracking-tight text-[#dde4e2] md:text-5xl">
             {artist.name}
           </h1>
           {artist.location ? (

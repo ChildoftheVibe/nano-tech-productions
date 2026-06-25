@@ -50,8 +50,7 @@ export function SoundsClient({ initial }: Props) {
     <div className="px-4 pt-2 pb-12 md:px-8">
       <header className="pt-1 pb-6">
         <h1
-          className="font-mono text-3xl font-extrabold tracking-wider text-white md:text-5xl"
-          style={{ letterSpacing: "0.06em" }}
+          className="font-[family-name:var(--font-bungee)] text-3xl tracking-tight text-[#62f3e4] md:text-5xl"
         >
           SOUNDS
         </h1>

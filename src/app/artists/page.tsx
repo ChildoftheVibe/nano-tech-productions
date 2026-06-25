@@ -14,10 +14,9 @@ async function ArtistsData() {
     <div className="px-4 pt-4 pb-12 md:px-8">
       <header className="pb-6">
         <h1
-          className="font-mono text-3xl font-bold uppercase tracking-[0.15em] text-white md:text-4xl"
-          style={{ fontFamily: "var(--font-geist-mono)" }}
+          className="font-[family-name:var(--font-bungee)] text-3xl tracking-tight text-[#62f3e4] md:text-4xl"
         >
-          Artists
+          ARTISTS
         </h1>
         <p className="mt-2 text-sm text-[#B3B3B3]">
           The voices behind the music.
