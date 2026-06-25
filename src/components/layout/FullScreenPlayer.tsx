@@ -132,11 +132,11 @@ export function FullScreenPlayer() {
   const cover = currentAlbum?.coverImage
     ? getAlbumCover(currentAlbum.coverImage, 400)
     : null;
-  // Play button takes the current album cover's accent; teal when no cover.
-  const playAccent =
-    currentAlbum?.coverImage && currentAlbum.accentColor
-      ? currentAlbum.accentColor
-      : "#62f3e4";
+  // All accent-driven colors derive from this single variable.
+  const accent =
+    currentAlbum?.accentColor ?? "#62f3e4";
+  // Play button: use accent; falls back to teal when no album loaded.
+  const playAccent = accent;
 
   return (
     <AnimatePresence>
@@ -165,9 +165,17 @@ export function FullScreenPlayer() {
             }}
             aria-hidden
           />
+          {/* Accent color bleed from bottom — gives the background the album's color temperature */}
           <div
             className="absolute inset-0"
-            style={{ background: "rgba(0,0,0,0.55)" }}
+            style={{
+              background: `radial-gradient(ellipse at 50% 110%, ${accent}28 0%, transparent 65%)`,
+            }}
+            aria-hidden
+          />
+          <div
+            className="absolute inset-0"
+            style={{ background: "rgba(0,0,0,0.52)" }}
             aria-hidden
           />
 
@@ -231,7 +239,7 @@ export function FullScreenPlayer() {
               <div className="font-[family-name:var(--font-bungee)] text-4xl leading-tight tracking-tight uppercase text-[#dde4e2] break-words">
                 {currentTrack.title}
               </div>
-              <div className="mt-1.5 truncate font-[family-name:var(--font-geist-mono)] text-sm text-[#62f3e4]">{features}</div>
+              <div className="mt-1.5 truncate font-[family-name:var(--font-geist-mono)] text-sm" style={{ color: accent }}>{features}</div>
             </div>
 
             {/* Buy Track + View Album */}
@@ -249,12 +257,17 @@ export function FullScreenPlayer() {
                   <motion.button
                     onClick={handleBuyTrack}
                     aria-label={`Buy ${currentTrack.title} for $${currentTrack.price.toFixed(2)}`}
-                    className="flex items-center gap-2 rounded-full px-8 py-3 text-sm font-bold text-white"
-                    style={{ background: "#62f3e4" }}
-                    whileHover={{ scale: 1.04 }}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      borderRadius: 8, padding: "12px 22px",
+                      fontSize: 11, fontWeight: 600,
+                      textTransform: "uppercase", letterSpacing: "0.06em",
+                      background: "transparent", cursor: "pointer",
+                      border: `1px solid ${accent}`, color: accent,
+                    }}
                     whileTap={{ scale: 0.96 }}
                   >
-                    <ShoppingBag size={16} aria-hidden="true" />
+                    <ShoppingBag size={14} aria-hidden="true" />
                     Buy Track · ${currentTrack.price.toFixed(2)}
                   </motion.button>
                 )}
@@ -262,7 +275,14 @@ export function FullScreenPlayer() {
                   <motion.button
                     onClick={handleViewAlbum}
                     aria-label={`View ${currentAlbum.title}`}
-                    className="rounded-full border border-[#62f3e4] px-8 py-3 text-sm font-semibold text-[#62f3e4] transition-colors hover:bg-[#62f3e4]/10"
+                    style={{
+                      borderRadius: 8, padding: "12px 22px",
+                      fontSize: 11, fontWeight: 600,
+                      textTransform: "uppercase", letterSpacing: "0.06em",
+                      background: "transparent", cursor: "pointer",
+                      border: "1px solid rgba(255,255,255,0.20)",
+                      color: "rgba(255,255,255,0.65)",
+                    }}
                     whileTap={{ scale: 0.96 }}
                   >
                     View Album →
@@ -288,6 +308,7 @@ export function FullScreenPlayer() {
                 aria-valuenow={duration > 0 ? Math.round((currentTime / duration) * 100) : 0}
                 aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
                 className="ntv-range h-1 w-full cursor-pointer accent-[#62f3e4]"
+                style={{ accentColor: accent }}
               />
               <div className="mt-1 flex items-center justify-between font-mono text-[11px] tabular-nums text-white/70">
                 <span>{formatTime(currentTime)}</span>
@@ -305,7 +326,8 @@ export function FullScreenPlayer() {
               >
                 <Shuffle
                   size={20}
-                  className={shuffle ? "text-[#62f3e4]" : "text-white/70"}
+                  style={{ color: shuffle ? accent : undefined }}
+                  className={shuffle ? undefined : "text-white/70"}
                 />
               </motion.button>
               <motion.button
@@ -345,11 +367,12 @@ export function FullScreenPlayer() {
                 whileTap={{ scale: 0.92 }}
               >
                 {repeat === "one" ? (
-                  <Repeat1 size={20} className="text-[#62f3e4]" />
+                  <Repeat1 size={20} style={{ color: accent }} />
                 ) : (
                   <Repeat
                     size={20}
-                    className={repeat === "all" ? "text-[#62f3e4]" : "text-white/70"}
+                    style={{ color: repeat === "all" ? accent : undefined }}
+                    className={repeat === "all" ? undefined : "text-white/70"}
                   />
                 )}
               </motion.button>
@@ -378,6 +401,7 @@ export function FullScreenPlayer() {
                 aria-valuenow={Math.round(volume * 100)}
                 aria-valuetext={`${Math.round(volume * 100)} percent`}
                 className="ntv-range h-1 flex-1 cursor-pointer accent-[#62f3e4]"
+                style={{ accentColor: accent }}
               />
               <button
                 aria-label={`Queue (${queueLen})`}
@@ -409,7 +433,7 @@ export function FullScreenPlayer() {
                   Home
                 </Link>
                 <span className="text-white/20 text-sm">|</span>
-                <span className="px-4 py-1.5 text-sm font-semibold text-[#62f3e4]">
+                <span className="px-4 py-1.5 text-sm font-semibold" style={{ color: accent }}>
                   Now Playing
                 </span>
                 <span className="text-white/20 text-sm">|</span>
@@ -445,15 +469,15 @@ export function FullScreenPlayer() {
                   <button
                     onClick={() => setVolume(muted ? 0.7 : 0)}
                     aria-label={muted ? "Unmute" : "Mute"}
-                    className="text-[#bbcac6] hover:text-[#62f3e4] transition-colors"
+                    className="text-[#bbcac6] hover:text-white transition-colors"
                   >
                     {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
                   </button>
                   {/* Vertical slider track */}
                   <div className="relative h-36 w-1 rounded-full bg-white/10 flex flex-col justify-end overflow-hidden">
                     <div
-                      className="w-full bg-[#62f3e4] rounded-full transition-all duration-150"
-                      style={{ height: `${Math.round(volume * 100)}%` }}
+                      className="w-full rounded-full transition-all duration-150"
+                      style={{ height: `${Math.round(volume * 100)}%`, background: accent }}
                       aria-hidden="true"
                     />
                   </div>
@@ -510,7 +534,7 @@ export function FullScreenPlayer() {
                         {currentTrack.title}
                       </h1>
                       <p className="mt-3 text-sm uppercase tracking-widest font-[family-name:var(--font-geist-mono)]">
-                        <span className="text-[#62f3e4]">{features}</span>
+                        <span style={{ color: accent }}>{features}</span>
                         {currentAlbum && (
                           <>
                             <span className="mx-2 text-white/30">•</span>
@@ -542,6 +566,7 @@ export function FullScreenPlayer() {
                     aria-valuenow={duration > 0 ? Math.round((currentTime / duration) * 100) : 0}
                     aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
                     className="ntv-range h-1 flex-1 cursor-pointer accent-[#62f3e4]"
+                    style={{ accentColor: accent }}
                   />
                   <span className="font-mono text-[11px] tabular-nums text-white/50 w-8 flex-shrink-0">
                     {formatTime(duration)}
@@ -556,7 +581,7 @@ export function FullScreenPlayer() {
                     className="p-2"
                     whileTap={{ scale: 0.92 }}
                   >
-                    <Shuffle size={20} className={shuffle ? "text-[#62f3e4]" : "text-white/40 hover:text-white/70"} style={{ transition: "color 150ms" }} />
+                    <Shuffle size={20} style={{ color: shuffle ? accent : undefined, transition: "color 150ms" }} className={shuffle ? undefined : "text-white/40 hover:text-white/70"} />
                   </motion.button>
                   <motion.button
                     onClick={previousAndPlay}
@@ -602,9 +627,9 @@ export function FullScreenPlayer() {
                     whileTap={{ scale: 0.92 }}
                   >
                     {repeat === "one" ? (
-                      <Repeat1 size={20} className="text-[#62f3e4]" />
+                      <Repeat1 size={20} style={{ color: accent }} />
                     ) : (
-                      <Repeat size={20} className={repeat === "all" ? "text-[#62f3e4]" : "text-white/40 hover:text-white/70"} style={{ transition: "color 150ms" }} />
+                      <Repeat size={20} style={{ color: repeat === "all" ? accent : undefined, transition: "color 150ms" }} className={repeat === "all" ? undefined : "text-white/40 hover:text-white/70"} />
                     )}
                   </motion.button>
                 </div>
@@ -623,9 +648,14 @@ export function FullScreenPlayer() {
                       <motion.button
                         onClick={handleBuyTrack}
                         aria-label={`Buy ${currentTrack.title}`}
-                        className="flex items-center gap-2 rounded-full px-6 py-2 text-sm font-bold text-[#003733]"
-                        style={{ background: "#62f3e4" }}
-                        whileHover={{ scale: 1.04 }}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 8,
+                          borderRadius: 8, padding: "10px 18px",
+                          fontSize: 11, fontWeight: 600,
+                          textTransform: "uppercase", letterSpacing: "0.06em",
+                          background: "transparent", cursor: "pointer",
+                          border: `1px solid ${accent}`, color: accent,
+                        }}
                         whileTap={{ scale: 0.96 }}
                       >
                         <ShoppingBag size={14} aria-hidden="true" />
@@ -636,7 +666,14 @@ export function FullScreenPlayer() {
                       <motion.button
                         onClick={handleViewAlbum}
                         aria-label={`View ${currentAlbum.title}`}
-                        className="rounded-full border border-white/20 px-6 py-2 text-sm text-white/60 transition-colors hover:border-[#62f3e4]/40 hover:text-[#62f3e4]"
+                        style={{
+                          borderRadius: 8, padding: "10px 18px",
+                          fontSize: 11, fontWeight: 600,
+                          textTransform: "uppercase", letterSpacing: "0.06em",
+                          background: "transparent", cursor: "pointer",
+                          border: "1px solid rgba(255,255,255,0.20)",
+                          color: "rgba(255,255,255,0.60)",
+                        }}
                         whileTap={{ scale: 0.96 }}
                       >
                         View Album

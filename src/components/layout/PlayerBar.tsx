@@ -315,9 +315,15 @@ export function PlayerBar() {
         )}
       </div>
 
-      {/* Desktop layout */}
-      <div className="hidden h-full items-center px-4 md:flex">
-        <div className="flex w-[30%] min-w-0 items-center gap-3">
+      {/* Desktop layout — clicking dead space opens full-screen player */}
+      <div
+        className="hidden h-full items-center px-4 md:flex cursor-pointer"
+        onClick={openFullScreen}
+        role="button"
+        aria-label="Open Now Playing"
+        tabIndex={-1}
+      >
+        <div className="flex w-[30%] min-w-0 items-center gap-3" onClick={(e) => e.stopPropagation()}>
           {currentTrack ? (
             <>
               <AnimatePresence mode="wait" initial={false}>
@@ -418,7 +424,7 @@ export function PlayerBar() {
           )}
         </div>
 
-        <div className="flex w-[40%] flex-col items-center justify-center gap-1.5">
+        <div className="flex w-[40%] flex-col items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-4">
             <motion.button
               onClick={toggleShuffle}
@@ -510,7 +516,7 @@ export function PlayerBar() {
           </div>
         </div>
 
-        <div className="flex w-[30%] items-center justify-end gap-3">
+        <div className="flex w-[30%] items-center justify-end gap-3" onClick={(e) => e.stopPropagation()}>
           {showLyricsButton ? (
             <motion.button
               onClick={toggleLyrics}

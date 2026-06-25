@@ -56,7 +56,7 @@ export function TopBar() {
           <motion.button
             onClick={openFullScreen}
             aria-label="Open Now Playing"
-            className="hidden md:flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-[#62f3e4] border border-[#62f3e4]/30 hover:bg-[#62f3e4]/10 transition-colors"
+            className="hidden md:flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#62f3e4] border border-[#62f3e4]/30 hover:bg-[#62f3e4]/10 transition-colors"
             whileTap={{ scale: 0.95 }}
           >
             Now Playing
