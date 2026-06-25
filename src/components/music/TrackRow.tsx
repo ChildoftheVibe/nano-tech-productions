@@ -54,9 +54,9 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
 
   return (
     <div
-      className="group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-lg px-3 py-3 transition-colors duration-150"
+      className="group grid grid-cols-[40px_1fr_60px] items-center gap-3 px-3 py-3 transition-colors duration-150"
       style={{
-        background: isActive ? `${accent}33` : "transparent",
+        background: isActive ? `${accent}40` : "transparent",
       }}
       onMouseEnter={(e) => {
         if (!isActive) {
