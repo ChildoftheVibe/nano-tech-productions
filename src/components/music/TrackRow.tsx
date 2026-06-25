@@ -22,6 +22,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
 
   const isActive = currentTrack?.id === track.id;
   const isThisPlaying = isActive && isPlaying;
+  const accent = album.accentColor || "#62f3e4";
 
   const [showUnavailable, setShowUnavailable] = useState(false);
   useEffect(() => {
@@ -55,9 +56,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
     <div
       className="group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-lg px-3 py-3 transition-colors duration-150"
       style={{
-        background: isActive
-          ? "rgba(98,243,228,0.13)"
-          : "transparent",
+        background: isActive ? `${accent}1f` : "transparent",
       }}
       onMouseEnter={(e) => {
         if (!isActive) {
@@ -83,23 +82,23 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
             <span className="flex h-[14px] items-end gap-[2px]">
               <span
                 className="eq-bar-1 block w-[3px] rounded-sm"
-                style={{ height: "100%", background: "#62f3e4", transformOrigin: "bottom" }}
+                style={{ height: "100%", background: accent, transformOrigin: "bottom" }}
               />
               <span
                 className="eq-bar-2 block w-[3px] rounded-sm"
-                style={{ height: "100%", background: "#62f3e4", transformOrigin: "bottom" }}
+                style={{ height: "100%", background: accent, transformOrigin: "bottom" }}
               />
               <span
                 className="eq-bar-3 block w-[3px] rounded-sm"
-                style={{ height: "100%", background: "#62f3e4", transformOrigin: "bottom" }}
+                style={{ height: "100%", background: accent, transformOrigin: "bottom" }}
               />
             </span>
           ) : (
             /* Paused bars (collapsed) */
             <span className="flex h-[14px] items-end gap-[2px]">
-              <span className="block w-[3px] rounded-sm" style={{ height: "55%", background: "#62f3e4", transform: "scaleY(0.5)", transformOrigin: "bottom" }} />
-              <span className="block w-[3px] rounded-sm" style={{ height: "100%", background: "#62f3e4", transform: "scaleY(0.5)", transformOrigin: "bottom" }} />
-              <span className="block w-[3px] rounded-sm" style={{ height: "75%", background: "#62f3e4", transform: "scaleY(0.5)", transformOrigin: "bottom" }} />
+              <span className="block w-[3px] rounded-sm" style={{ height: "55%", background: accent, transform: "scaleY(0.5)", transformOrigin: "bottom" }} />
+              <span className="block w-[3px] rounded-sm" style={{ height: "100%", background: accent, transform: "scaleY(0.5)", transformOrigin: "bottom" }} />
+              <span className="block w-[3px] rounded-sm" style={{ height: "75%", background: accent, transform: "scaleY(0.5)", transformOrigin: "bottom" }} />
             </span>
           )
         ) : (
@@ -131,7 +130,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
         <button
           onClick={handleClick}
           className="block w-full truncate text-left text-sm font-medium transition-none"
-          style={{ color: isActive ? "#ffffff" : "#dde4e2" }}
+          style={{ color: isActive ? accent : "#dde4e2" }}
         >
           {track.title}
         </button>

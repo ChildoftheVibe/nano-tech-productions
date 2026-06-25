@@ -89,6 +89,7 @@ export function AlbumDetail({
   const shuffle = usePlayerStore((s) => s.shuffle);
   const openCheckout = useCheckoutStore((s) => s.open);
 
+  const accent = album.accentColor || "#62f3e4";
   const year = album.releaseDate?.slice(0, 4) ?? "";
   const songCount = album.tracks.length;
   const totalDuration = calcTotalDuration(album.tracks);
@@ -189,7 +190,7 @@ export function AlbumDetail({
           >
             <h1
               className="font-[family-name:var(--font-bungee)] leading-[1.05] tracking-tight"
-              style={{ fontSize: "2.25rem", color: "#62f3e4", margin: 0 }}
+              style={{ fontSize: "2.25rem", color: accent, margin: 0 }}
             >
               {album.title}
             </h1>
@@ -242,7 +243,7 @@ export function AlbumDetail({
               <Shuffle size={16} />
             </button>
 
-            {/* Buy — ghost outline pill */}
+            {/* Buy — filled accent pill (primary CTA, themed to album cover) */}
             <button
               onClick={handleBuyAlbum}
               style={{
@@ -252,10 +253,10 @@ export function AlbumDetail({
                 borderRadius: 9999,
                 padding: "10px 20px",
                 fontSize: 12,
-                fontWeight: 600,
-                color: "rgba(255,255,255,0.80)",
-                background: "transparent",
-                border: "1px solid rgba(255,255,255,0.22)",
+                fontWeight: 700,
+                color: "#0d1412",
+                background: accent,
+                border: "none",
                 cursor: "pointer",
                 flexShrink: 0,
                 textTransform: "uppercase",
@@ -266,6 +267,23 @@ export function AlbumDetail({
               Buy · ${ALBUM_PRICE.toFixed(2)}
             </button>
           </motion.div>
+
+          {/* Description */}
+          {album.description?.trim() ? (
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut", delay: 0.18 }}
+              style={{
+                fontSize: 13,
+                lineHeight: 1.65,
+                color: "#bbcac6",
+                margin: 0,
+              }}
+            >
+              {album.description}
+            </motion.p>
+          ) : null}
 
           {/* Streaming links */}
           {album.streaming_links != null &&
@@ -308,7 +326,9 @@ export function AlbumDetail({
               display: "flex",
               alignItems: "baseline",
               justifyContent: "space-between",
-              marginBottom: 20,
+              paddingBottom: 14,
+              marginBottom: 12,
+              borderBottom: "1px solid rgba(255,255,255,0.08)",
             }}
           >
             <h2
@@ -324,12 +344,15 @@ export function AlbumDetail({
             </h2>
             <span
               style={{
-                fontSize: 13,
+                fontFamily: "var(--font-geist-mono), monospace",
+                fontSize: 11,
                 color: "#6b7c79",
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
                 cursor: "default",
               }}
             >
-              {album.tracks.length} songs
+              Duration
             </span>
           </motion.div>
 
@@ -399,10 +422,8 @@ export function AlbumDetail({
       ) : null}
 
       <section className="border-t border-white/5 px-6 py-8 md:px-8">
-        <h2 className="mb-3 text-lg font-bold text-white">About this Album</h2>
-        <p className="max-w-3xl text-sm text-white/80">{album.description}</p>
         {featuredArtists.length > 0 ? (
-          <div className="mt-6">
+          <div>
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#B3B3B3]">
               Featured Artists
             </h3>
@@ -418,7 +439,7 @@ export function AlbumDetail({
             </div>
           </div>
         ) : null}
-        <div className="mt-6">
+        <div className={featuredArtists.length > 0 ? "mt-6" : ""}>
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#B3B3B3]">
             Credits
           </h3>
