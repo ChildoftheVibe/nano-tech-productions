@@ -98,10 +98,10 @@ export const usePlayerStore = create<PlayerState>()(
 
       playAlbum: (album) => {
         if (!album.tracks.length) return;
-        const ordered = get().shuffle ? shuffleArray(album.tracks) : album.tracks;
-        // Pick the first track that has a streamable audioUrl. The full
-        // ordered list still goes into the queue so the UI shows everything;
-        // next/previousTrack just skip the non-playable rows.
+        // Exclude vault-only tracks (no public audioUrl) before building the queue.
+        const playable = album.tracks.filter((t) => !!t.audioUrl);
+        if (!playable.length) return;
+        const ordered = get().shuffle ? shuffleArray(playable) : playable;
         const first = ordered.find((t) => !!t.audioUrl);
         if (!first) return;
         set({

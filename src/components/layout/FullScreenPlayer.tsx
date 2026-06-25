@@ -53,7 +53,7 @@ export function FullScreenPlayer() {
 
   // Use the PlayerContext helpers so audio.play() runs synchronously in the
   // click handler and the user-gesture token survives.
-  const { togglePlayPause, nextAndPlay, previousAndPlay } = usePlayer();
+  const { togglePlayPause, nextAndPlay, previousAndPlay, playFromTrack } = usePlayer();
 
   const handleBuyTrack = () => {
     if (!currentTrack) return;
@@ -690,13 +690,14 @@ export function FullScreenPlayer() {
                     Up Next
                   </p>
                   <div className="flex-1 overflow-y-auto space-y-1 no-scrollbar">
-                    {queue.length > 1 ? (
+                    {queue.filter((t) => t.id !== currentTrack?.id && !!t.audioUrl).length > 0 ? (
                       queue
-                        .filter((t) => t.id !== currentTrack?.id)
+                        .filter((t) => t.id !== currentTrack?.id && !!t.audioUrl)
                         .slice(0, 8)
                         .map((t) => (
                           <div
                             key={t.id}
+                            onClick={() => playFromTrack(t, currentAlbum ?? null)}
                             className="flex items-center gap-3 rounded-lg px-2 py-2 cursor-pointer group transition-colors hover:bg-white/[0.04]"
                           >
                             <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white/5 flex items-center justify-center">
