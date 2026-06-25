@@ -18,7 +18,8 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { AnalyticsProvider } from "@/providers/AnalyticsProvider";
 import { RouteChangeFocus } from "@/components/layout/RouteChangeFocus";
 import { SentryErrorBoundary } from "@/components/ui/SentryErrorBoundary";
-import { getAlbums } from "@/lib/queries";
+import { getAlbums, getPlaylistTracks } from "@/lib/queries";
+import { PlayerSeeder } from "@/components/layout/PlayerSeeder";
 import InstallPromptBanner from '@/components/layout/InstallPromptBanner'
 import CosmicInterferenceBanner from '@/components/layout/CosmicInterferenceBanner'
 
@@ -61,7 +62,10 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { albums: sidebarAlbums } = await getAlbums({ page: 1, limit: 50 });
+  const [{ albums: sidebarAlbums }, playlistTracks] = await Promise.all([
+    getAlbums({ page: 1, limit: 50 }),
+    getPlaylistTracks(),
+  ]);
 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${bungee.variable} h-full antialiased`}>
@@ -81,6 +85,7 @@ export default async function RootLayout({
         <Suspense fallback={null}>
           <AnalyticsProvider>
             <PlayerProvider>
+              <PlayerSeeder tracks={playlistTracks} />
               <RouteChangeFocus />
               <div style={{ display: "flex", height: "100vh", flexDirection: "column" }}>
                 <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
