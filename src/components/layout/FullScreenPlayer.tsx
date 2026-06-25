@@ -220,10 +220,10 @@ export function FullScreenPlayer() {
                   {currentAlbum.title}
                 </div>
               )}
-              <div className="truncate font-[family-name:var(--font-bungee)] text-2xl leading-tight text-[#dde4e2]">
+              <div className="font-[family-name:var(--font-bungee)] text-4xl leading-tight tracking-tight uppercase text-[#dde4e2] break-words">
                 {currentTrack.title}
               </div>
-              <div className="mt-1 truncate text-sm text-white/60">{features}</div>
+              <div className="mt-1.5 truncate font-[family-name:var(--font-geist-mono)] text-sm text-[#62f3e4]">{features}</div>
             </div>
 
             {/* Buy Track + View Album */}

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Play } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
-import { useCheckoutStore, trackCheckoutItem } from "@/store/checkoutStore";
 import { MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
 import type { Album, Track } from "@/types/music";
 
@@ -57,14 +56,9 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
     }).catch(() => {});
   };
 
-  const openCheckout = useCheckoutStore((s) => s.open);
-  const handleBuy = () => {
-    openCheckout(trackCheckoutItem(track, album));
-  };
-
   return (
     <div
-      className={`group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-lg px-3 py-2 transition-all duration-150 md:grid-cols-[40px_1fr_120px_80px_60px] md:gap-4 md:px-4 ${
+      className={`group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-lg px-3 py-2 transition-all duration-150 ${
         isActive
           ? "bg-[#62f3e4]/10 border border-[#62f3e4]/20"
           : "hover:bg-white/[0.04] border border-transparent"
@@ -176,18 +170,6 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
           </div>
         ) : null}
       </div>
-
-      <div className="hidden text-sm text-[#B3B3B3] md:block">
-        ${track.price.toFixed(2)}
-      </div>
-
-      <button
-        onClick={handleBuy}
-        aria-label={`Buy ${track.title} for $${track.price.toFixed(2)}`}
-        className="hidden rounded-full border border-[#62f3e4] px-5 py-2 text-xs font-bold uppercase tracking-wider text-[#62f3e4] opacity-0 transition-opacity duration-150 hover:bg-[#62f3e4]/10 group-hover:opacity-100 md:block"
-      >
-        Buy
-      </button>
 
       <div className="text-right font-mono text-xs text-[#B3B3B3]">{track.duration}</div>
     </div>

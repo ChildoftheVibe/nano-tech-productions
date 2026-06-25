@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion, type Variants } from "framer-motion";
-import { ExternalLink, Music, Play, Shuffle, ShoppingBag } from "lucide-react";
+import { Music, Play, Shuffle, ShoppingBag } from "lucide-react";
 import { getAlbumCover } from "@/lib/albumCover";
 import { TrackRow } from "@/components/music/TrackRow";
 import { MaybeArtistLink, MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
@@ -15,7 +15,7 @@ import {
   trackPurchaseIntent,
 } from "@/lib/analytics";
 import { usePageEngagement } from "@/lib/usePageEngagement";
-import type { Album, TrackCredits } from "@/types/music";
+import type { Album, Track, TrackCredits } from "@/types/music";
 
 const ALBUM_PRICE = 9.99;
 
@@ -49,6 +49,18 @@ function buildCreditEntries(credits: TrackCredits | null | undefined): CreditLin
   return out;
 }
 
+function calcTotalDuration(tracks: Track[]): string {
+  let totalSecs = 0;
+  for (const t of tracks) {
+    if (!t.duration) continue;
+    const parts = t.duration.split(":").map(Number);
+    if (parts.length === 2) totalSecs += (parts[0] ?? 0) * 60 + (parts[1] ?? 0);
+    else if (parts.length === 1) totalSecs += parts[0] ?? 0;
+  }
+  const mins = Math.floor(totalSecs / 60);
+  return mins > 0 ? `${mins} min` : `${totalSecs} sec`;
+}
+
 const trackContainer: Variants = {
   hidden: { opacity: 1 },
   visible: { opacity: 1, transition: { staggerChildren: 0.03 } },
@@ -76,10 +88,10 @@ export function AlbumDetail({
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
   const shuffle = usePlayerStore((s) => s.shuffle);
   const openCheckout = useCheckoutStore((s) => s.open);
-  const [expanded, setExpanded] = useState(false);
 
   const year = album.releaseDate?.slice(0, 4) ?? "";
   const songCount = album.tracks.length;
+  const totalDuration = calcTotalDuration(album.tracks);
 
   useEffect(() => {
     trackAlbumView(album);
@@ -126,187 +138,162 @@ export function AlbumDetail({
     return out;
   })();
 
-  const platformLinks: Array<{ label: string; url?: string }> = [
-    { label: "Spotify", url: album.spotifyUrl || undefined },
-    { label: "Apple Music", url: album.appleMusicUrl },
-    { label: "YouTube", url: album.youtubeUrl },
-    { label: "Amazon", url: album.amazonUrl },
-  ];
-
   return (
-    <div className="text-white">
-      {/* ── GRADIENT BACKGROUND HEADER ── */}
+    <div className="text-white min-h-full">
+      {/* ── TWO-COLUMN LAYOUT ── */}
       <motion.div
-        className="px-6 pt-6 pb-4 md:px-0 md:pt-0 md:pb-0"
+        className="flex flex-col md:flex-row md:gap-0 md:min-h-[calc(100vh-80px)]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        style={{
-          background: `linear-gradient(180deg, ${album.bgColor} 0%, #393838 100%)`,
-        }}
       >
-        {/* ── TWO-COLUMN DESKTOP LAYOUT ── */}
-        <div className="flex flex-col md:flex-row md:gap-10 md:px-8 md:pt-8">
-          {/* Left: Art + Title + Meta */}
-          <div className="md:w-2/5 flex-shrink-0">
-            <motion.div
-              initial={{ scale: 0.96, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="w-full max-w-[360px] mx-auto md:mx-0"
-              style={{
-                borderRadius: 12,
-                overflow: "hidden",
-                boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                aspectRatio: "1 / 1",
-                background: album.bgColor || "#1a2120",
-              }}
+        {/* ── LEFT: Art + Info ── */}
+        <div className="flex-shrink-0 md:w-[360px] lg:w-[400px] px-6 pt-6 pb-6 md:px-8 md:pt-8 md:pb-8 flex flex-col gap-5 border-r border-white/[0.06]">
+          {/* Album art */}
+          <motion.div
+            initial={{ scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="w-full"
+            style={{
+              borderRadius: 8,
+              overflow: "hidden",
+              boxShadow: "0 16px 48px rgba(0,0,0,0.7)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              aspectRatio: "1 / 1",
+              background: album.bgColor || "#1a2120",
+            }}
+          >
+            {album.coverImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={getAlbumCover(album.coverImage, "lg")}
+                alt={`${album.title} album cover`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Music size={64} style={{ color: album.accentColor || "#62f3e4", opacity: 0.5 }} />
+              </div>
+            )}
+          </motion.div>
+
+          {/* Title + Meta */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut", delay: 0.08 }}
+            className="flex flex-col gap-2"
+          >
+            <h1 className="font-[family-name:var(--font-bungee)] text-3xl lg:text-4xl leading-tight text-[#62f3e4] tracking-tight">
+              {album.title}
+            </h1>
+            <p className="text-sm font-medium text-[#dde4e2]">Jhodge</p>
+            <p className="font-[family-name:var(--font-geist-mono)] text-[11px] text-[#b3b3b3] uppercase tracking-wider">
+              {[year, `${songCount} ${songCount === 1 ? "track" : "tracks"}`, totalDuration]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          </motion.div>
+
+          {/* Action buttons */}
+          <motion.div
+            className="flex items-center gap-3 flex-wrap"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut", delay: 0.14 }}
+          >
+            <button
+              onClick={() => playFromAlbum(album)}
+              disabled={!album.tracks.length}
+              aria-label={`Play ${album.title}`}
+              className="flex h-12 w-12 items-center justify-center rounded-full disabled:opacity-40 flex-shrink-0"
+              style={{ background: album.accentColor || "#62f3e4" }}
             >
-              {album.coverImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={getAlbumCover(album.coverImage, "lg")}
-                  alt={`${album.title} album cover`}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Music size={64} style={{ color: album.accentColor || "#62f3e4", opacity: 0.5 }} />
-                </div>
-              )}
-            </motion.div>
-            <motion.div
-              className="min-w-0 mt-4"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut", delay: 0.1 }}
+              <Play size={20} fill="#003733" className="ml-0.5 text-[#003733]" />
+            </button>
+            <button
+              onClick={handleShuffle}
+              disabled={!album.tracks.length}
+              aria-label="Shuffle play"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white hover:bg-white/10 disabled:opacity-40 flex-shrink-0"
             >
-              <div className="mb-2 font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-[0.2em] text-white/60">
-                Album
-              </div>
-              <h1 className="mb-3 font-[family-name:var(--font-bungee)] text-3xl leading-tight text-[#62f3e4] md:text-5xl">
-                {album.title}
-              </h1>
-              <div className="mb-3 text-sm text-white/80">
-                <span className="font-semibold text-white">Jhodge</span>
-                {year ? ` · ${year}` : ""} · {songCount}{" "}
-                {songCount === 1 ? "song" : "songs"}
-              </div>
-              <p
-                className={`max-w-2xl text-sm text-white/80 ${
-                  expanded ? "" : "line-clamp-2"
-                }`}
-              >
-                {album.description}
-              </p>
-              {album.description && album.description.length > 140 ? (
-                <button
-                  onClick={() => setExpanded((v) => !v)}
-                  className="-ml-4 mt-1 inline-flex rounded-full px-4 py-1.5 text-xs font-semibold text-white/60 hover:bg-white/10 hover:text-white"
-                >
-                  {expanded ? "Show less" : "Show more"}
-                </button>
-              ) : null}
-              <p className="mt-3 text-xs text-white/60">
-                © {year || new Date().getFullYear()} Nano Tech Productions. All
-                rights reserved.
-              </p>
-              <div className="-mx-6 mt-4 flex gap-2 overflow-x-auto px-6 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:pb-0 md:mb-4">
-                {platformLinks
-                  .filter((l) => !!l.url)
-                  .map((l) => (
-                    <a
-                      key={l.label}
-                      href={l.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ntv-btn flex flex-shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-black/20 px-3 py-1.5 text-xs font-medium text-white hover:bg-black/40"
-                    >
-                      <ExternalLink size={12} />
-                      {l.label}
-                    </a>
-                  ))}
-              </div>
-            </motion.div>
-          </div>
+              <Shuffle size={16} className={shuffle ? "text-[#62f3e4]" : ""} />
+            </button>
+            <button
+              onClick={handleBuyAlbum}
+              className="flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold text-[#003733] flex-shrink-0"
+              style={{ background: "#ffabef" }}
+            >
+              <ShoppingBag size={16} />
+              Buy · ${ALBUM_PRICE.toFixed(2)}
+            </button>
+          </motion.div>
 
-          {/* Right: Actions + Tracklist */}
-          <div className="flex-1 flex flex-col min-h-0 md:pt-8 md:pb-8">
-            {/* Action buttons */}
-            <div className="flex flex-wrap items-center gap-3 py-4 px-0 md:pt-0">
-              <motion.button
-                onClick={() => playFromAlbum(album)}
-                disabled={!album.tracks.length}
-                aria-label={`Play ${album.title}`}
-                className="flex h-14 w-14 items-center justify-center rounded-full disabled:opacity-40"
-                style={{ background: album.accentColor || "#62f3e4" }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.96 }}
-              >
-                <Play size={22} fill="#003733" className="ml-1 text-[#003733]" />
-              </motion.button>
-              <motion.button
-                onClick={handleShuffle}
-                disabled={!album.tracks.length}
-                aria-label="Shuffle play"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 text-white hover:bg-white/10 disabled:opacity-40"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.96 }}
-              >
-                <Shuffle size={18} className={shuffle ? "text-[#62f3e4]" : ""} />
-              </motion.button>
-              <motion.button
-                onClick={handleBuyAlbum}
-                className="ml-2 flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold text-[#003733]"
-                style={{ background: "#ffabef" }}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.96 }}
-              >
-                <ShoppingBag size={18} />
-                Buy Album · ${ALBUM_PRICE.toFixed(2)}
-              </motion.button>
-            </div>
-
-            {/* Tracklist header */}
-            <div className="grid grid-cols-[40px_1fr_60px] gap-3 border-b border-white/10 px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#B3B3B3] md:grid-cols-[40px_1fr_120px_80px_60px] md:gap-4 md:px-4">
-              <div>#</div>
-              <div>Title</div>
-              <div className="hidden md:block">Price</div>
-              <div className="hidden md:block"></div>
-              <div className="text-right">Time</div>
-            </div>
-
-            {/* Track rows */}
-            <div className="flex-1 overflow-y-auto pb-6">
-              {album.tracks.length === 0 ? (
-                <div className="px-4 py-10 text-center text-sm text-[#B3B3B3]">
-                  Track list coming soon.
-                </div>
-              ) : (
-                <motion.div
-                  className="pt-2"
-                  variants={trackContainer}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  {album.tracks.map((track) => (
-                    <motion.div key={track.id} variants={trackItem}>
-                      <TrackRow
-                        track={track}
-                        album={album}
-                        artistSlugsByName={artistSlugsByName}
-                      />
-                    </motion.div>
-                  ))}
-                </motion.div>
+          {/* Streaming links */}
+          {album.streaming_links != null &&
+           typeof album.streaming_links === "object" &&
+           !Array.isArray(album.streaming_links) &&
+           Object.keys(album.streaming_links).length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {(Object.entries(album.streaming_links as Record<string, string>)).map(
+                ([platform, url]) => (
+                  <a
+                    key={platform}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/15 text-[11px] text-white/70 hover:border-[#62f3e4] hover:text-[#62f3e4] transition-colors font-[family-name:var(--font-geist-mono)] uppercase tracking-wider"
+                  >
+                    {platform}
+                  </a>
+                )
               )}
             </div>
+          )}
+        </div>
+
+        {/* ── RIGHT: Tracklist ── */}
+        <div className="flex-1 flex flex-col min-h-0 px-6 pt-6 pb-6 md:px-8 md:pt-8">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut", delay: 0.05 }}
+            className="mb-6"
+          >
+            <h2 className="font-[family-name:var(--font-bungee)] text-2xl text-[#dde4e2] tracking-tight">
+              Tracklist
+            </h2>
+          </motion.div>
+
+          {/* Track rows */}
+          <div className="flex-1 overflow-y-auto">
+            {album.tracks.length === 0 ? (
+              <div className="py-10 text-center text-sm text-[#B3B3B3]">
+                Track list coming soon.
+              </div>
+            ) : (
+              <motion.div
+                variants={trackContainer}
+                initial="hidden"
+                animate="visible"
+              >
+                {album.tracks.map((track) => (
+                  <motion.div key={track.id} variants={trackItem}>
+                    <TrackRow
+                      track={track}
+                      album={album}
+                      artistSlugsByName={artistSlugsByName}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
           </div>
         </div>
       </motion.div>
 
-      {/* ── CREDITS SECTION (full width, below the two-column layout) ── */}
+      {/* ── CREDITS SECTION ── */}
       {hasAnyCredits ? (
         <section className="border-t border-white/5 px-6 py-8 md:px-8">
           <h2 className="mb-4 font-mono text-sm font-bold uppercase tracking-[0.25em] text-white">
@@ -372,34 +359,7 @@ export function AlbumDetail({
             {album.copyright ?? "© Nano Tech Productions. All rights reserved."}
           </p>
         </div>
-        {/* TODO: production notes & gear info — not in catalog.ts yet, add when data is available. */}
       </section>
-
-      {album.streaming_links != null &&
-       typeof album.streaming_links === 'object' &&
-       !Array.isArray(album.streaming_links) &&
-       Object.keys(album.streaming_links).length > 0 && (
-        <section className="mt-8 pt-6 border-t border-white/10 px-2">
-          <h3 className="text-sm font-medium text-white/50 mb-3">
-            Stream on
-          </h3>
-          <div className="flex flex-wrap gap-3">
-            {(Object.entries(
-              album.streaming_links as Record<string, string>
-            )).map(([platform, url]) => (
-              <a
-                key={platform}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 text-xs text-white/80 hover:border-[#62f3e4] hover:text-[#62f3e4] transition-colors"
-              >
-                {platform}
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }
