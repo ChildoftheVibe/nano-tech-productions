@@ -53,8 +53,8 @@ export const metadata: Metadata = {
     follow: true,
   },
   icons: {
-    icon: '/icon-192.png',
-    apple: '/icon-192.png',
+    icon: '/icons/icon-192.png',
+    apple: '/icons/icon-192.png',
   },
 };
 

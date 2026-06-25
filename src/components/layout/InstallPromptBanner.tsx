@@ -151,7 +151,7 @@ export default function InstallPromptBanner() {
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             <div className="flex items-center gap-3 max-w-sm mx-auto">
-              <Image src="/icon-192.png" alt="NTV" width={40} height={40} className="rounded-xl shrink-0" />
+              <Image src="/icons/icon-192.png" alt="NTV" width={40} height={40} className="rounded-xl shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-white truncate">Add NTV to your home screen</p>
                 <p className="text-xs text-white/50 truncate">Play music offline, faster access</p>
