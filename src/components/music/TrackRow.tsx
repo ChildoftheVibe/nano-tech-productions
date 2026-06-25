@@ -39,14 +39,9 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
       return;
     }
     if (!track.audioUrl) {
-      // Track row stays visually unchanged (isActive remains false). Flash an
-      // inline note so the user knows the click registered and why nothing
-      // happened.
       setShowUnavailable(true);
       return;
     }
-    // Direct synchronous play() via PlayerContext keeps the user-gesture
-    // chain alive so Chrome's autoplay policy doesn't block the call.
     playFromTrack(track, album);
     void fetch("/api/tracks/played", {
       method: "POST",
@@ -58,110 +53,94 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
 
   return (
     <div
-      className={`group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-lg px-3 py-2 transition-all duration-150 ${
-        isActive
-          ? "bg-[#62f3e4]/10 border border-[#62f3e4]/20"
-          : "hover:bg-white/[0.04] border border-transparent"
-      }`}
+      className="group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-lg px-3 py-3 transition-colors duration-150"
+      style={{
+        background: isActive
+          ? "rgba(98,243,228,0.09)"
+          : "transparent",
+      }}
+      onMouseEnter={(e) => {
+        if (!isActive) {
+          (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isActive) {
+          (e.currentTarget as HTMLDivElement).style.background = "transparent";
+        }
+      }}
       aria-label={`Track ${track.trackNumber}: ${track.title}`}
     >
+      {/* Number / EQ bars / Play icon */}
       <button
         onClick={handleClick}
         aria-label={isThisPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
-        className="flex h-6 w-6 items-center justify-center text-sm"
+        className="flex h-6 w-6 items-center justify-center"
       >
         {isActive ? (
           isThisPlaying ? (
-            <span className="flex h-4 items-end gap-0.5">
+            /* Animated EQ bars */
+            <span className="flex h-[14px] items-end gap-[2px]">
               <span
-                className="eq-bar-1 block w-1 rounded-sm"
-                style={{
-                  height: "100%",
-                  background: "#62f3e4",
-                  transformOrigin: "bottom",
-                }}
+                className="eq-bar-1 block w-[3px] rounded-sm"
+                style={{ height: "100%", background: "#62f3e4", transformOrigin: "bottom" }}
               />
               <span
-                className="eq-bar-2 block w-1 rounded-sm"
-                style={{
-                  height: "100%",
-                  background: "#62f3e4",
-                  transformOrigin: "bottom",
-                }}
+                className="eq-bar-2 block w-[3px] rounded-sm"
+                style={{ height: "100%", background: "#62f3e4", transformOrigin: "bottom" }}
               />
               <span
-                className="eq-bar-3 block w-1 rounded-sm"
-                style={{
-                  height: "100%",
-                  background: "#62f3e4",
-                  transformOrigin: "bottom",
-                }}
+                className="eq-bar-3 block w-[3px] rounded-sm"
+                style={{ height: "100%", background: "#62f3e4", transformOrigin: "bottom" }}
               />
             </span>
           ) : (
-            <span className="flex h-4 items-end gap-0.5">
-              <span
-                className="block w-1 rounded-sm"
-                style={{
-                  height: "60%",
-                  background: "#62f3e4",
-                  transform: "scaleY(0.4)",
-                  transformOrigin: "bottom",
-                }}
-              />
-              <span
-                className="block w-1 rounded-sm"
-                style={{
-                  height: "100%",
-                  background: "#62f3e4",
-                  transform: "scaleY(0.4)",
-                  transformOrigin: "bottom",
-                }}
-              />
-              <span
-                className="block w-1 rounded-sm"
-                style={{
-                  height: "80%",
-                  background: "#62f3e4",
-                  transform: "scaleY(0.4)",
-                  transformOrigin: "bottom",
-                }}
-              />
+            /* Paused bars (collapsed) */
+            <span className="flex h-[14px] items-end gap-[2px]">
+              <span className="block w-[3px] rounded-sm" style={{ height: "55%", background: "#62f3e4", transform: "scaleY(0.5)", transformOrigin: "bottom" }} />
+              <span className="block w-[3px] rounded-sm" style={{ height: "100%", background: "#62f3e4", transform: "scaleY(0.5)", transformOrigin: "bottom" }} />
+              <span className="block w-[3px] rounded-sm" style={{ height: "75%", background: "#62f3e4", transform: "scaleY(0.5)", transformOrigin: "bottom" }} />
             </span>
           )
         ) : (
-          <>
-            <span className="text-[#B3B3B3] transition-opacity duration-150 group-hover:hidden">
+          <span className="relative flex h-5 w-5 items-center justify-center">
+            {/* Track number — fades out on row hover */}
+            <span
+              className="absolute inset-0 flex items-center justify-center group-hover:opacity-0 transition-opacity duration-100"
+              style={{
+                fontFamily: "var(--font-geist-mono), monospace",
+                fontSize: 12,
+                color: "#6b7c79",
+                lineHeight: 1,
+              }}
+            >
               {track.trackNumber}
             </span>
+            {/* Play icon — fades in on row hover */}
             <Play
               size={14}
               fill="currentColor"
-              className="hidden text-white group-hover:block"
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-100 text-white"
             />
-          </>
+          </span>
         )}
       </button>
 
+      {/* Title + features */}
       <div className="min-w-0">
         <button
           onClick={handleClick}
-          className={`block truncate text-left text-sm font-medium ${
-            isActive ? "text-[#62f3e4]" : "text-white"
-          }`}
+          className="block w-full truncate text-left text-sm font-medium transition-none"
+          style={{ color: isActive ? "#ffffff" : "#dde4e2" }}
         >
           {track.title}
         </button>
         {showUnavailable ? (
-          <div
-            className="truncate text-xs text-yellow-300/90"
-            role="status"
-            aria-live="polite"
-          >
+          <div className="truncate text-xs text-yellow-300/90" role="status" aria-live="polite">
             Audio not yet available
           </div>
         ) : track.features?.length ? (
-          <div className="truncate text-xs text-[#B3B3B3] transition-colors duration-150 group-hover:text-[#62f3e4]">
+          <div className="truncate text-xs" style={{ color: "#6b7c79" }}>
             feat.{" "}
             <MaybeArtistLinkList
               names={track.features}
@@ -171,7 +150,16 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
         ) : null}
       </div>
 
-      <div className="text-right font-mono text-xs text-[#B3B3B3]">{track.duration}</div>
+      {/* Duration */}
+      <div
+        className="text-right text-xs"
+        style={{
+          fontFamily: "var(--font-geist-mono), monospace",
+          color: isActive ? "#9db8b4" : "#6b7c79",
+        }}
+      >
+        {track.duration}
+      </div>
     </div>
   );
 }
