@@ -36,7 +36,7 @@ type PlayerState = {
   toggleRepeat: () => void;
   shuffleQueue: () => void;
   addToQueue: (track: Track) => void;
-  setQueue: (queue: Track[], currentTrack?: Track | null) => void;
+  setQueue: (queue: Track[], currentTrack?: Track | null, album?: Album | null) => void;
   openFullScreen: () => void;
   closeFullScreen: () => void;
   openLyrics: () => void;
@@ -204,12 +204,13 @@ export const usePlayerStore = create<PlayerState>()(
 
       addToQueue: (track) => set({ queue: [...get().queue, track] }),
 
-      setQueue: (queue, currentTrack) => {
-        if (currentTrack !== undefined) {
-          set({ queue, currentTrack });
-        } else {
-          set({ queue });
-        }
+      setQueue: (queue, currentTrack, album) => {
+        set({
+          queue,
+          ...(currentTrack !== undefined ? { currentTrack } : {}),
+          // Only update currentAlbum when explicitly passed; undefined = leave as-is.
+          ...(album !== undefined ? { currentAlbum: album } : {}),
+        });
       },
 
       openFullScreen: () => set({ fullScreenOpen: true }),

@@ -43,6 +43,13 @@ export type Track = {
   credits: TrackCredits;
   lyrics: string | null;
   has_lyrics: boolean;
+  // Embedded album metadata — populated by the playlist query (album join).
+  // Undefined on tracks fetched as part of a full Album query.
+  albumCoverImage?: string | null;
+  albumBgColor?: string | null;
+  albumAccentColor?: string | null;
+  albumSlug?: string | null;
+  albumTitle?: string | null;
 };
 
 export type AlbumListResult = {

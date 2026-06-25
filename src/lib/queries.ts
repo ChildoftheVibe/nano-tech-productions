@@ -59,6 +59,16 @@ type TrackRow = {
   credits: TrackCredits | null;
   lyrics: string | null;
   has_lyrics: boolean | null;
+  // Present only when the query includes an album join (playlist query).
+  // Supabase returns related rows as an array even for many-to-one joins.
+  albums?: {
+    id: string;
+    slug: string;
+    title: string;
+    cover_image: string | null;
+    bg_color: string | null;
+    accent_color: string | null;
+  }[] | null;
 };
 
 /** Build the streaming URL a Track exposes to the player.
@@ -87,6 +97,12 @@ const mapTrack = (row: TrackRow): Track => ({
   credits: row.credits ?? {},
   lyrics: row.lyrics,
   has_lyrics: !!row.has_lyrics,
+  // Album metadata — only present when row includes an album join.
+  albumCoverImage: row.albums?.[0]?.cover_image ?? undefined,
+  albumBgColor: row.albums?.[0]?.bg_color ?? undefined,
+  albumAccentColor: row.albums?.[0]?.accent_color ?? undefined,
+  albumSlug: row.albums?.[0]?.slug ?? undefined,
+  albumTitle: row.albums?.[0]?.title ?? undefined,
 });
 
 const mapAlbum = (row: AlbumRow, tracks: Track[] = []): Album => ({
@@ -239,7 +255,7 @@ export const getPlaylistTracks = unstable_cache(
     // queue even if audio_url was somehow left null.
     const { data, error } = await supabase
       .from("tracks")
-      .select(TRACK_COLUMNS)
+      .select(`${TRACK_COLUMNS}, albums(id, slug, title, cover_image, bg_color, accent_color)`)
       .eq("is_published", true)
       .or("audio_url.not.is.null,public_audio_id.not.is.null")
       .limit(PLAYLIST_MAX);
@@ -429,9 +445,7 @@ export const searchContent = unstable_cache(
     return {
       albums: albumRows.map((row) => mapAlbum(row)),
       tracks: trackRows.map((row) => {
-        const slug = Array.isArray(row.albums)
-          ? row.albums[0]?.slug ?? null
-          : row.albums?.slug ?? null;
+        const slug = row.albums?.[0]?.slug ?? null;
         return { ...mapTrack(row), albumSlug: slug };
       }),
       artists,

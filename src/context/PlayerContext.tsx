@@ -265,11 +265,33 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const fresh = usePlayerStore.getState();
       if (fresh.queue.length > 0 || fresh.currentTrack) return;
       const shuffled = shuffle(tracks);
+      const first = shuffled[0] ?? null;
+
+      // Build a minimal Album from the embedded album metadata that the
+      // playlist query now joins in. This lets the PlayerBar display
+      // artwork and accent color immediately on first load, before the
+      // user explicitly picks an album.
+      const seedAlbum: Album | null =
+        first?.albumId && first.albumCoverImage
+          ? {
+              id: first.albumId,
+              slug: first.albumSlug ?? "",
+              title: first.albumTitle ?? "",
+              description: "",
+              releaseDate: "",
+              coverImage: first.albumCoverImage,
+              bgColor: first.albumBgColor ?? "#090f0e",
+              accentColor: first.albumAccentColor ?? "#62f3e4",
+              spotifyUrl: "",
+              tracks: [],
+            }
+          : null;
+
       // Without a currentTrack the PlayerBar play button stays disabled
       // (disabled={!currentTrack}) — clicks do nothing, which presents as
-      // "the play button doesn't work". Seed the first track too so the
-      // user can press play without first picking an album.
-      fresh.setQueue(shuffled, shuffled[0] ?? null);
+      // "the play button doesn't work". Seed the first track and its album
+      // so the PlayerBar shows artwork and accent color from the start.
+      fresh.setQueue(shuffled, first, seedAlbum);
       console.log(
         "[PlayerContext] seed: queue set, currentTrack =",
         shuffled[0]?.title,
@@ -283,7 +305,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       // closes that window: by the time the React commit + src-effect fire,
       // src is already the same value and the effect is a no-op.
       const audio = audioRef.current;
-      const first = shuffled[0];
       if (audio && first?.audioUrl) {
         console.log(
           "[PlayerContext] seed: setting audio.src synchronously →",
