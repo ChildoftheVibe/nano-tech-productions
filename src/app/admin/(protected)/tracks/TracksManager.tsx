@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { adminFetch } from "@/lib/adminFetch";
 import { TrackForm } from "@/components/admin/TrackForm";
 import type { Album, Track } from "@/lib/db-types";
@@ -31,6 +31,10 @@ export function TracksManager({
   >({ kind: "list" });
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [tracks, setTracks] = useState<Track[]>(initialTracks);
+
+  useEffect(() => {
+    setTracks(initialTracks);
+  }, [albumFilter]);
 
   const albumTitle = (id: string | null) =>
     id ? (albums.find((a) => a.id === id)?.title ?? "—") : "—";
@@ -130,7 +134,7 @@ export function TracksManager({
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <button
           onClick={() => setMode({ kind: "create" })}
-          className="rounded bg-[#3DD6C8] px-4 py-2 font-medium text-black"
+          className="rounded-full bg-[#3DD6C8] px-4 py-2 font-medium text-black"
         >
           + Add track
         </button>
@@ -215,14 +219,14 @@ export function TracksManager({
                         <div className="flex justify-end gap-2">
                           <button
                             onClick={() => setMode({ kind: "edit", track })}
-                            className="rounded border border-white/15 px-2.5 py-1 text-xs hover:bg-white/5"
+                            className="rounded-full border border-white/15 px-2.5 py-1 text-xs hover:bg-white/5"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => onDelete(track)}
                             disabled={pending}
-                            className="rounded border border-red-500/30 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/10 disabled:opacity-50"
+                            className="rounded-full border border-red-500/30 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/10 disabled:opacity-50"
                           >
                             Delete
                           </button>
@@ -243,7 +247,7 @@ export function TracksManager({
               {page > 1 ? (
                 <Link
                   href={pageHref(page - 1)}
-                  className="rounded border border-white/20 px-3 py-1 hover:bg-white/5"
+                  className="rounded-full border border-white/20 px-3 py-1 hover:bg-white/5"
                 >
                   Previous
                 </Link>
@@ -251,7 +255,7 @@ export function TracksManager({
               {page < totalPages ? (
                 <Link
                   href={pageHref(page + 1)}
-                  className="rounded border border-white/20 px-3 py-1 hover:bg-white/5"
+                  className="rounded-full border border-white/20 px-3 py-1 hover:bg-white/5"
                 >
                   Next
                 </Link>

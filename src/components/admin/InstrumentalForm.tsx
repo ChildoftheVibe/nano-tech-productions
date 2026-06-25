@@ -174,14 +174,14 @@ export function InstrumentalForm({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded border border-white/15 px-3 py-1.5 text-sm hover:bg-white/5"
+            className="rounded-full border border-white/15 px-3 py-1.5 text-sm hover:bg-white/5"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="rounded bg-[#3DD6C8] px-3 py-1.5 text-sm font-bold text-black disabled:opacity-50"
+            className="rounded-full bg-[#3DD6C8] px-3 py-1.5 text-sm font-bold text-black disabled:opacity-50"
           >
             {saving ? "Saving…" : "Save"}
           </button>

@@ -369,7 +369,7 @@ export function ArtistsManager({ initialArtists, allTracks, allAlbums }: Props) 
                           onClick={() =>
                             setView({ mode: "edit", artistId: artist.id })
                           }
-                          className="rounded p-1.5 text-white/60 hover:bg-white/5 hover:text-white"
+                          className="rounded-full p-1.5 text-white/60 hover:bg-white/5 hover:text-white"
                           aria-label="Edit"
                         >
                           <Pencil size={14} />
@@ -378,7 +378,7 @@ export function ArtistsManager({ initialArtists, allTracks, allAlbums }: Props) 
                           type="button"
                           onClick={() => onDelete(artist)}
                           disabled={isPending}
-                          className="rounded p-1.5 text-white/60 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-50"
+                          className="rounded-full p-1.5 text-white/60 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-50"
                           aria-label="Delete"
                         >
                           <Trash2 size={14} />
@@ -413,7 +413,7 @@ function Header({
       <button
         type="button"
         onClick={onBack}
-        className="rounded border border-white/15 px-3 py-1.5 text-xs text-white/70 hover:border-white/30 hover:text-white"
+        className="rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/70 hover:border-white/30 hover:text-white"
       >
         ← {backLabel}
       </button>

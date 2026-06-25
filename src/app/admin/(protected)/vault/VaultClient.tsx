@@ -202,7 +202,7 @@ export function VaultClient({ tracks }: { tracks: VaultTrack[] }) {
             {activeTrackId ? (
               <button
                 onClick={handleStop}
-                className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/5"
+                className="rounded-full border border-white/20 px-3 py-1 text-xs hover:bg-white/5"
               >
                 Stop
               </button>

@@ -183,7 +183,7 @@ export default async function AdminOrdersPage({
               {page > 1 ? (
                 <Link
                   href={`?page=${page - 1}${status ? `&status=${status}` : ""}`}
-                  className="rounded border border-white/20 px-3 py-1 hover:bg-white/5"
+                  className="rounded-full border border-white/20 px-3 py-1 hover:bg-white/5"
                 >
                   Previous
                 </Link>
@@ -191,7 +191,7 @@ export default async function AdminOrdersPage({
               {page < totalPages ? (
                 <Link
                   href={`?page=${page + 1}${status ? `&status=${status}` : ""}`}
-                  className="rounded border border-white/20 px-3 py-1 hover:bg-white/5"
+                  className="rounded-full border border-white/20 px-3 py-1 hover:bg-white/5"
                 >
                   Next
                 </Link>

@@ -64,7 +64,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <form action="/api/admin/auth/logout" method="post">
           <button
             type="submit"
-            className="rounded border border-white/15 px-3 py-1.5 text-xs text-white/70 hover:border-white/30 hover:text-white"
+            className="rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/70 hover:border-white/30 hover:text-white"
           >
             Sign out
           </button>

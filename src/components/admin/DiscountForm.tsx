@@ -225,7 +225,7 @@ export function DiscountForm({ initial, albums, onSaved, onCancel }: Props) {
         <button
           type="submit"
           disabled={submitting}
-          className="rounded bg-[#3DD6C8] px-4 py-2 font-medium text-black disabled:opacity-50"
+          className="rounded-full bg-[#3DD6C8] px-4 py-2 font-medium text-black disabled:opacity-50"
         >
           {submitting ? "Saving…" : initial ? "Save changes" : "Create discount"}
         </button>
@@ -233,7 +233,7 @@ export function DiscountForm({ initial, albums, onSaved, onCancel }: Props) {
           <button
             type="button"
             onClick={onCancel}
-            className="rounded border border-white/20 px-4 py-2 text-white/80 hover:bg-white/5"
+            className="rounded-full border border-white/20 px-4 py-2 text-white/80 hover:bg-white/5"
           >
             Cancel
           </button>

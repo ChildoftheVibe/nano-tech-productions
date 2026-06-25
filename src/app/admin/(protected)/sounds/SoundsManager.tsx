@@ -156,7 +156,7 @@ export function SoundsManager({
         <button
           type="button"
           onClick={() => setMode({ kind: "create" })}
-          className="inline-flex items-center gap-2 rounded bg-[#3DD6C8] px-3 py-1.5 text-sm font-bold text-black"
+          className="inline-flex items-center gap-2 rounded-full bg-[#3DD6C8] px-3 py-1.5 text-sm font-bold text-black"
         >
           <Plus size={14} /> Add Instrumental
         </button>
@@ -169,7 +169,7 @@ export function SoundsManager({
           <button
             type="button"
             onClick={() => setMode({ kind: "create" })}
-            className="mt-3 inline-flex items-center gap-2 rounded bg-[#3DD6C8] px-3 py-1.5 text-sm font-bold text-black"
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#3DD6C8] px-3 py-1.5 text-sm font-bold text-black"
           >
             <Plus size={14} /> Add your first instrumental
           </button>
@@ -241,7 +241,7 @@ export function SoundsManager({
                       <button
                         type="button"
                         onClick={() => setMode({ kind: "edit", row })}
-                        className="rounded border border-white/20 px-2 py-1 text-xs hover:bg-white/5"
+                        className="rounded-full border border-white/20 px-2 py-1 text-xs hover:bg-white/5"
                       >
                         Edit
                       </button>
@@ -249,7 +249,7 @@ export function SoundsManager({
                         type="button"
                         onClick={() => onDelete(row)}
                         disabled={pendingId === row.id}
-                        className="rounded border border-red-500/40 px-2 py-1 text-xs text-red-300 hover:bg-red-500/10 disabled:opacity-40"
+                        className="rounded-full border border-red-500/40 px-2 py-1 text-xs text-red-300 hover:bg-red-500/10 disabled:opacity-40"
                       >
                         Delete
                       </button>
@@ -276,7 +276,7 @@ export function SoundsManager({
                   params.set("page", String(page - 1));
                   router.push(`?${params.toString()}`);
                 }}
-                className="rounded border border-white/15 px-2 py-1 hover:bg-white/5"
+                className="rounded-full border border-white/15 px-2 py-1 hover:bg-white/5"
               >
                 Prev
               </button>
@@ -289,7 +289,7 @@ export function SoundsManager({
                   params.set("page", String(page + 1));
                   router.push(`?${params.toString()}`);
                 }}
-                className="rounded border border-white/15 px-2 py-1 hover:bg-white/5"
+                className="rounded-full border border-white/15 px-2 py-1 hover:bg-white/5"
               >
                 Next
               </button>

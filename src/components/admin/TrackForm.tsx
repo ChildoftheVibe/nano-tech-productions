@@ -202,7 +202,7 @@ function CreditChipInput({
           type="button"
           onClick={commit}
           aria-label={`Add ${label}`}
-          className="flex items-center gap-1 rounded border border-white/15 px-2.5 py-1.5 text-xs text-white/80 hover:bg-white/5 hover:text-white"
+          className="flex items-center gap-1 rounded-full border border-white/15 px-2.5 py-1.5 text-xs text-white/80 hover:bg-white/5 hover:text-white"
         >
           <Plus size={14} />
           Add
@@ -504,7 +504,7 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
             <button
               type="button"
               onClick={downloadLyrics}
-              className="ml-auto inline-flex items-center gap-1.5 rounded border border-white/20 px-3 py-1.5 text-xs text-white/80 hover:bg-white/5 hover:text-white"
+              className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/20 px-3 py-1.5 text-xs text-white/80 hover:bg-white/5 hover:text-white"
             >
               <Download size={12} />
               Download as .txt
@@ -533,11 +533,11 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
 
       {error && <p className="text-sm text-red-400">{error}</p>}
 
-      <div className="sticky bottom-32 z-10 flex gap-2 border-t border-white/10 bg-[#1a1919]/95 py-3 backdrop-blur-sm md:bottom-0">
+      <div className="sticky bottom-0 z-10 flex gap-2 border-t border-white/10 bg-[#1a1919]/95 py-3 backdrop-blur-sm">
         <button
           type="submit"
           disabled={submitting}
-          className="rounded bg-[#3DD6C8] px-4 py-2 font-medium text-black disabled:opacity-50"
+          className="rounded-full bg-[#3DD6C8] px-4 py-2 font-medium text-black disabled:opacity-50"
         >
           {submitting ? "Saving…" : initial ? "Save changes" : "Create track"}
         </button>
@@ -545,7 +545,7 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
           <button
             type="button"
             onClick={onCancel}
-            className="rounded border border-white/20 px-4 py-2 text-white/80 hover:bg-white/5"
+            className="rounded-full border border-white/20 px-4 py-2 text-white/80 hover:bg-white/5"
           >
             Cancel
           </button>

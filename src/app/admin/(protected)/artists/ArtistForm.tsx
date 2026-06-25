@@ -534,7 +534,7 @@ export function ArtistForm({
                     setTrackAssocs((prev) => prev.filter((x) => x.id !== a.id))
                   }
                   aria-label="Remove"
-                  className="rounded p-1 text-white/40 hover:bg-white/5 hover:text-white"
+                  className="rounded-full p-1 text-white/40 hover:bg-white/5 hover:text-white"
                 >
                   <X size={12} />
                 </button>
@@ -609,7 +609,7 @@ export function ArtistForm({
                     setAlbumAssocs((prev) => prev.filter((x) => x.id !== a.id))
                   }
                   aria-label="Remove"
-                  className="rounded p-1 text-white/40 hover:bg-white/5 hover:text-white"
+                  className="rounded-full p-1 text-white/40 hover:bg-white/5 hover:text-white"
                 >
                   <X size={12} />
                 </button>
@@ -623,14 +623,14 @@ export function ArtistForm({
         <button
           type="submit"
           disabled={submitting}
-          className="rounded bg-[#3DD6C8] px-5 py-2 text-sm font-bold text-black hover:brightness-110 disabled:opacity-50"
+          className="rounded-full bg-[#3DD6C8] px-5 py-2 text-sm font-bold text-black hover:brightness-110 disabled:opacity-50"
         >
           {submitting ? "Saving…" : artistId ? "Save Changes" : "Create Artist"}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="rounded border border-white/15 px-5 py-2 text-sm text-white/70 hover:border-white/30 hover:text-white"
+          className="rounded-full border border-white/15 px-5 py-2 text-sm text-white/70 hover:border-white/30 hover:text-white"
         >
           Cancel
         </button>

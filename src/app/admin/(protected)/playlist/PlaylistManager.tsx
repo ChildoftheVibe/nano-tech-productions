@@ -215,7 +215,7 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
         <button
           onClick={addAllPublished}
           disabled={busy}
-          className="rounded bg-[#3DD6C8] px-4 py-2 text-sm font-medium text-black disabled:opacity-50"
+          className="rounded-full bg-[#3DD6C8] px-4 py-2 text-sm font-medium text-black disabled:opacity-50"
         >
           + Add all published tracks
         </button>
@@ -295,7 +295,7 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
                   <button
                     onClick={() => removeEntry(entry)}
                     disabled={busy}
-                    className="rounded p-1.5 text-white/40 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-50"
+                    className="rounded-full p-1.5 text-white/40 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-50"
                     title="Remove"
                   >
                     <Trash2 size={14} />
@@ -321,7 +321,7 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="rounded p-1 text-white/40 hover:text-white"
+              className="rounded-full p-1 text-white/40 hover:text-white"
               title="Clear"
             >
               <X size={14} />
