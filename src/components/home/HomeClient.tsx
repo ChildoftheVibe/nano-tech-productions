@@ -9,7 +9,7 @@ import { ArtistCard } from "@/components/artist/ArtistCard";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { usePageEngagement } from "@/lib/usePageEngagement";
-import type { Album, AlbumListResult, Artist } from "@/types/music";
+import type { Album, AlbumListResult, Artist, Track } from "@/types/music";
 import { getAlbumCover } from "@/lib/albumCover";
 
 const PAGE_SIZE =
@@ -59,6 +59,7 @@ type Props = {
   latest: Album | null;
   initialCollection: AlbumListResult;
   featuredArtists: Artist[];
+  weeklyTracks: Track[];
 };
 
 function SectionLabel({
@@ -91,6 +92,7 @@ export function HomeClient({
   latest,
   initialCollection,
   featuredArtists,
+  weeklyTracks,
 }: Props) {
   const greeting = useSyncExternalStore(
     subscribeNoop,
@@ -268,7 +270,7 @@ export function HomeClient({
       </section>
 
       {/* ── WEEKLY SELECTIONS ── */}
-      {latest && latest.tracks.length > 0 ? (
+      {weeklyTracks.length > 0 ? (
         <section className="pb-12 md:pb-16">
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
             {/* Track list */}
@@ -287,7 +289,7 @@ export function HomeClient({
                 initial="hidden"
                 animate={mounted ? "visible" : "hidden"}
               >
-                {latest.tracks.slice(0, 6).map((track, idx) => {
+                {weeklyTracks.map((track, idx) => {
                   const isActive = currentTrack?.id === track.id;
                   const durSec = Number(track.duration);
                   const dur = durSec > 0
@@ -297,7 +299,7 @@ export function HomeClient({
                     <motion.button
                       key={track.id}
                       variants={itemFadeUp}
-                      onClick={() => playFromAlbum(latest)}
+                      onClick={togglePlayPause}
                       className={`w-full flex items-center gap-4 rounded-lg px-3 py-3 text-left transition-all group border-l-2 ${
                         isActive
                           ? "border-[#ffabef] bg-white/5"
@@ -327,63 +329,64 @@ export function HomeClient({
               </motion.div>
               <div className="mt-4">
                 <Link
-                  href={`/album/${latest.slug}`}
+                  href="/library"
                   className="font-[family-name:var(--font-geist-mono)] text-[11px] uppercase tracking-widest text-[#62f3e4] hover:underline transition-colors"
                 >
-                  View Full Album →
+                  View Full Catalog →
                 </Link>
               </div>
             </div>
 
             {/* Right glass card — NTV curation highlight */}
-            <div className="hidden lg:flex w-64 flex-shrink-0">
-              <div className="glass-panel rounded-xl p-6 w-full flex flex-col gap-5">
-                <div className="flex items-center gap-3">
+            {latest && (
+              <div className="hidden lg:flex w-64 flex-shrink-0">
+                <div className="glass-panel rounded-xl p-6 w-full flex flex-col gap-5">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ background: "linear-gradient(135deg, #62f3e4 0%, #ffabef 100%)" }}
+                      aria-hidden="true"
+                    >
+                      <span className="font-[family-name:var(--font-bungee)] text-xs text-[#003733]">NTV</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#dde4e2]">Nano Tech Vibe</p>
+                      <p className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-widest text-[#62f3e4]">
+                        Curated by Jhodge
+                      </p>
+                    </div>
+                  </div>
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ background: "linear-gradient(135deg, #62f3e4 0%, #ffabef 100%)" }}
-                    aria-hidden="true"
+                    className="w-full aspect-square rounded-lg overflow-hidden"
+                    style={{ background: latest.bgColor ?? "#1a2120" }}
                   >
-                    <span className="font-[family-name:var(--font-bungee)] text-xs text-[#003733]">NTV</span>
+                    {latest.coverImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={getAlbumCover(latest.coverImage, "sm")}
+                        alt={latest.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : null}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[#dde4e2]">Nano Tech Vibe</p>
-                    <p className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-widest text-[#62f3e4]">
-                      Curated by Jhodge
+                    <p className="font-[family-name:var(--font-bungee)] text-lg leading-tight text-[#dde4e2] uppercase">
+                      {latest.title}
                     </p>
+                    <p className="mt-1 text-xs text-[#b3b3b3] line-clamp-2">{latest.description}</p>
                   </div>
+                  <motion.button
+                    onClick={() => playFromAlbum(latest)}
+                    className="w-full rounded-lg py-2.5 text-sm font-bold text-[#003733] teal-glow"
+                    style={{ background: "#62f3e4" }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    Listen Now
+                  </motion.button>
                 </div>
-                <div
-                  className="w-full aspect-square rounded-lg overflow-hidden"
-                  style={{ background: latest.bgColor ?? "#1a2120" }}
-                >
-                  {latest.coverImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={getAlbumCover(latest.coverImage, "sm")}
-                      alt={latest.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : null}
-                </div>
-                <div>
-                  <p className="font-[family-name:var(--font-bungee)] text-lg leading-tight text-[#dde4e2] uppercase">
-                    {latest.title}
-                  </p>
-                  <p className="mt-1 text-xs text-[#b3b3b3] line-clamp-2">{latest.description}</p>
-                </div>
-                <motion.button
-                  onClick={() => playFromAlbum(latest)}
-                  disabled={!latest.tracks.length}
-                  className="w-full rounded-lg py-2.5 text-sm font-bold text-[#003733] disabled:opacity-40 teal-glow"
-                  style={{ background: "#62f3e4" }}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  Listen Now
-                </motion.button>
               </div>
-            </div>
+            )}
           </div>
         </section>
       ) : null}
