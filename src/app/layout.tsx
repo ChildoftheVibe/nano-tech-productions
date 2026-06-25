@@ -71,10 +71,10 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://www.paypalobjects.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.paypal.com" crossOrigin="anonymous" />
       </head>
-      <body className="bg-[#090f0e] text-white">
+      <body className="bg-[#090f0e] text-[#dde4e2]">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[1000] focus:rounded focus:bg-[#3DD6C8] focus:px-4 focus:py-2 focus:font-semibold focus:text-black focus:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[1000] focus:rounded focus:bg-[#62f3e4] focus:px-4 focus:py-2 focus:font-semibold focus:text-[#003733] focus:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
         >
           Skip to main content
         </a>

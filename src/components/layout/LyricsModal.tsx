@@ -16,7 +16,7 @@ function renderLyrics(lyrics: string) {
       return (
         <p
           key={i}
-          className="font-mono text-[#3DD6C8]"
+          className="font-mono text-[#62f3e4]"
           style={{ fontSize: 16, lineHeight: 1.9 }}
         >
           {line.trim()}
@@ -143,7 +143,7 @@ export function LyricsModal() {
                 ref={closeButtonRef}
                 onClick={close}
                 aria-label="Close lyrics"
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DD6C8]"
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
               >
                 <ChevronDown size={24} aria-hidden="true" />
               </button>
@@ -157,7 +157,7 @@ export function LyricsModal() {
                 scrollBehavior: "smooth",
                 WebkitOverflowScrolling: "touch",
                 scrollbarWidth: "thin",
-                scrollbarColor: "#3DD6C8 transparent",
+                scrollbarColor: "#62f3e4 transparent",
               }}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -186,7 +186,7 @@ export function LyricsModal() {
                 background: transparent;
               }
               .ntv-lyrics-scroll::-webkit-scrollbar-thumb {
-                background: #3dd6c8;
+                background: #62f3e4;
                 border-radius: 2px;
               }
             `}</style>

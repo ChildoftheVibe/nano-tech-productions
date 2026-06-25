@@ -80,7 +80,7 @@ export default function PrivacyPage() {
             <strong className="text-white">PostHog</strong> — analytics and
             session recordings.{" "}
             <a
-              className="text-[#3DD6C8] underline-offset-2 hover:underline"
+              className="text-[#62f3e4] underline-offset-2 hover:underline"
               href="https://posthog.com/privacy"
               target="_blank"
               rel="noopener noreferrer"
@@ -93,7 +93,7 @@ export default function PrivacyPage() {
             <strong className="text-white">Vercel</strong> — hosting,
             performance metrics, geographic headers.{" "}
             <a
-              className="text-[#3DD6C8] underline-offset-2 hover:underline"
+              className="text-[#62f3e4] underline-offset-2 hover:underline"
               href="https://vercel.com/legal/privacy-policy"
               target="_blank"
               rel="noopener noreferrer"
@@ -105,7 +105,7 @@ export default function PrivacyPage() {
           <li>
             <strong className="text-white">PayPal</strong> — payment processing.{" "}
             <a
-              className="text-[#3DD6C8] underline-offset-2 hover:underline"
+              className="text-[#62f3e4] underline-offset-2 hover:underline"
               href="https://www.paypal.com/us/legalhub/privacy-full"
               target="_blank"
               rel="noopener noreferrer"
@@ -118,7 +118,7 @@ export default function PrivacyPage() {
             <strong className="text-white">Cloudinary</strong> — media CDN and
             storage.{" "}
             <a
-              className="text-[#3DD6C8] underline-offset-2 hover:underline"
+              className="text-[#62f3e4] underline-offset-2 hover:underline"
               href="https://cloudinary.com/privacy"
               target="_blank"
               rel="noopener noreferrer"
@@ -143,7 +143,7 @@ export default function PrivacyPage() {
         <p className="text-sm leading-relaxed text-white/80">
           For data requests or privacy questions, email{" "}
           <a
-            className="text-[#3DD6C8] underline-offset-2 hover:underline"
+            className="text-[#62f3e4] underline-offset-2 hover:underline"
             href="mailto:privacy@nanotechproductions.com"
           >
             privacy@nanotechproductions.com
@@ -153,7 +153,7 @@ export default function PrivacyPage() {
       </Section>
 
       <p className="mt-12 text-xs text-white/40">
-        See also: <Link href="/terms" className="text-[#3DD6C8] hover:underline">Terms of Sale</Link>.
+        See also: <Link href="/terms" className="text-[#62f3e4] hover:underline">Terms of Sale</Link>.
       </p>
     </article>
   );

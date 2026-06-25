@@ -108,11 +108,11 @@ export function TapToStartBanner() {
           aria-live="polite"
         >
           <div
-            className="rounded-full border px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[#3DD6C8] backdrop-blur"
+            className="rounded-full border px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[#62f3e4] backdrop-blur"
             style={{
-              borderColor: "rgba(61, 214, 200, 0.4)",
+              borderColor: "rgba(98, 243, 228, 0.4)",
               background: "rgba(0,0,0,0.55)",
-              boxShadow: "0 0 18px rgba(61, 214, 200, 0.25)",
+              boxShadow: "0 0 18px rgba(98, 243, 228, 0.25)",
             }}
           >
             Tap anywhere to start the music

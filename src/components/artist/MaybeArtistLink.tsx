@@ -17,7 +17,7 @@ export function MaybeArtistLink({
     return (
       <Link
         href={`/artist/${slug}`}
-        className={`hover:text-[#3DD6C8] hover:underline ${className ?? ""}`}
+        className={`hover:text-[#62f3e4] hover:underline ${className ?? ""}`}
       >
         {name}
       </Link>

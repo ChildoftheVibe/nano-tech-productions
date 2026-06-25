@@ -76,8 +76,8 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
   return (
     <div className="px-4 pt-2 pb-12 md:px-8">
       <div className="pb-4 pt-1 md:pt-2 md:pb-6">
-        <h1 className="font-[family-name:var(--font-bungee)] text-2xl text-white uppercase md:text-4xl">
-          Your Collection
+        <h1 className="font-[family-name:var(--font-bungee)] text-2xl text-[#62f3e4] tracking-tight uppercase md:text-4xl">
+          YOUR COLLECTION
         </h1>
         <p className="mt-1 text-sm text-[#bbcac6]">
           {albums.length} releases · browse the full catalog
@@ -93,7 +93,7 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
               onClick={() => setFilter(opt.key)}
               className={`rounded-full px-4 py-1.5 font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-widest transition-colors ${
                 filter === opt.key
-                  ? "border-b-2 border-[#3DD6C8] text-[#3DD6C8] pb-[5px]"
+                  ? "border-b-2 border-[#62f3e4] text-[#62f3e4] pb-[5px]"
                   : "text-[#bbcac6] hover:text-white pb-[7px]"
               }`}
             >
@@ -110,7 +110,7 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
             id="library-sort"
             value={sort}
             onChange={(e) => setSort(e.target.value as Sort)}
-            className="rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white outline-none focus:border-[#3DD6C8]"
+            className="rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white outline-none focus:border-[#62f3e4]"
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.key} value={opt.key}>

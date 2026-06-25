@@ -231,7 +231,7 @@ function CheckoutModalContent({
       >
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
           <div className="flex items-center gap-2">
-            <Lock size={16} className="text-[#3DD6C8]" aria-hidden="true" />
+            <Lock size={16} className="text-[#62f3e4]" aria-hidden="true" />
             <h2 id="checkout-modal-title" className="text-lg font-bold">
               Checkout
             </h2>
@@ -241,7 +241,7 @@ function CheckoutModalContent({
             onClick={onClose}
             disabled={phase.kind === "submitting"}
             aria-label="Close checkout"
-            className="rounded-full p-1 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DD6C8]"
+            className="rounded-full p-1 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
           >
             <X size={18} aria-hidden="true" />
           </button>
@@ -267,7 +267,7 @@ function CheckoutModalContent({
                   className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded"
                   style={{
                     background: item.bgColor ?? "#393838",
-                    color: item.accentColor ?? "#3DD6C8",
+                    color: item.accentColor ?? "#62f3e4",
                   }}
                 >
                   <Music size={20} />
@@ -296,7 +296,7 @@ function CheckoutModalContent({
                   value={discountInput}
                   onChange={(e) => setDiscountInput(e.target.value)}
                   placeholder="Enter code"
-                  className="flex-1 rounded border border-white/15 bg-black/30 px-3 py-2 text-sm outline-none focus:border-[#3DD6C8]"
+                  className="flex-1 rounded border border-white/15 bg-black/30 px-3 py-2 text-sm outline-none focus:border-[#62f3e4]"
                   disabled={discount.applied || validating}
                 />
                 {discount.applied ? (
@@ -315,7 +315,7 @@ function CheckoutModalContent({
                   <button
                     onClick={applyDiscount}
                     disabled={validating || !discountInput.trim()}
-                    className="rounded bg-[#3DD6C8] px-4 py-1.5 text-sm font-bold text-black disabled:opacity-50"
+                    className="rounded bg-[#62f3e4] px-4 py-1.5 text-sm font-bold text-[#003733] disabled:opacity-50"
                   >
                     {validating ? "…" : "Apply"}
                   </button>
@@ -514,7 +514,7 @@ function Row({
   return (
     <div className="flex justify-between">
       <span className="text-white/70">{label}</span>
-      <span className={accent ? "text-[#3DD6C8]" : "text-white"}>{value}</span>
+      <span className={accent ? "text-[#62f3e4]" : "text-white"}>{value}</span>
     </div>
   );
 }
@@ -647,16 +647,16 @@ function SuccessView({
             cx="32"
             cy="32"
             r="28"
-            stroke="#3DD6C8"
+            stroke="#62f3e4"
             strokeWidth="3"
-            fill="rgba(61,214,200,0.08)"
+            fill="rgba(98,243,228,0.08)"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           />
           <motion.path
             d="M20 33L29 42L46 24"
-            stroke="#3DD6C8"
+            stroke="#62f3e4"
             strokeWidth="4"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -686,7 +686,7 @@ function SuccessView({
               target="_blank"
               rel="noopener noreferrer"
               className="ntv-btn block rounded-full px-5 py-2 text-sm font-bold text-black"
-              style={{ background: "#3DD6C8" }}
+              style={{ background: "#62f3e4" }}
             >
               Download{" "}
               {phase.downloadUrls.length > 1 ? `track ${i + 1}` : "MP3 (320kbps)"}

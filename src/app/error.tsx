@@ -23,14 +23,14 @@ export default function GlobalRouteError({ error, reset }: Props) {
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 py-16 text-center">
       <div
-        className="font-mono text-[#EB41DF]"
+        className="font-mono text-[#ffabef]"
         style={{
           fontSize: "clamp(72px, 16vw, 160px)",
           fontWeight: 800,
           letterSpacing: "0.04em",
           lineHeight: 1,
           textShadow:
-            "0 0 18px rgba(235,65,223,0.45), 0 0 32px rgba(235,65,223,0.2)",
+            "0 0 18px rgba(255,171,239,0.45), 0 0 32px rgba(255,171,239,0.2)",
         }}
         aria-hidden
       >
@@ -66,7 +66,7 @@ export default function GlobalRouteError({ error, reset }: Props) {
           type="button"
           onClick={() => reset()}
           className="inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-bold text-black transition-transform hover:scale-105"
-          style={{ background: "#3DD6C8" }}
+          style={{ background: "#62f3e4" }}
         >
           Try Again
         </button>

@@ -98,7 +98,7 @@ export function ArtistHero({ artist }: { artist: Artist }) {
     artist.websiteUrl && {
       href: artist.websiteUrl,
       label: "Website",
-      hoverColor: "#3DD6C8",
+      hoverColor: "#62f3e4",
       icon: <Globe size={16} />,
     },
   ].filter(Boolean) as LinkSpec[];
@@ -136,7 +136,7 @@ export function ArtistHero({ artist }: { artist: Artist }) {
 
       <div className="-mt-[75px] flex flex-col items-start gap-4 px-4 md:flex-row md:items-end md:gap-6 md:px-8">
         <div
-          className="flex h-[120px] w-[120px] flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-[#393838] bg-[#222121] font-mono text-4xl font-bold text-[#3DD6C8] md:h-[150px] md:w-[150px] md:text-5xl"
+          className="flex h-[120px] w-[120px] flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-[#393838] bg-[#222121] font-mono text-4xl font-bold text-[#62f3e4] md:h-[150px] md:w-[150px] md:text-5xl"
           aria-hidden
         >
           {artist.profileImage ? (
@@ -176,7 +176,7 @@ export function ArtistHero({ artist }: { artist: Artist }) {
             <button
               type="button"
               onClick={() => setBioExpanded((v) => !v)}
-              className="mt-2 text-xs font-semibold text-[#3DD6C8] hover:brightness-110"
+              className="mt-2 text-xs font-semibold text-[#62f3e4] hover:brightness-110"
             >
               {bioExpanded ? "Show less" : "Show more"}
             </button>

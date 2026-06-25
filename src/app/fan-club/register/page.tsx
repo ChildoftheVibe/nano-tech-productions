@@ -89,7 +89,7 @@ export default function FanClubRegisterPage() {
           width: 720,
           height: 480,
           background:
-            "radial-gradient(ellipse at 50% 0%, rgba(61,214,200,0.10) 0%, transparent 68%)",
+            "radial-gradient(ellipse at 50% 0%, rgba(98,243,228,0.10) 0%, transparent 68%)",
         }}
       />
 
@@ -111,7 +111,7 @@ export default function FanClubRegisterPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <div className="mb-4 font-mono text-[10px] uppercase tracking-[0.45em] text-[#3DD6C8]/50">
+          <div className="mb-4 font-mono text-[10px] uppercase tracking-[0.45em] text-[#62f3e4]/50">
             Nano Tech Vibe
           </div>
           <h1
@@ -126,7 +126,7 @@ export default function FanClubRegisterPage() {
             <br />
             TECHIANS
           </h1>
-          <div className="mx-auto mt-5 h-px w-8 bg-[#3DD6C8]/30" />
+          <div className="mx-auto mt-5 h-px w-8 bg-[#62f3e4]/30" />
           <p className="mt-4 font-mono text-xs tracking-widest text-white/25 uppercase">
             Create Account
           </p>
@@ -151,16 +151,16 @@ export default function FanClubRegisterPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.97 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="rounded-2xl border border-[#3DD6C8]/15 p-8 text-center"
-                style={{ background: "rgba(61,214,200,0.03)" }}
+                className="rounded-2xl border border-[#62f3e4]/15 p-8 text-center"
+                style={{ background: "rgba(98,243,228,0.03)" }}
               >
                 <div
-                  className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full border border-[#3DD6C8]/20"
-                  style={{ background: "rgba(61,214,200,0.06)" }}
+                  className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full border border-[#62f3e4]/20"
+                  style={{ background: "rgba(98,243,228,0.06)" }}
                 >
-                  <span className="font-mono text-lg text-[#3DD6C8]/70">✓</span>
+                  <span className="font-mono text-lg text-[#62f3e4]/70">✓</span>
                 </div>
-                <h2 className="mb-3 font-mono text-xs font-bold uppercase tracking-[0.25em] text-[#3DD6C8]">
+                <h2 className="mb-3 font-mono text-xs font-bold uppercase tracking-[0.25em] text-[#62f3e4]">
                   Check Your Email
                 </h2>
                 <p className="text-sm leading-relaxed text-white/40">
@@ -170,7 +170,7 @@ export default function FanClubRegisterPage() {
                 </p>
                 <Link
                   href="/fan-club/login"
-                  className="mt-6 inline-block font-mono text-[10px] uppercase tracking-widest text-[#3DD6C8]/40 underline underline-offset-4 transition-colors hover:text-[#3DD6C8]/70"
+                  className="mt-6 inline-block font-mono text-[10px] uppercase tracking-widest text-[#62f3e4]/40 underline underline-offset-4 transition-colors hover:text-[#62f3e4]/70"
                 >
                   Back to Sign In
                 </Link>
@@ -243,7 +243,7 @@ export default function FanClubRegisterPage() {
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         placeholder="Your name"
-                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#3DD6C8]/40 focus:bg-black/60"
+                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-black/60"
                       />
                     </label>
 
@@ -259,7 +259,7 @@ export default function FanClubRegisterPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
-                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#3DD6C8]/40 focus:bg-black/60"
+                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-black/60"
                       />
                     </label>
 
@@ -276,7 +276,7 @@ export default function FanClubRegisterPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Min 8 characters"
-                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#3DD6C8]/40 focus:bg-black/60"
+                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-black/60"
                       />
                     </label>
 
@@ -292,7 +292,7 @@ export default function FanClubRegisterPage() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Repeat password"
-                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#3DD6C8]/40 focus:bg-black/60"
+                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-black/60"
                       />
                     </label>
 
@@ -320,7 +320,7 @@ export default function FanClubRegisterPage() {
                         !confirmPassword
                       }
                       className="w-full rounded-full py-3 font-mono text-sm font-bold uppercase tracking-[0.18em] text-black disabled:opacity-40"
-                      style={{ background: "#3DD6C8" }}
+                      style={{ background: "#62f3e4" }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.97 }}
                     >
@@ -336,7 +336,7 @@ export default function FanClubRegisterPage() {
             Already a member?{" "}
             <Link
               href="/fan-club/login"
-              className="text-[#3DD6C8]/35 underline underline-offset-4 transition-colors hover:text-[#3DD6C8]/65"
+              className="text-[#62f3e4]/35 underline underline-offset-4 transition-colors hover:text-[#62f3e4]/65"
             >
               Sign in
             </Link>

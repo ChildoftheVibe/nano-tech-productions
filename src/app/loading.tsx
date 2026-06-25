@@ -6,7 +6,7 @@ export default function RootLoading() {
       aria-label="Loading NTV Vault"
     >
       <div
-        className="ntv-logo-pulse font-mono font-bold text-[#3DD6C8]"
+        className="ntv-logo-pulse font-mono font-bold text-[#62f3e4]"
         style={{ fontSize: 64, letterSpacing: "0.12em" }}
         aria-hidden
       >

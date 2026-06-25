@@ -1,8 +1,8 @@
 import { SkeletonPulse } from "./SkeletonPulse";
 
-// Teal tint matches the brand accent (#3DD6C8). Cards look intentional, not
+// Teal tint matches the brand accent (#62f3e4). Cards look intentional, not
 // "broken white box," while covers stream in.
-const TEAL_TINT = "rgba(61,214,200,0.08)";
+const TEAL_TINT = "rgba(98,243,228,0.08)";
 
 export function AlbumCardSkeleton() {
   return (

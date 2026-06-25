@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 py-16 text-center">
       <h1
-        className="ntv-glitch font-mono text-[#3DD6C8]"
+        className="ntv-glitch font-mono text-[#62f3e4]"
         style={{
           fontSize: "clamp(96px, 22vw, 220px)",
           fontWeight: 800,
@@ -26,7 +26,7 @@ export default function NotFound() {
       <Link
         href="/"
         className="ntv-btn mt-8 inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-bold text-black transition-transform hover:scale-105"
-        style={{ background: "#3DD6C8" }}
+        style={{ background: "#62f3e4" }}
       >
         Return to Vault
       </Link>

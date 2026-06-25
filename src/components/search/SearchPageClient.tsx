@@ -419,7 +419,7 @@ export function SearchPageClient() {
                   const avatarEl = (
                     <span
                       className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full font-bold text-black"
-                      style={{ background: "#3DD6C8" }}
+                      style={{ background: "#62f3e4" }}
                     >
                       {artist.profileImage ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -485,7 +485,7 @@ function ResultSection({
   return (
     <section>
       <div className="mb-3 flex items-center gap-2">
-        <span className="text-[#3DD6C8]">{icon}</span>
+        <span className="text-[#62f3e4]">{icon}</span>
         <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-white">
           {title}
         </h2>

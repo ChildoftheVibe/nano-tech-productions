@@ -116,7 +116,7 @@ export function ArtistDetailClient({ artist }: { artist: Artist }) {
                         t.albumSlug ? (
                           <Link
                             href={`/album/${t.albumSlug}`}
-                            className="hover:text-[#3DD6C8]"
+                            className="hover:text-[#62f3e4]"
                             onClick={(e) => e.stopPropagation()}
                           >
                             {t.albumTitle}

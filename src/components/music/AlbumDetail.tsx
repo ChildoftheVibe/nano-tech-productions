@@ -165,7 +165,7 @@ export function AlbumDetail({
               <div className="mb-2 font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-[0.2em] text-white/60">
                 Album
               </div>
-              <h1 className="mb-3 font-[family-name:var(--font-bungee)] text-3xl leading-tight text-[#3DD6C8] md:text-5xl">
+              <h1 className="mb-3 font-[family-name:var(--font-bungee)] text-3xl leading-tight text-[#62f3e4] md:text-5xl">
                 {album.title}
               </h1>
               <div className="mb-3 text-sm text-white/80">
@@ -220,11 +220,11 @@ export function AlbumDetail({
                 disabled={!album.tracks.length}
                 aria-label={`Play ${album.title}`}
                 className="flex h-14 w-14 items-center justify-center rounded-full disabled:opacity-40"
-                style={{ background: album.accentColor || "#3DD6C8" }}
+                style={{ background: album.accentColor || "#62f3e4" }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.96 }}
               >
-                <Play size={22} fill="black" className="ml-1 text-black" />
+                <Play size={22} fill="#003733" className="ml-1 text-[#003733]" />
               </motion.button>
               <motion.button
                 onClick={handleShuffle}
@@ -234,12 +234,12 @@ export function AlbumDetail({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.96 }}
               >
-                <Shuffle size={18} className={shuffle ? "text-[#3DD6C8]" : ""} />
+                <Shuffle size={18} className={shuffle ? "text-[#62f3e4]" : ""} />
               </motion.button>
               <motion.button
                 onClick={handleBuyAlbum}
-                className="ml-2 flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold text-black"
-                style={{ background: "#EB41DF" }}
+                className="ml-2 flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold text-[#003733]"
+                style={{ background: "#ffabef" }}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.96 }}
               >
@@ -316,7 +316,7 @@ export function AlbumDetail({
             <button
               type="button"
               onClick={() => setShowAllCredits((v) => !v)}
-              className="mt-4 text-xs font-semibold text-[#3DD6C8] hover:brightness-110"
+              className="mt-4 text-xs font-semibold text-[#62f3e4] hover:brightness-110"
             >
               {showAllCredits ? "Show fewer credits" : "Show all credits"}
             </button>
@@ -372,7 +372,7 @@ export function AlbumDetail({
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 text-xs text-white/80 hover:border-[#3DD6C8] hover:text-[#3DD6C8] transition-colors"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 text-xs text-white/80 hover:border-[#62f3e4] hover:text-[#62f3e4] transition-colors"
               >
                 {platform}
               </a>

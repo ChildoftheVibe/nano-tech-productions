@@ -62,7 +62,7 @@ export function PreviewPlayer({ instrumental }: Props) {
       className="flex flex-col gap-3 rounded-lg p-4"
       style={{
         background: "#282828",
-        borderLeft: "3px solid #3DD6C8",
+        borderLeft: "3px solid #62f3e4",
       }}
       aria-label={`Instrumental: ${instrumental.title}`}
     >
@@ -81,7 +81,7 @@ export function PreviewPlayer({ instrumental }: Props) {
             />
           ) : (
             <div
-              className="flex h-full w-full items-center justify-center text-[#3DD6C8]"
+              className="flex h-full w-full items-center justify-center text-[#62f3e4]"
               aria-hidden="true"
             >
               <Music size={22} />
@@ -92,8 +92,8 @@ export function PreviewPlayer({ instrumental }: Props) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span
-              className="rounded-sm px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-[#3DD6C8]"
-              style={{ background: "rgba(61,214,200,0.12)" }}
+              className="rounded-sm px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-[#62f3e4]"
+              style={{ background: "rgba(98,243,228,0.12)" }}
             >
               {typeLabel}
             </span>
@@ -131,7 +131,7 @@ export function PreviewPlayer({ instrumental }: Props) {
             className="h-full transition-[width] duration-100"
             style={{
               width: `${percent}%`,
-              background: "#3DD6C8",
+              background: "#62f3e4",
             }}
           />
         </div>
@@ -142,7 +142,7 @@ export function PreviewPlayer({ instrumental }: Props) {
       </div>
 
       {ended ? (
-        <p className="rounded border border-[#3DD6C8]/30 bg-[#3DD6C8]/5 px-3 py-2 text-xs text-[#3DD6C8]">
+        <p className="rounded border border-[#62f3e4]/30 bg-[#62f3e4]/5 px-3 py-2 text-xs text-[#62f3e4]">
           Preview ended — purchase to hear full track
         </p>
       ) : null}
@@ -155,7 +155,7 @@ export function PreviewPlayer({ instrumental }: Props) {
           aria-label={playLabel}
           aria-pressed={isPlaying}
           className="flex h-9 w-9 items-center justify-center rounded-full text-black transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-          style={{ background: "#3DD6C8" }}
+          style={{ background: "#62f3e4" }}
         >
           {isPlaying ? (
             <Pause size={16} fill="currentColor" aria-hidden="true" />
@@ -168,7 +168,7 @@ export function PreviewPlayer({ instrumental }: Props) {
           onClick={handleBuy}
           aria-label={`Buy ${instrumental.title} for $${instrumental.price.toFixed(2)}`}
           className="ml-auto rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-          style={{ background: "#EB41DF" }}
+          style={{ background: "#ffabef" }}
         >
           Buy · ${instrumental.price.toFixed(2)}
         </button>

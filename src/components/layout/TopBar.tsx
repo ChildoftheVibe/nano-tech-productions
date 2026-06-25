@@ -47,8 +47,8 @@ export function TopBar() {
         >
           <Link
             href="/fan-club/login"
-            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-[#3DD6C8]/25 px-5 py-1 text-xs font-semibold tracking-wide text-[#3DD6C8]/80 transition-colors hover:border-[#3DD6C8]/50 hover:text-[#3DD6C8]"
-            style={{ background: "rgba(61,214,200,0.06)" }}
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-[#62f3e4]/25 px-5 py-1 text-xs font-semibold tracking-wide text-[#62f3e4]/80 transition-colors hover:border-[#62f3e4]/50 hover:text-[#62f3e4]"
+            style={{ background: "rgba(98,243,228,0.06)" }}
           >
             <Users size={12} aria-hidden="true" />
             Nano Techians

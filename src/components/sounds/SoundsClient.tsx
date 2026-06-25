@@ -57,7 +57,7 @@ export function SoundsClient({ initial }: Props) {
         </h1>
         <div
           className="mt-2 h-[3px] w-12 rounded-full"
-          style={{ background: "#3DD6C8" }}
+          style={{ background: "#62f3e4" }}
           aria-hidden="true"
         />
         <p className="mt-3 text-sm text-[#B3B3B3]">Instrumentals by Jhodge</p>
@@ -77,9 +77,9 @@ export function SoundsClient({ initial }: Props) {
               role="tab"
               aria-selected={active}
               onClick={() => setFilter(key)}
-              className={`rounded-full px-4 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DD6C8] ${
+              className={`rounded-full px-4 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] ${
                 active
-                  ? "bg-[#3DD6C8] text-black"
+                  ? "bg-[#62f3e4] text-[#003733]"
                   : "border border-white/15 text-[#B3B3B3] hover:border-white/30 hover:text-white"
               }`}
             >

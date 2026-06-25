@@ -34,14 +34,14 @@ const TIER_LABELS: Record<MembershipTier, string> = {
 };
 
 const TIER_COLORS: Record<MembershipTier, string> = {
-  standard: "rgba(61,214,200,0.15)",
-  vip: "rgba(235,65,223,0.15)",
+  standard: "rgba(98,243,228,0.15)",
+  vip: "rgba(255,171,239,0.15)",
   founding: "rgba(255,200,80,0.15)",
 };
 
 const TIER_TEXT: Record<MembershipTier, string> = {
-  standard: "#3DD6C8",
-  vip: "#EB41DF",
+  standard: "#62f3e4",
+  vip: "#ffabef",
   founding: "#FFC850",
 };
 
@@ -54,8 +54,8 @@ function SectionLabel({
 }) {
   return (
     <div>
-      <div className="mb-2 h-px w-6 bg-[#3DD6C8]" />
-      <div className="mb-0.5 font-mono text-[10px] uppercase tracking-[0.28em] text-[#3DD6C8]">
+      <div className="mb-2 h-px w-6 bg-[#62f3e4]" />
+      <div className="mb-0.5 font-mono text-[10px] uppercase tracking-[0.28em] text-[#62f3e4]">
         {eyebrow}
       </div>
       <h2 className="text-xl font-bold text-white">{title}</h2>
@@ -80,7 +80,7 @@ function LockedContentCard({
         width: 180,
         height: 180,
         background: bg,
-        border: "1px solid rgba(61,214,200,0.12)",
+        border: "1px solid rgba(98,243,228,0.12)",
         flexShrink: 0,
       }}
     >
@@ -89,7 +89,7 @@ function LockedContentCard({
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at 30% 30%, rgba(61,214,200,0.08) 0%, transparent 60%)",
+            "radial-gradient(ellipse at 30% 30%, rgba(98,243,228,0.08) 0%, transparent 60%)",
         }}
       />
       {/* subtle grid texture */}
@@ -103,9 +103,9 @@ function LockedContentCard({
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
         <div
           className="flex h-10 w-10 items-center justify-center rounded-full"
-          style={{ background: "rgba(61,214,200,0.10)", border: "1px solid rgba(61,214,200,0.20)" }}
+          style={{ background: "rgba(98,243,228,0.10)", border: "1px solid rgba(98,243,228,0.20)" }}
         >
-          <Lock size={16} className="text-[#3DD6C8]/60" />
+          <Lock size={16} className="text-[#62f3e4]/60" />
         </div>
         <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/30">
           {label}
@@ -127,7 +127,7 @@ function VideoPlaceholderCard({ index }: { index: number }) {
       style={{
         aspectRatio: "16/9",
         background: gradients[index % gradients.length],
-        border: "1px solid rgba(61,214,200,0.10)",
+        border: "1px solid rgba(98,243,228,0.10)",
         width: "100%",
       }}
     >
@@ -135,7 +135,7 @@ function VideoPlaceholderCard({ index }: { index: number }) {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 50%, rgba(61,214,200,0.06) 0%, transparent 60%)",
+            "radial-gradient(ellipse at 50% 50%, rgba(98,243,228,0.06) 0%, transparent 60%)",
         }}
       />
       <div
@@ -148,11 +148,11 @@ function VideoPlaceholderCard({ index }: { index: number }) {
         <div
           className="flex h-12 w-12 items-center justify-center rounded-full"
           style={{
-            background: "rgba(61,214,200,0.10)",
-            border: "1px solid rgba(61,214,200,0.20)",
+            background: "rgba(98,243,228,0.10)",
+            border: "1px solid rgba(98,243,228,0.20)",
           }}
         >
-          <Play size={18} className="text-[#3DD6C8]/60" fill="currentColor" />
+          <Play size={18} className="text-[#62f3e4]/60" fill="currentColor" />
         </div>
         <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/30">
           Coming Soon
@@ -171,9 +171,9 @@ function ArtworkPlaceholderCard({
 }) {
   const bgs = ["#1a0d2e", "#0d1a1a", "#1a1a0d"];
   const tints = [
-    "radial-gradient(ellipse at 20% 80%, rgba(235,65,223,0.07) 0%, transparent 55%)",
-    "radial-gradient(ellipse at 80% 20%, rgba(61,214,200,0.07) 0%, transparent 55%)",
-    "radial-gradient(ellipse at 50% 50%, rgba(61,214,200,0.05) 0%, transparent 55%)",
+    "radial-gradient(ellipse at 20% 80%, rgba(255,171,239,0.07) 0%, transparent 55%)",
+    "radial-gradient(ellipse at 80% 20%, rgba(98,243,228,0.07) 0%, transparent 55%)",
+    "radial-gradient(ellipse at 50% 50%, rgba(98,243,228,0.05) 0%, transparent 55%)",
   ];
 
   return (
@@ -240,13 +240,13 @@ export function FanClubHubClient({ user, member }: Props) {
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         <div>
-          <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.3em] text-[#3DD6C8]">
+          <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.3em] text-[#62f3e4]">
             Nano Techians Fan Club
           </div>
           <h1 className="text-3xl font-black tracking-tight leading-tight text-white md:text-5xl">
             Welcome back,{" "}
             <span className="text-white">{displayName}</span>
-            <span className="text-[#3DD6C8]">.</span>
+            <span className="text-[#62f3e4]">.</span>
           </h1>
           <div className="mt-4 flex items-center gap-3">
             <span
@@ -322,18 +322,18 @@ export function FanClubHubClient({ user, member }: Props) {
           className="relative overflow-hidden rounded-2xl p-8 md:p-10"
           style={{
             background: "linear-gradient(135deg, #1a0d2e 0%, #0d0d1a 60%, #0a1a18 100%)",
-            border: "1px solid rgba(61,214,200,0.10)",
+            border: "1px solid rgba(98,243,228,0.10)",
           }}
         >
           {/* grid texture */}
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.03]"
             style={{
-              backgroundImage: `repeating-linear-gradient(0deg, #3DD6C8 0px, #3DD6C8 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, #3DD6C8 0px, #3DD6C8 1px, transparent 1px, transparent 40px)`,
+              backgroundImage: `repeating-linear-gradient(0deg, #62f3e4 0px, #62f3e4 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, #62f3e4 0px, #62f3e4 1px, transparent 1px, transparent 40px)`,
             }}
           />
           <div className="relative">
-            <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.32em] text-[#3DD6C8]/60">
+            <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.32em] text-[#62f3e4]/60">
               Nano Techians × Printify
             </div>
             <h3 className="mb-3 text-2xl font-black text-white md:text-3xl">
@@ -346,11 +346,11 @@ export function FanClubHubClient({ user, member }: Props) {
             <div
               className="inline-flex items-center gap-2 rounded-full px-5 py-2 font-mono text-xs text-white/40"
               style={{
-                background: "rgba(61,214,200,0.06)",
-                border: "1px solid rgba(61,214,200,0.15)",
+                background: "rgba(98,243,228,0.06)",
+                border: "1px solid rgba(98,243,228,0.15)",
               }}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-[#3DD6C8]/40" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#62f3e4]/40" />
               Opening Soon
             </div>
           </div>

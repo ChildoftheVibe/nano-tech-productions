@@ -66,7 +66,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
     <div
       className={`group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-lg px-3 py-2 transition-all duration-150 md:grid-cols-[40px_1fr_120px_80px_60px] md:gap-4 md:px-4 ${
         isActive
-          ? "bg-[#3DD6C8]/10 border border-[#3DD6C8]/20"
+          ? "bg-[#62f3e4]/10 border border-[#62f3e4]/20"
           : "hover:bg-white/[0.04] border border-transparent"
       }`}
       aria-label={`Track ${track.trackNumber}: ${track.title}`}
@@ -83,7 +83,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
                 className="eq-bar-1 block w-1 rounded-sm"
                 style={{
                   height: "100%",
-                  background: "#3DD6C8",
+                  background: "#62f3e4",
                   transformOrigin: "bottom",
                 }}
               />
@@ -91,7 +91,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
                 className="eq-bar-2 block w-1 rounded-sm"
                 style={{
                   height: "100%",
-                  background: "#3DD6C8",
+                  background: "#62f3e4",
                   transformOrigin: "bottom",
                 }}
               />
@@ -99,7 +99,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
                 className="eq-bar-3 block w-1 rounded-sm"
                 style={{
                   height: "100%",
-                  background: "#3DD6C8",
+                  background: "#62f3e4",
                   transformOrigin: "bottom",
                 }}
               />
@@ -110,7 +110,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
                 className="block w-1 rounded-sm"
                 style={{
                   height: "60%",
-                  background: "#3DD6C8",
+                  background: "#62f3e4",
                   transform: "scaleY(0.4)",
                   transformOrigin: "bottom",
                 }}
@@ -119,7 +119,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
                 className="block w-1 rounded-sm"
                 style={{
                   height: "100%",
-                  background: "#3DD6C8",
+                  background: "#62f3e4",
                   transform: "scaleY(0.4)",
                   transformOrigin: "bottom",
                 }}
@@ -128,7 +128,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
                 className="block w-1 rounded-sm"
                 style={{
                   height: "80%",
-                  background: "#3DD6C8",
+                  background: "#62f3e4",
                   transform: "scaleY(0.4)",
                   transformOrigin: "bottom",
                 }}
@@ -153,7 +153,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
         <button
           onClick={handleClick}
           className={`block truncate text-left text-sm font-medium ${
-            isActive ? "text-[#3DD6C8]" : "text-white"
+            isActive ? "text-[#62f3e4]" : "text-white"
           }`}
         >
           {track.title}
@@ -167,7 +167,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
             Audio not yet available
           </div>
         ) : track.features?.length ? (
-          <div className="truncate text-xs text-[#B3B3B3] transition-colors duration-150 group-hover:text-[#3DD6C8]">
+          <div className="truncate text-xs text-[#B3B3B3] transition-colors duration-150 group-hover:text-[#62f3e4]">
             feat.{" "}
             <MaybeArtistLinkList
               names={track.features}
@@ -184,7 +184,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
       <button
         onClick={handleBuy}
         aria-label={`Buy ${track.title} for $${track.price.toFixed(2)}`}
-        className="hidden rounded-full border border-[#3DD6C8] px-5 py-2 text-xs font-bold uppercase tracking-wider text-[#3DD6C8] opacity-0 transition-opacity duration-150 hover:bg-[#3DD6C8]/10 group-hover:opacity-100 md:block"
+        className="hidden rounded-full border border-[#62f3e4] px-5 py-2 text-xs font-bold uppercase tracking-wider text-[#62f3e4] opacity-0 transition-opacity duration-150 hover:bg-[#62f3e4]/10 group-hover:opacity-100 md:block"
       >
         Buy
       </button>

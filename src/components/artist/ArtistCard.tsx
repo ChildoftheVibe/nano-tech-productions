@@ -41,7 +41,7 @@ export function ArtistCard({ artist, size = "md" }: Props) {
         className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-white/5"
       >
         <div
-          className="flex flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/5 font-mono font-bold text-[#3DD6C8]"
+          className="flex flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/5 font-mono font-bold text-[#62f3e4]"
           style={{
             width: dim,
             height: dim,

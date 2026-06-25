@@ -177,7 +177,7 @@ export function FullScreenPlayer() {
                 ref={closeButtonRef}
                 onClick={close}
                 aria-label="Minimize player"
-                className="-ml-2 flex h-10 w-10 items-center justify-center text-white/80 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DD6C8]"
+                className="-ml-2 flex h-10 w-10 items-center justify-center text-white/80 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
               >
                 <ChevronDown size={28} aria-hidden="true" />
               </button>
@@ -220,7 +220,7 @@ export function FullScreenPlayer() {
                   {currentAlbum.title}
                 </div>
               )}
-              <div className="truncate font-[family-name:var(--font-bungee)] text-2xl leading-tight text-[#3DD6C8]">
+              <div className="truncate font-[family-name:var(--font-bungee)] text-2xl leading-tight text-[#62f3e4]">
                 {currentTrack.title}
               </div>
               <div className="mt-1 truncate text-sm text-white/60">{features}</div>
@@ -242,7 +242,7 @@ export function FullScreenPlayer() {
                     onClick={handleBuyTrack}
                     aria-label={`Buy ${currentTrack.title} for $${currentTrack.price.toFixed(2)}`}
                     className="flex items-center gap-2 rounded-full px-8 py-3 text-sm font-bold text-white"
-                    style={{ background: "#3DD6C8" }}
+                    style={{ background: "#62f3e4" }}
                     whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.96 }}
                   >
@@ -254,7 +254,7 @@ export function FullScreenPlayer() {
                   <motion.button
                     onClick={handleViewAlbum}
                     aria-label={`View ${currentAlbum.title}`}
-                    className="rounded-full border border-[#3DD6C8] px-8 py-3 text-sm font-semibold text-[#3DD6C8] transition-colors hover:bg-[#3DD6C8]/10"
+                    className="rounded-full border border-[#62f3e4] px-8 py-3 text-sm font-semibold text-[#62f3e4] transition-colors hover:bg-[#62f3e4]/10"
                     whileTap={{ scale: 0.96 }}
                   >
                     View Album →
@@ -279,7 +279,7 @@ export function FullScreenPlayer() {
                 aria-valuemax={100}
                 aria-valuenow={duration > 0 ? Math.round((currentTime / duration) * 100) : 0}
                 aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
-                className="ntv-range h-1 w-full cursor-pointer accent-[#3DD6C8]"
+                className="ntv-range h-1 w-full cursor-pointer accent-[#62f3e4]"
               />
               <div className="mt-1 flex items-center justify-between font-mono text-[11px] tabular-nums text-white/70">
                 <span>{formatTime(currentTime)}</span>
@@ -297,7 +297,7 @@ export function FullScreenPlayer() {
               >
                 <Shuffle
                   size={20}
-                  className={shuffle ? "text-[#3DD6C8]" : "text-white/70"}
+                  className={shuffle ? "text-[#62f3e4]" : "text-white/70"}
                 />
               </motion.button>
               <motion.button
@@ -311,8 +311,8 @@ export function FullScreenPlayer() {
               <motion.button
                 onClick={togglePlayPause}
                 aria-label={isPlaying ? "Pause" : "Play"}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-[#3DD6C8] text-black"
-                style={{ boxShadow: "0 0 24px rgba(61, 214, 200, 0.4)" }}
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-[#62f3e4] text-[#003733]"
+                style={{ boxShadow: "0 0 24px rgba(98, 243, 228, 0.4)" }}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.94 }}
               >
@@ -337,11 +337,11 @@ export function FullScreenPlayer() {
                 whileTap={{ scale: 0.92 }}
               >
                 {repeat === "one" ? (
-                  <Repeat1 size={20} className="text-[#3DD6C8]" />
+                  <Repeat1 size={20} className="text-[#62f3e4]" />
                 ) : (
                   <Repeat
                     size={20}
-                    className={repeat === "all" ? "text-[#3DD6C8]" : "text-white/70"}
+                    className={repeat === "all" ? "text-[#62f3e4]" : "text-white/70"}
                   />
                 )}
               </motion.button>
@@ -369,7 +369,7 @@ export function FullScreenPlayer() {
                 aria-valuemax={100}
                 aria-valuenow={Math.round(volume * 100)}
                 aria-valuetext={`${Math.round(volume * 100)} percent`}
-                className="ntv-range h-1 flex-1 cursor-pointer accent-[#3DD6C8]"
+                className="ntv-range h-1 flex-1 cursor-pointer accent-[#62f3e4]"
               />
               <button
                 aria-label={`Queue (${queueLen})`}
@@ -388,7 +388,7 @@ export function FullScreenPlayer() {
               ref={closeButtonRef}
               onClick={close}
               aria-label="Close player"
-              className="absolute top-6 right-6 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DD6C8]"
+              className="absolute top-6 right-6 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
             >
               <X size={20} aria-hidden="true" />
             </button>
@@ -423,7 +423,7 @@ export function FullScreenPlayer() {
                     {currentAlbum.title}
                   </div>
                 )}
-                <div className="font-[family-name:var(--font-bungee)] text-3xl text-[#3DD6C8]">
+                <div className="font-[family-name:var(--font-bungee)] text-3xl text-[#62f3e4]">
                   {currentTrack.title}
                 </div>
                 <div className="mt-1 text-sm text-white/60">{features}</div>
@@ -443,7 +443,7 @@ export function FullScreenPlayer() {
                       onClick={handleBuyTrack}
                       aria-label={`Buy ${currentTrack.title} for $${currentTrack.price.toFixed(2)}`}
                       className="flex items-center gap-2 rounded-full px-8 py-3 text-sm font-bold text-white"
-                      style={{ background: "#3DD6C8" }}
+                      style={{ background: "#62f3e4" }}
                       whileHover={{ scale: 1.04 }}
                       whileTap={{ scale: 0.96 }}
                     >
@@ -455,7 +455,7 @@ export function FullScreenPlayer() {
                     <motion.button
                       onClick={handleViewAlbum}
                       aria-label={`View ${currentAlbum.title}`}
-                      className="rounded-full border border-[#3DD6C8] px-8 py-3 text-sm font-semibold text-[#3DD6C8] transition-colors hover:bg-[#3DD6C8]/10"
+                      className="rounded-full border border-[#62f3e4] px-8 py-3 text-sm font-semibold text-[#62f3e4] transition-colors hover:bg-[#62f3e4]/10"
                       whileTap={{ scale: 0.96 }}
                     >
                       View Album →
@@ -483,7 +483,7 @@ export function FullScreenPlayer() {
                   aria-valuemax={100}
                   aria-valuenow={duration > 0 ? Math.round((currentTime / duration) * 100) : 0}
                   aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
-                  className="ntv-range h-1 w-full cursor-pointer accent-[#3DD6C8]"
+                  className="ntv-range h-1 w-full cursor-pointer accent-[#62f3e4]"
                 />
                 <div className="mt-2 flex items-center justify-between font-mono text-[12px] tabular-nums text-white/70">
                   <span>{formatTime(currentTime)}</span>
@@ -501,7 +501,7 @@ export function FullScreenPlayer() {
                 >
                   <Shuffle
                     size={24}
-                    className={shuffle ? "text-[#3DD6C8]" : "text-white/70"}
+                    className={shuffle ? "text-[#62f3e4]" : "text-white/70"}
                   />
                 </motion.button>
                 <motion.button
@@ -515,8 +515,8 @@ export function FullScreenPlayer() {
                 <motion.button
                   onClick={togglePlayPause}
                   aria-label={isPlaying ? "Pause" : "Play"}
-                  className="flex h-20 w-20 items-center justify-center rounded-full bg-[#3DD6C8] text-black"
-                  style={{ boxShadow: "0 0 32px rgba(61, 214, 200, 0.4)" }}
+                  className="flex h-20 w-20 items-center justify-center rounded-full bg-[#62f3e4] text-[#003733]"
+                  style={{ boxShadow: "0 0 32px rgba(98, 243, 228, 0.4)" }}
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.94 }}
                 >
@@ -541,11 +541,11 @@ export function FullScreenPlayer() {
                   whileTap={{ scale: 0.92 }}
                 >
                   {repeat === "one" ? (
-                    <Repeat1 size={24} className="text-[#3DD6C8]" />
+                    <Repeat1 size={24} className="text-[#62f3e4]" />
                   ) : (
                     <Repeat
                       size={24}
-                      className={repeat === "all" ? "text-[#3DD6C8]" : "text-white/70"}
+                      className={repeat === "all" ? "text-[#62f3e4]" : "text-white/70"}
                     />
                   )}
                 </motion.button>
@@ -573,7 +573,7 @@ export function FullScreenPlayer() {
                   aria-valuemax={100}
                   aria-valuenow={Math.round(volume * 100)}
                   aria-valuetext={`${Math.round(volume * 100)} percent`}
-                  className="ntv-range h-1 flex-1 cursor-pointer accent-[#3DD6C8]"
+                  className="ntv-range h-1 flex-1 cursor-pointer accent-[#62f3e4]"
                 />
               </div>
 

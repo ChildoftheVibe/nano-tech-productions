@@ -218,7 +218,7 @@ export function PlayerBar() {
         aria-valuemax={100}
         aria-valuenow={Math.round(percentPlayed)}
         aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
-        className="ntv-range absolute inset-x-0 top-0 z-10 h-1 w-full cursor-pointer accent-[#3DD6C8] md:hidden"
+        className="ntv-range absolute inset-x-0 top-0 z-10 h-1 w-full cursor-pointer accent-[#62f3e4] md:hidden"
       />
 
       {/* Mobile single-row layout */}
@@ -266,8 +266,8 @@ export function PlayerBar() {
             <motion.button
               onClick={togglePlayPause}
               aria-label={playLabel}
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#3DD6C8] text-black"
-              style={{ boxShadow: "0 0 15px rgba(61, 214, 200, 0.3)" }}
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#62f3e4] text-[#003733]"
+              style={{ boxShadow: "0 0 15px rgba(98, 243, 228, 0.3)" }}
               whileTap={{ scale: 0.92 }}
             >
               {isPlaying ? (
@@ -283,8 +283,8 @@ export function PlayerBar() {
                 aria-pressed={lyricsOpen}
                 className="flex-shrink-0 p-2"
                 style={{
-                  color: lyricsOpen ? "#3DD6C8" : "#B3B3B3",
-                  filter: lyricsOpen ? "drop-shadow(0 0 6px rgba(61,214,200,0.6))" : "none",
+                  color: lyricsOpen ? "#62f3e4" : "#B3B3B3",
+                  filter: lyricsOpen ? "drop-shadow(0 0 6px rgba(98,243,228,0.6))" : "none",
                 }}
                 whileTap={{ scale: 0.92 }}
               >
@@ -302,7 +302,7 @@ export function PlayerBar() {
           </>
         ) : (
           <div className="flex w-full items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded bg-gradient-to-br from-[#3DD6C8] to-[#EB41DF]">
+            <div className="flex h-10 w-10 items-center justify-center rounded bg-gradient-to-br from-[#62f3e4] to-[#ffabef]">
               <span className="font-mono text-xs font-bold text-black">NTV</span>
             </div>
             <div className="text-sm text-[#B3B3B3]">No track playing</div>
@@ -396,16 +396,16 @@ export function PlayerBar() {
                   <Heart
                     size={18}
                     className={
-                      liked ? "text-[#EB41DF]" : "text-[#B3B3B3] hover:text-white"
+                      liked ? "text-[#ffabef]" : "text-[#B3B3B3] hover:text-white"
                     }
-                    fill={liked ? "#EB41DF" : "none"}
+                    fill={liked ? "#ffabef" : "none"}
                   />
                 </motion.span>
               </motion.button>
             </>
           ) : (
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded bg-gradient-to-br from-[#3DD6C8] to-[#EB41DF]">
+              <div className="flex h-10 w-10 items-center justify-center rounded bg-gradient-to-br from-[#62f3e4] to-[#ffabef]">
                 <span className="font-mono text-xs font-bold text-black">NTV</span>
               </div>
               <div className="text-sm text-[#B3B3B3]">No track playing</div>
@@ -423,7 +423,7 @@ export function PlayerBar() {
             >
               <Shuffle
                 size={16}
-                className={shuffle ? "text-[#3DD6C8]" : "text-[#B3B3B3] hover:text-white"}
+                className={shuffle ? "text-[#62f3e4]" : "text-[#B3B3B3] hover:text-white"}
               />
             </motion.button>
             <motion.button
@@ -439,8 +439,8 @@ export function PlayerBar() {
               onClick={togglePlayPause}
               aria-label={playLabel}
               disabled={!currentTrack}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#3DD6C8] text-black disabled:opacity-40"
-            style={{ boxShadow: "0 0 15px rgba(61, 214, 200, 0.3)" }}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#62f3e4] text-[#003733] disabled:opacity-40"
+            style={{ boxShadow: "0 0 15px rgba(98, 243, 228, 0.3)" }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.92 }}
               transition={{ duration: 0.15 }}
@@ -467,12 +467,12 @@ export function PlayerBar() {
               whileTap={{ scale: 0.92 }}
             >
               {repeat === "one" ? (
-                <Repeat1 size={16} className="text-[#3DD6C8]" />
+                <Repeat1 size={16} className="text-[#62f3e4]" />
               ) : (
                 <Repeat
                   size={16}
                   className={
-                    repeat === "all" ? "text-[#3DD6C8]" : "text-[#B3B3B3] hover:text-white"
+                    repeat === "all" ? "text-[#62f3e4]" : "text-[#B3B3B3] hover:text-white"
                   }
                 />
               )}
@@ -497,7 +497,7 @@ export function PlayerBar() {
               aria-valuemax={100}
               aria-valuenow={Math.round(percentPlayed)}
               aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
-              className="ntv-range h-1 flex-1 cursor-pointer accent-[#3DD6C8]"
+              className="ntv-range h-1 flex-1 cursor-pointer accent-[#62f3e4]"
             />
             <span className="font-mono text-[11px] tabular-nums text-[#B3B3B3]">
               {formatTime(duration)}
@@ -514,8 +514,8 @@ export function PlayerBar() {
               title="Lyrics"
               className="p-2 transition-colors"
               style={{
-                color: lyricsOpen ? "#3DD6C8" : "#B3B3B3",
-                filter: lyricsOpen ? "drop-shadow(0 0 6px rgba(61,214,200,0.6))" : "none",
+                color: lyricsOpen ? "#62f3e4" : "#B3B3B3",
+                filter: lyricsOpen ? "drop-shadow(0 0 6px rgba(98,243,228,0.6))" : "none",
               }}
               whileTap={{ scale: 0.92 }}
             >
@@ -548,7 +548,7 @@ export function PlayerBar() {
             aria-valuemax={100}
             aria-valuenow={Math.round(volume * 100)}
             aria-valuetext={`${Math.round(volume * 100)} percent`}
-            className="ntv-range h-1 w-24 cursor-pointer accent-[#3DD6C8]"
+            className="ntv-range h-1 w-24 cursor-pointer accent-[#62f3e4]"
           />
           {currentTrack?.price != null && Number(currentTrack.price) > 0 && (
             <div className="relative">
@@ -557,7 +557,7 @@ export function PlayerBar() {
                   href={`/api/download/${dlToken}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-1.5 rounded text-[#3DD6C8] hover:bg-white/[0.08] transition-colors block"
+                  className="p-1.5 rounded text-[#62f3e4] hover:bg-white/[0.08] transition-colors block"
                   aria-label="Download track"
                 >
                   <Download size={16} />
@@ -581,12 +581,12 @@ export function PlayerBar() {
                     value={tokenInput}
                     onChange={(e) => setTokenInput(e.target.value)}
                     placeholder="Enter token..."
-                    className="w-full bg-white/[0.06] border border-white/10 rounded px-2 py-1.5 text-xs text-white placeholder:text-white/30 mb-2 focus:outline-none focus:border-[#3DD6C8]/50"
+                    className="w-full bg-white/[0.06] border border-white/10 rounded px-2 py-1.5 text-xs text-white placeholder:text-white/30 mb-2 focus:outline-none focus:border-[#62f3e4]/50"
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={handleSaveToken}
-                      className="flex-1 text-xs py-1 bg-[#3DD6C8] text-black rounded font-medium hover:bg-[#3DD6C8]/90 transition-colors"
+                      className="flex-1 text-xs py-1 bg-[#62f3e4] text-[#003733] rounded font-medium hover:bg-[#62f3e4]/90 transition-colors"
                     >
                       Save
                     </button>

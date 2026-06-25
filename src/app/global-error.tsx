@@ -35,7 +35,7 @@ export default function GlobalError({ error, reset }: Props) {
             style={{
               fontSize: "clamp(72px,16vw,140px)",
               fontWeight: 800,
-              color: "#EB41DF",
+              color: "#ffabef",
               lineHeight: 1,
             }}
             aria-hidden
@@ -58,7 +58,7 @@ export default function GlobalError({ error, reset }: Props) {
             onClick={reset}
             style={{
               marginTop: "2rem",
-              background: "#3DD6C8",
+              background: "#62f3e4",
               color: "#000",
               border: "none",
               borderRadius: 9999,

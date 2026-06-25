@@ -94,12 +94,12 @@ export default function InstallPromptBanner() {
                   <div className="absolute left-[13px] top-7 bottom-7 w-px border-l border-dashed border-white/10" />
 
                   <div className="flex gap-3">
-                    <div className="w-7 h-7 shrink-0 rounded-full bg-[#3DD6C8] text-black text-xs font-bold flex items-center justify-center z-10">1</div>
+                    <div className="w-7 h-7 shrink-0 rounded-full bg-[#62f3e4] text-[#003733] text-xs font-bold flex items-center justify-center z-10">1</div>
                     <div>
                       <p className="text-sm text-white leading-snug">Tap the Share button</p>
                       <p className="text-xs text-white/50 mt-0.5">The box with an arrow at the bottom of Safari</p>
                       <div className="inline-flex items-center gap-1.5 bg-white/[0.06] px-2 py-1 rounded mt-1.5">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3DD6C8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#62f3e4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
                           <polyline points="16 6 12 2 8 6"/>
                           <line x1="12" y1="2" x2="12" y2="15"/>
@@ -110,7 +110,7 @@ export default function InstallPromptBanner() {
                   </div>
 
                   <div className="flex gap-3">
-                    <div className="w-7 h-7 shrink-0 rounded-full bg-[#3DD6C8] text-black text-xs font-bold flex items-center justify-center z-10">2</div>
+                    <div className="w-7 h-7 shrink-0 rounded-full bg-[#62f3e4] text-[#003733] text-xs font-bold flex items-center justify-center z-10">2</div>
                     <div>
                       <p className="text-sm text-white leading-snug">Tap &#39;Add to Home Screen&#39;</p>
                       <p className="text-xs text-white/50 mt-0.5">Scroll down if you don&#39;t see it</p>
@@ -122,11 +122,11 @@ export default function InstallPromptBanner() {
                   </div>
 
                   <div className="flex gap-3">
-                    <div className="w-7 h-7 shrink-0 rounded-full bg-[#3DD6C8] text-black text-xs font-bold flex items-center justify-center z-10">3</div>
+                    <div className="w-7 h-7 shrink-0 rounded-full bg-[#62f3e4] text-[#003733] text-xs font-bold flex items-center justify-center z-10">3</div>
                     <div>
                       <p className="text-sm text-white leading-snug">Tap &#39;Add&#39; to confirm</p>
                       <p className="text-xs text-white/50 mt-0.5">Top right corner of the prompt</p>
-                      <div className="inline-flex mt-1.5 bg-[#3DD6C8]/15 border border-[#3DD6C8]/30 text-[#3DD6C8] text-xs px-3 py-1 rounded">Add</div>
+                      <div className="inline-flex mt-1.5 bg-[#62f3e4]/15 border border-[#62f3e4]/30 text-[#62f3e4] text-xs px-3 py-1 rounded">Add</div>
                     </div>
                   </div>
                 </div>
@@ -159,14 +159,14 @@ export default function InstallPromptBanner() {
               {isIOSDevice ? (
                 <button
                   onClick={() => setShowIOSGuide((v) => !v)}
-                  className="shrink-0 text-xs px-3 py-1 rounded-full border border-[#3DD6C8] text-[#3DD6C8] whitespace-nowrap hover:bg-[#3DD6C8]/10 transition-colors"
+                  className="shrink-0 text-xs px-3 py-1 rounded-full border border-[#62f3e4] text-[#62f3e4] whitespace-nowrap hover:bg-[#62f3e4]/10 transition-colors"
                 >
                   Show me how
                 </button>
               ) : (
                 <button
                   onClick={handleInstall}
-                  className="shrink-0 text-xs px-3 py-1 rounded-full bg-[#3DD6C8] text-black font-medium hover:bg-[#3DD6C8]/90 transition-colors"
+                  className="shrink-0 text-xs px-3 py-1 rounded-full bg-[#62f3e4] text-[#003733] font-medium hover:bg-[#62f3e4]/90 transition-colors"
                 >
                   Install
                 </button>

@@ -7,7 +7,7 @@ interface PlayerWaveformProps {
   isSingle: boolean
 }
 
-const DEFAULT_COLOR = '#3DD6C8'
+const DEFAULT_COLOR = '#62f3e4'
 
 const BAR_CONFIGS = [
   { duration: '0.9s', delay: '0.0s', minH: 25 },

@@ -110,14 +110,14 @@ export function SearchBar({
       style={{
         background: "#181818",
         border: focused
-          ? "1px solid #3DD6C8"
+          ? "1px solid #62f3e4"
           : "1px solid rgba(255,255,255,0.08)",
       }}
       role="search"
     >
       <Search
         size={16}
-        className={focused ? "text-[#3DD6C8]" : "text-[#B3B3B3]"}
+        className={focused ? "text-[#62f3e4]" : "text-[#B3B3B3]"}
       />
       <input
         ref={inputRef}

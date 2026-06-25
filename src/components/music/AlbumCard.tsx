@@ -89,23 +89,30 @@ export function AlbumCard({
         <Music size={Math.max(16, Math.floor(px / 4))} aria-hidden="true" />
       </div>
       {album.album_type === 'ep' && (
-        <span className="absolute bottom-1.5 left-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#3DD6C8]/15 text-[#3DD6C8] border border-[#3DD6C8]/30 pointer-events-none">
+        <span className="absolute bottom-1.5 left-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#62f3e4]/15 text-[#62f3e4] border border-[#62f3e4]/30 pointer-events-none">
           EP
         </span>
       )}
       {showHoverPlay && onPlay ? (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onPlay();
-          }}
-          aria-label={`Play ${album.title}`}
-          className="absolute bottom-2 right-2 flex h-12 w-12 translate-y-2 items-center justify-center rounded-full opacity-0 shadow-lg transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-          style={{ background: "#3DD6C8" }}
-        >
-          <Play size={18} fill="black" className="ml-0.5 text-black" aria-hidden="true" />
-        </button>
+        <>
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPlay();
+            }}
+            aria-label={`Play ${album.title}`}
+            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 focus-visible:outline-none"
+          >
+            <span
+              className="flex h-12 w-12 items-center justify-center rounded-full shadow-xl"
+              style={{ background: "#62f3e4", boxShadow: "0 0 20px rgba(98,243,228,0.4)" }}
+            >
+              <Play size={20} fill="#003733" className="ml-0.5 text-[#003733]" aria-hidden="true" />
+            </span>
+          </button>
+        </>
       ) : null}
     </motion.div>
   );

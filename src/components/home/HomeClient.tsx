@@ -72,12 +72,12 @@ function SectionLabel({
 }) {
   return (
     <div>
-      <div className="mb-2 h-px w-6 bg-[#3DD6C8]" />
-      <div className="mb-0.5 font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-[0.28em] text-[#3DD6C8]">
+      <div className="mb-2 h-px w-6 bg-[#62f3e4]" />
+      <div className="mb-1 font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-[0.28em] text-[#62f3e4]">
         {eyebrow}
       </div>
       <div className="flex items-baseline gap-3">
-        <h2 className="font-[family-name:var(--font-bungee)] text-xl text-white">{title}</h2>
+        <h2 className="font-[family-name:var(--font-bungee)] text-xl text-[#dde4e2] tracking-tight">{title}</h2>
         {count && (
           <span className="font-[family-name:var(--font-geist-mono)] text-[11px] text-[#B3B3B3]">{count}</span>
         )}
@@ -154,20 +154,20 @@ export function HomeClient({
                 backgroundPosition: "center",
               }}
             />
-            {/* Dark overlay */}
-            <div className="absolute inset-0 bg-black/50" />
+            {/* Scrim */}
+            <div className="absolute inset-0 bg-black/40 z-10 pointer-events-none" />
             {/* Gradient overlay at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 h-2/3 bg-gradient-to-t from-black/90 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-gradient-to-t from-black/90 via-black/30 to-transparent z-10 pointer-events-none" />
             {/* Content */}
-            <div className="absolute bottom-0 left-0 p-8 md:p-12 z-10">
+            <div className="absolute bottom-0 left-0 p-8 md:p-12 z-20 max-w-2xl">
               <div className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-[0.3em] text-[#ffabef] mb-3">
                 New Release
               </div>
-              <h1 className="font-[family-name:var(--font-bungee)] text-4xl md:text-6xl text-white leading-none mb-3">
+              <h1 className="font-[family-name:var(--font-bungee)] text-4xl md:text-6xl text-white leading-none mb-3 tracking-tight">
                 {latest.title}
               </h1>
               {latest.description && (
-                <p className="text-sm text-white/70 max-w-md mb-6 line-clamp-2">
+                <p className="text-sm text-[#dde4e2]/70 max-w-md mb-6 line-clamp-2">
                   {latest.description}
                 </p>
               )}
@@ -175,16 +175,16 @@ export function HomeClient({
                 <motion.button
                   onClick={() => playFromAlbum(latest)}
                   disabled={!latest.tracks.length}
-                  className="bg-[#3DD6C8] text-black px-8 py-3 rounded-full font-bold text-sm flex items-center gap-2 disabled:opacity-40"
+                  className="bg-[#62f3e4] text-[#003733] px-8 py-3 rounded-lg font-bold text-sm flex items-center gap-2 disabled:opacity-40 teal-glow"
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.96 }}
                 >
                   <Play size={14} fill="currentColor" />
-                  Play Now
+                  Listen Now
                 </motion.button>
                 <Link
                   href={`/album/${latest.slug}`}
-                  className="glass-panel px-8 py-3 rounded-full font-bold text-sm text-white hover:bg-white/10 transition-colors"
+                  className="glass-panel px-8 py-3 rounded-lg font-bold text-sm text-[#dde4e2] hover:bg-white/10 transition-colors"
                 >
                   View Album
                 </Link>
@@ -193,12 +193,12 @@ export function HomeClient({
           </div>
         ) : (
           <>
-            <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#3DD6C8]">
+            <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#62f3e4]">
               Nano Tech Vibe · The Vault
             </div>
             <h1 className="font-[family-name:var(--font-bungee)] text-4xl leading-[0.93] text-white md:text-6xl lg:text-7xl">
               {greeting}
-              <span className="text-[#3DD6C8]">.</span>
+              <span className="text-[#62f3e4]">.</span>
             </h1>
             <p className="mt-4 max-w-xs text-sm text-[#B3B3B3] leading-relaxed md:max-w-sm">
               Music direct from the artist. No algorithm. No filter.
@@ -243,10 +243,10 @@ export function HomeClient({
                   fetchPriority={idx < 3 ? "high" : undefined}
                 />
                 <div className="mt-2.5 space-y-1">
-                  <div className="truncate text-sm font-semibold text-white leading-tight">
+                  <div className="truncate text-sm font-semibold text-[#dde4e2] leading-tight">
                     <Link
                       href={`/album/${album.slug}`}
-                      className="hover:text-[#3DD6C8] transition-colors duration-200"
+                      className="hover:text-[#62f3e4] transition-colors duration-200"
                     >
                       {album.title}
                     </Link>
@@ -329,7 +329,7 @@ export function HomeClient({
                     />
                   ) : null}
                 </div>
-                <div className="truncate text-sm font-semibold text-[#dde4e2] mb-1 transition-colors group-hover:text-[#3DD6C8]">
+                <div className="truncate text-sm font-semibold text-[#dde4e2] mb-1 transition-colors group-hover:text-[#62f3e4]">
                   {album.title}
                 </div>
                 <div className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-wider text-[#b3b3b3]">
@@ -345,7 +345,7 @@ export function HomeClient({
             <motion.button
               onClick={loadMore}
               disabled={loading}
-              className="rounded-full border border-white/15 px-8 py-2.5 text-sm font-semibold text-white/70 transition-all hover:border-[#3DD6C8]/40 hover:text-[#3DD6C8] disabled:opacity-50"
+              className="rounded-full border border-white/15 px-8 py-2.5 text-sm font-semibold text-white/70 transition-all hover:border-[#62f3e4]/40 hover:text-[#62f3e4] disabled:opacity-50"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
             >
@@ -378,7 +378,7 @@ export function HomeClient({
               />
             ) : null}
             <div className="min-w-0 flex-1">
-              <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.25em] text-[#3DD6C8]">
+              <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.25em] text-[#62f3e4]">
                 Currently Playing
               </div>
               <div className="truncate text-xl font-black leading-tight text-white md:text-2xl">
@@ -394,7 +394,7 @@ export function HomeClient({
               <motion.button
                 onClick={togglePlayPause}
                 className="mt-4 flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold text-black"
-                style={{ background: currentAlbum?.accentColor ?? "#3DD6C8" }}
+                style={{ background: currentAlbum?.accentColor ?? "#62f3e4" }}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
               >

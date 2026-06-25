@@ -27,20 +27,20 @@ export function Sidebar({ initialAlbums }: Props) {
     // TODO: hidden below md — needs a mobile bottom tab bar (later phase).
     <aside
       aria-label="Sidebar"
-      className="hidden flex-shrink-0 flex-col text-white md:flex"
-      style={{ width: 240, background: "#1a2120", borderRight: "1px solid rgba(255,255,255,0.08)" }}
+      className="hidden flex-shrink-0 flex-col md:flex"
+      style={{ width: 280, background: "#1a2120", borderRight: "1px solid rgba(255,255,255,0.08)" }}
     >
-      <div className="flex-shrink-0 px-5 pt-5 pb-4">
+      <div className="flex-shrink-0 px-6 pt-6 pb-4">
         <Link
           href="/"
           aria-label="NTV Vault home"
-          className="ntv-logo font-[family-name:var(--font-bungee)] text-2xl tracking-tight text-[#3DD6C8]"
+          className="ntv-logo font-[family-name:var(--font-bungee)] text-[22px] tracking-tighter text-[#62f3e4] leading-none"
         >
           NTV
         </Link>
       </div>
 
-      <nav aria-label="Primary" className="flex-shrink-0 px-2 py-2">
+      <nav aria-label="Primary" className="flex-shrink-0 px-3 py-2">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
           return (
@@ -48,13 +48,13 @@ export function Sidebar({ initialAlbums }: Props) {
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                 active
-                  ? "bg-[#2f3635] text-[#3DD6C8] font-bold"
-                  : "text-[#bbcac6] hover:bg-[#242b2a] hover:text-white"
+                  ? "bg-[#2f3635] text-[#62f3e4] font-bold"
+                  : "text-[#bbcac6] hover:bg-[#242b2a] hover:text-[#dde4e2]"
               }`}
             >
-              <Icon size={20} aria-hidden="true" />
+              <Icon size={18} aria-hidden="true" />
               <span>{label}</span>
             </Link>
           );
@@ -66,10 +66,10 @@ export function Sidebar({ initialAlbums }: Props) {
         style={{ borderColor: "rgba(255,255,255,0.08)" }}
       />
 
-      <div className="flex-shrink-0 px-5 pb-2 pt-1">
+      <div className="flex-shrink-0 px-6 pb-2 pt-1">
         <h2
           id="sidebar-collection-heading"
-          className="font-[family-name:var(--font-geist-mono)] text-[10px] font-semibold uppercase tracking-[0.2em] text-[#bbcac6]"
+          className="font-[family-name:var(--font-geist-mono)] text-[10px] font-semibold uppercase tracking-[0.22em] text-[#bbcac6]/60"
         >
           Your Collection
         </h2>
@@ -98,10 +98,10 @@ export function Sidebar({ initialAlbums }: Props) {
                   className="group flex items-center gap-3 rounded-lg py-2 pr-2 transition-colors duration-150 hover:bg-[#242b2a]"
                   style={{
                     borderLeft: active
-                      ? "3px solid #3DD6C8"
+                      ? "3px solid #62f3e4"
                       : "3px solid transparent",
                     paddingLeft: 5,
-                    background: active ? "rgba(255,255,255,0.04)" : undefined,
+                    background: active ? "rgba(98,243,228,0.05)" : undefined,
                   }}
                 >
                   {album.coverImage ? (
@@ -128,7 +128,7 @@ export function Sidebar({ initialAlbums }: Props) {
                   <div className="min-w-0 flex-1">
                     <div
                       className={`truncate text-sm font-medium transition-colors duration-150 ${
-                        active ? "text-[#3DD6C8]" : "text-white"
+                        active ? "text-[#62f3e4]" : "text-[#dde4e2]"
                       }`}
                     >
                       {album.title}

@@ -88,7 +88,7 @@ export default function TermsPage() {
         <p className="text-sm leading-relaxed text-white/80">
           Questions, support, or licensing inquiries:{" "}
           <a
-            className="text-[#3DD6C8] underline-offset-2 hover:underline"
+            className="text-[#62f3e4] underline-offset-2 hover:underline"
             href="mailto:support@nanotechproductions.com"
           >
             support@nanotechproductions.com
@@ -99,7 +99,7 @@ export default function TermsPage() {
 
       <p className="mt-12 text-xs text-white/40">
         See also:{" "}
-        <Link href="/privacy" className="text-[#3DD6C8] hover:underline">
+        <Link href="/privacy" className="text-[#62f3e4] hover:underline">
           Privacy Policy
         </Link>
         .

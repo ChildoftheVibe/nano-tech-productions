@@ -50,7 +50,7 @@ export function MobileTabBar() {
     >
       {TABS.map(({ href, label, Icon, match }) => {
         const active = match(pathname);
-        const color = active ? "#3DD6C8" : "#B3B3B3";
+        const color = active ? "#62f3e4" : "#B3B3B3";
         return (
           <Link
             key={href}

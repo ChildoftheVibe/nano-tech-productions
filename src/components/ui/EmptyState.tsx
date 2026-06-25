@@ -29,7 +29,7 @@ export function EmptyState({
       role="status"
     >
       {icon ? (
-        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/5 text-[#3DD6C8]">
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/5 text-[#62f3e4]">
           {icon}
         </div>
       ) : null}
@@ -43,7 +43,7 @@ export function EmptyState({
         <Link
           href={actionHref}
           className="ntv-btn mt-4 inline-flex items-center justify-center rounded-full px-5 py-2 text-xs font-bold text-black transition-transform hover:scale-105"
-          style={{ background: "#3DD6C8" }}
+          style={{ background: "#62f3e4" }}
         >
           {actionLabel}
         </Link>

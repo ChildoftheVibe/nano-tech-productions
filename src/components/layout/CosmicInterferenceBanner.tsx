@@ -63,7 +63,7 @@ export default function CosmicInterferenceBanner() {
           aria-live="polite"
         >
           <div className="flex items-center gap-3 max-w-sm mx-auto">
-            <WifiOff size={16} className={connectionStatus === 'interference' ? 'text-[#EB41DF] shrink-0' : 'text-white/40 shrink-0'} />
+            <WifiOff size={16} className={connectionStatus === 'interference' ? 'text-[#ffabef] shrink-0' : 'text-white/40 shrink-0'} />
             <div className="flex-1 min-w-0">
               {connectionStatus === 'reconnecting' && (
                 <>
@@ -87,7 +87,7 @@ export default function CosmicInterferenceBanner() {
               )}
             </div>
             {connectionStatus === 'interference' && !exhausted && (
-              <button onClick={handleRetry} className="shrink-0 flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full border border-[#3DD6C8]/40 text-[#3DD6C8] hover:bg-[#3DD6C8]/10 transition-colors">
+              <button onClick={handleRetry} className="shrink-0 flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full border border-[#62f3e4]/40 text-[#62f3e4] hover:bg-[#62f3e4]/10 transition-colors">
                 <RefreshCw size={11} />
                 Retry
               </button>
