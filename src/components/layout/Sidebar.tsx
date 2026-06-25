@@ -33,8 +33,8 @@ export function Sidebar({ initialAlbums: _ }: Props) {
         aria-current={active ? "page" : undefined}
         className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-150 ${
           active
-            ? "bg-[#62f3e4]/[0.11] text-[#62f3e4]"
-            : "text-[#bbcac6] hover:bg-white/[0.05] hover:text-[#dde4e2]"
+            ? "bg-[#62f3e4]/10 text-[#62f3e4]"
+            : "text-[#bbcac6] hover:bg-white/5 hover:text-[#dde4e2]"
         }`}
       >
         <Icon size={18} aria-hidden="true" />
