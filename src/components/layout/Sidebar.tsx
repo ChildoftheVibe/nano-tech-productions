@@ -31,9 +31,10 @@ export function Sidebar({ initialAlbums: _ }: Props) {
         key={href}
         href={href}
         aria-current={active ? "page" : undefined}
-        className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-150 ${
+        style={active ? { background: "rgba(98,243,228,0.18)", color: "#62f3e4" } : undefined}
+        className={`flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium transition-all duration-150 ${
           active
-            ? "bg-[#62f3e4]/10 text-[#62f3e4]"
+            ? ""
             : "text-[#bbcac6] hover:bg-white/5 hover:text-[#dde4e2]"
         }`}
       >
@@ -47,10 +48,10 @@ export function Sidebar({ initialAlbums: _ }: Props) {
     <aside
       aria-label="Sidebar"
       className="hidden flex-shrink-0 flex-col md:flex"
-      style={{ width: 260, background: "#111918", borderRight: "1px solid rgba(255,255,255,0.07)" }}
+      style={{ width: 260, background: "#0d1412", borderRight: "1px solid rgba(255,255,255,0.07)" }}
     >
       {/* Brand */}
-      <div className="flex-shrink-0 px-5 pt-7 pb-6">
+      <div className="flex-shrink-0 px-5 pt-7 pb-7">
         <Link
           href="/"
           aria-label="NTV Vault home"
@@ -61,17 +62,17 @@ export function Sidebar({ initialAlbums: _ }: Props) {
       </div>
 
       {/* Primary nav */}
-      <nav aria-label="Primary" className="flex-shrink-0 px-3 flex flex-col gap-0.5">
+      <nav aria-label="Primary" className="flex-shrink-0 px-3 flex flex-col gap-1">
         {primaryNav.map(({ href, label, icon: Icon }) => navLink(href, label, Icon))}
       </nav>
 
       {/* Secondary nav */}
-      <div className="flex-shrink-0 px-5 pt-6 pb-2">
-        <p className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-[0.22em] text-[#bbcac6]/40">
+      <div className="flex-shrink-0 px-5 pt-7 pb-2.5">
+        <p className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-[0.22em]" style={{ color: "rgba(187,202,198,0.4)" }}>
           Personal Space
         </p>
       </div>
-      <nav aria-label="Personal" className="flex-shrink-0 px-3 flex flex-col gap-0.5">
+      <nav aria-label="Personal" className="flex-shrink-0 px-3 flex flex-col gap-1">
         {secondaryNav.map(({ href, label, icon: Icon }) => navLink(href, label, Icon))}
       </nav>
 
