@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePlayer } from "@/context/PlayerContext";
+import { usePlayerStore } from "@/store/playerStore";
 
 const STORAGE_KEY = "ntv_audio_unlocked";
 const BANNER_DELAY_MS = 2000;
@@ -73,11 +74,16 @@ export function TapToStartBanner() {
     const dismiss = () => {
       // Best-effort prime — if a src is set this kicks off playback; if not,
       // the call is a no-op but the element is now unlocked for future
-      // programmatic plays.
+      // programmatic plays. On success, sync the store so the PlayerBar
+      // immediately shows the pause icon rather than the play icon.
       const audio = audioRef.current;
       if (audio) {
         const r = audio.play();
-        if (r && typeof r.catch === "function") r.catch(() => {});
+        if (r instanceof Promise) {
+          r.then(() => {
+            usePlayerStore.getState().setPlaying(true);
+          }).catch(() => {});
+        }
       }
       markUnlocked();
     };

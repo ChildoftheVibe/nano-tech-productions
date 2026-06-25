@@ -15,18 +15,36 @@ system, security rules). Read this file for the *current* state of the project
 
 ---
 
-## Current Project State (as of 2026-06-22)
+## Current Project State (as of 2026-06-25)
 
 ### Recent Changes
 
 | Session | Change |
 |---------|--------|
+| 2026-06-25 | **2027 UI redesign (desktop + player)**. Full sidebar restyle, album view accent theming, tracklist overhaul, desktop Now Playing screen, PlayerBar polish, Now Playing button in TopBar. See "2027 Design Refresh" below. |
+| 2026-06-25 | **Player queue fixes**: seed now promotes first track *with album cover* to `currentTrack`; `TapToStartBanner` syncs `store.setPlaying(true)` when audio starts so PlayerBar reflects playing state. |
+| 2026-06-23 | **Security: C1/H5/H6/H7/C3 implemented**. CSRF double-submit cookie on all admin mutations, PayPal IP allowlist in live mode, order nonce validation, session IP binding, real cron security-check. See "Fixed This Session" below. |
 | 2026-06-22 | Font: All `h1–h6` now use **Bungee** (next/font/google, CSS var `--font-bungee`). Set in `src/app/layout.tsx` and `src/styles/globals.css`. |
-| 2026-06-22 | Security audit + fixes (see Open Security Issues below) |
-| 2026-06-22 | `tsconfig.json` now excludes `nano-marketing-agent-repo/` (untracked sibling project that caused false TS errors) |
 
 ### Last Commit
-`013c02e` — fix: add crossOrigin=anonymous to audio elements
+`b459661` — fix: show album art and accent color on first play at page load  
+*(current session not yet committed as of this update)*
+
+---
+
+## 2027 Design Refresh (2026-06-25)
+
+All changes below are live in `main`. Source of truth remains `2027DESIGN.md`.
+
+- **Sidebar** — Darker `#0d1514` bg, teal left-border active state, removed album list, TopBar fan club button replaced with user avatar.
+- **Album view** — Two-column layout (cover + info left, tracklist right). Per-album `accentColor` used for track row highlight, Bungee "TRACKLIST" heading, accent-coloured play buttons.
+- **Tracklist rows** — Flat strip highlight (no card radius), two-line layout (title + artist), larger font and row height.
+- **Desktop Now Playing** — Full-screen overlay (`FullScreenPlayer`). Opened via "Now Playing" button in TopBar. Accent-coloured gradient background, centered album art, waveform, lyrics modal, queue drawer.
+- **PlayerBar** — Accent-coloured play button, rectangular transport controls, click track-info area opens Now Playing.
+- **Queue** — Vault-only tracks (no `audioUrl`) excluded from the public shuffle queue. Queue list items are clickable (jump-to-track).
+- **Home page** — Weekly Selections section (playlist tracks), centered Now Playing section.
+- **Sounds / Artists / Library** — Bungee headings, matching dark aesthetic.
+- **Admin** — Track filter sync fix, sticky save button on scroll, pill-style buttons.
 
 ---
 
@@ -35,6 +53,11 @@ system, security rules). Read this file for the *current* state of the project
 Full audit document: `SECURITY.md` (untracked, load when working on API/auth/payments).
 
 ### Fixed This Session
+- **C1** CSRF: double-submit cookie set on `/api/admin/auth/login`. Every admin mutation validates `x-csrf-token` header via new `validateCsrf()` in `src/lib/auth.ts`. Client utility `adminFetch()` in `src/lib/adminFetch.ts` sends header automatically.
+- **C3** Cron security-check: now runs real audit_log queries, anomaly detection (IP changes, rapid failures), and execution logging. `/api/cron/backup` still TODO.
+- **H5** PayPal IP allowlist: webhook rejects requests outside PayPal CIDR ranges in live mode (uses `requestIp` middleware).
+- **H6** Order nonce: `/api/paypal/create-order` sets HMAC-signed `ntv-co-nonce` cookie. `/api/paypal/verify` validates and clears before minting tokens.
+- **H7** Session IP binding: `verifySessionToken()` now compares stored IP to current request IP. `isAdmin()` extracts IP from `x-forwarded-for` or `cf-connecting-ip` headers.
 - **C2** Cron secret comparison is now timing-safe (`crypto.timingSafeEqual`)
 - **H1** Discount validation endpoint has rate limiting (10/min, strict)
 - **H2** Analytics endpoints have rate limiting (120/min events, 10/5min geo)
@@ -43,17 +66,14 @@ Full audit document: `SECURITY.md` (untracked, load when working on API/auth/pay
 - **M2** Admin discount POST validates `discount_percent` (1–100), `expires_at` (future), `max_uses` (positive int)
 - **Bug** Analytics routes returned raw Supabase `error.message` — now `"internal_error"`
 - **Bug** WAV stream route logged `trackId` before auth check — moved to after `isAdmin()`
+- **Bug** Removed console.log of audio field payload from TrackForm (security violation)
 
 ### Still Open (Not Fixed — Requires Planning)
 | ID | Issue | Notes |
 |----|-------|-------|
-| C1 | No CSRF on admin mutation routes | Requires `x-csrf-token` header on every admin fetch + double-submit cookie helper in `src/lib/auth.ts`. Multi-PR scope. |
-| C3 | Cron routes are TODO stubs | `/api/cron/security-check` and `/api/cron/backup` return 200 but do nothing real. |
 | C4 | `ADMIN_PASSWORD_HASH` in env var | Architectural: move to DB row in `admin_sessions` table. |
-| H5 | PayPal webhook has no IP allowlist | Add Cloudflare WAF rule or middleware check against PayPal's published IP ranges. |
-| H6 | Client-supplied PayPal `orderId` not nonce-validated | Server should issue a short-lived nonce when order is created and validate it in verify. Requires checkout flow changes. |
-| H7 | Admin sessions not rotated; no IP binding | Session sliding-window refresh + IP-change warning. |
 | M1 | `unsafe-eval` + `unsafe-inline` in CSP | Requires per-request nonce middleware. PayPal SDK may require `unsafe-eval` — audit first. |
+| M8 | Download token expiry too long | Default 2 hours; consider reducing for WAV vault access (max 15 min recommended). |
 
 ---
 
@@ -95,6 +115,14 @@ Cloudinary URL or bare publicId directly to `<img src>`.
 - All three are loaded via `next/font/google` in `src/app/layout.tsx` and
   exposed as CSS variables on `<html>`.
 
+### Player Queue & Autoplay
+
+- **Queue seeding**: `PlayerContext` fetches `/api/playlist` on mount (when queue is empty), shuffles, and picks the first track that has `albumId && albumCoverImage` as `currentTrack`. It is moved to position 0 in the queue. `audio.src` is set synchronously in the same async block — do not rely on the `[currentTrack]` effect for the first src assignment.
+- **Persistence**: Only `volume` and `shuffle` survive page refreshes. `queue`, `currentTrack`, `currentAlbum` reset every load.
+- **Autoplay**: Browsers block unprompted `audio.play()`. `TapToStartBanner` listens for the first `pointerdown`/`keydown` anywhere on the page, calls `audio.play()`, and on success calls `store.setPlaying(true)` so the PlayerBar shows the pause icon. Sets `ntv_audio_unlocked` in localStorage so it never reappears.
+- **Vault tracks**: Tracks with no `audioUrl` (vault-only WAV) are excluded from the public playlist queue. `playTrack` and `nextTrack` in the store guard against them too.
+- **User-gesture chain**: All play-initiating helpers (`togglePlayPause`, `playFromTrack`, `playFromAlbum`, `nextAndPlay`, `previousAndPlay`) call `audio.play()` synchronously from click handlers. Never call `audio.play()` from a `useEffect` — Chrome will block it.
+
 ### Admin Auth Flow
 1. `requireAdmin()` in `src/lib/auth.ts` — use at top of every `/api/admin/*` handler
 2. Session token: 64-char hex, SHA-256 hashed in DB, HttpOnly/Secure/SameSite=Strict cookie
@@ -102,10 +130,10 @@ Cloudinary URL or bare publicId directly to `<img src>`.
 4. Sessions expire after 8 hours; no sliding window yet (C1/H7 open)
 
 ### PayPal Checkout Flow
-1. `POST /api/paypal/create-order` — server re-prices cart from DB, creates PayPal order
-2. Client completes PayPal UI
-3. `POST /api/paypal/verify` — captures payment, re-validates price, mints download tokens
-4. `POST /api/paypal/webhook` — reliability net; signature-verified before processing
+1. `POST /api/paypal/create-order` — server re-prices cart from DB, creates PayPal order, sets HMAC-signed `ntv-co-nonce` cookie (nonce = order ID + timestamp, signed with `CRON_SECRET`)
+2. Client completes PayPal UI, gets PayPal `orderId` back
+3. `POST /api/paypal/verify` — validates nonce from cookie, captures payment, re-validates price from DB, clears nonce cookie, mints single-use download tokens
+4. `POST /api/paypal/webhook` — reliability net; validates PayPal signature, confirms order status, emits tokens for any missed verify calls
 
 ### Download Token Flow
 - Tokens are minted only after `capturePayPalOrder` confirms `status === "COMPLETED"`

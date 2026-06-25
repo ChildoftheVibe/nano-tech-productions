@@ -1,3 +1,6 @@
+
+
+
 # 2027 Design System — NTV Vault UI Update
 
 > **Purpose:** This document is the single source of truth for the 2027 UI refresh of NTV Vault. It is derived from the reference HTML mockups in `Desktop UI Update/` and `Mobile UI Update/`, plus the Nocturne Audio `DESIGN.md` design system. Implement every section below. Do not deviate from these specs without explicit approval.

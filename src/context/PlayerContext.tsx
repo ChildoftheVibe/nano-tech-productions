@@ -265,7 +265,18 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const fresh = usePlayerStore.getState();
       if (fresh.queue.length > 0 || fresh.currentTrack) return;
       const shuffled = shuffle(tracks);
-      const first = shuffled[0] ?? null;
+      // Prefer a track with an album cover as the initial currentTrack so the
+      // PlayerBar shows artwork immediately. Fall back to shuffled[0] if none
+      // have a cover (e.g. all tracks are singles without a cover_image).
+      const firstWithCover =
+        shuffled.find((t) => !!(t.albumId && t.albumCoverImage)) ?? null;
+      const first = firstWithCover ?? shuffled[0] ?? null;
+      // Keep the chosen track at position 0 so next/previous navigation is
+      // consistent with the queue order.
+      const reordered =
+        first && first !== shuffled[0]
+          ? [first, ...shuffled.filter((t) => t.id !== first.id)]
+          : shuffled;
 
       // Build a minimal Album from the embedded album metadata that the
       // playlist query now joins in. This lets the PlayerBar display
@@ -291,12 +302,12 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       // (disabled={!currentTrack}) — clicks do nothing, which presents as
       // "the play button doesn't work". Seed the first track and its album
       // so the PlayerBar shows artwork and accent color from the start.
-      fresh.setQueue(shuffled, first, seedAlbum);
+      fresh.setQueue(reordered, first, seedAlbum);
       console.log(
         "[PlayerContext] seed: queue set, currentTrack =",
-        shuffled[0]?.title,
+        first?.title,
         "audioUrl =",
-        shuffled[0]?.audioUrl,
+        first?.audioUrl,
       );
       // Set audio.src directly in the same synchronous block. Relying on the
       // [currentTrack, queue] effect that runs after the next commit leaves a

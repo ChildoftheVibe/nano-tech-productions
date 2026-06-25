@@ -138,8 +138,8 @@ CRUD for albums/tracks/artists/instrumentals/discounts; WAV vault streaming (5mi
 
 1. **Server Components by default** — `"use client"` only at interactivity boundaries
 2. **`unstable_cache`** — memoizes Supabase queries; CDN TTLs: albums 5min, search/playlist 1min, admin no-store
-3. **Zustand + localStorage** — `playerStore` (track, queue, shuffle, repeat, volume, seek) persists across refreshes
-4. **PlayerContext** — audio element ref, play/pause/next/prev/seek, analytics hooks
+3. **Zustand + localStorage** — `playerStore` manages all player state; only `volume` and `shuffle` persist to localStorage across refreshes. `queue`, `currentTrack`, and `currentAlbum` reset to empty on every page load and are re-seeded by `PlayerContext` on mount.
+4. **PlayerContext** — audio element ref, play/pause/next/prev/seek, analytics hooks. On mount, fetches `/api/playlist` (up to 500 published tracks), shuffles, promotes the first track with an album cover to `currentTrack`, and sets `audio.src` synchronously. All play-initiating actions call `audio.play()` directly from click handlers to preserve the user-gesture chain required by browser autoplay policy. `TapToStartBanner` (`src/components/layout/TapToStartBanner.tsx`) shows on first visit, calls `audio.play()` on any pointer/key event to unlock the audio element, and syncs `store.setPlaying(true)` on success. Vault-only tracks (no `audioUrl`) are excluded from the public queue.
 5. **SW (Serwist)** — navigate+`/api/*` → NetworkOnly; `/_next/static/*` → CacheFirst; Cloudinary images → CacheFirst 20MB; audio → CacheFirst 25MB/entry 50MB bucket; namespaced by `BUILD_ID` for auto-cleanup
 6. **Cloudinary pipeline** — MP3 320k on-the-fly transcode for streaming; signed vault URLs for WAV masters
 7. **PayPal checkout** — order created server-side (authoritative price), nonce cookie set on `create-order` and validated on `verify` (prevents replay), discount applied before order, webhook restricted to PayPal IP allowlist, single-use download tokens issued only after confirmed capture
@@ -151,6 +151,7 @@ CRUD for albums/tracks/artists/instrumentals/discounts; WAV vault streaming (5mi
 13. **Cover image pipeline** — every `<img>` for an album, artist, or instrumental cover MUST use `getAlbumCover(src, size)` from `src/lib/albumCover.ts`. Accepts a full Cloudinary URL, bare publicId, or local `/assets` path; inserts `f_auto,q_auto:good,w_N,h_N,c_fill` after `/image/upload/`. Bypassing it serves full-resolution originals (5–10× bandwidth, breaks LCP, silently fails bare publicIds).
 14. **Audio CORS** — all `<audio>` elements carry `crossOrigin="anonymous"` to prevent `ERR_BLOCKED_BY_RESPONSE` on Cloudinary-served audio.
 15. **Cron auth** — `/api/cron/*` routes validate `Authorization: Bearer <CRON_SECRET>` from `vercel.json` cron config; reject requests without it.
+16. **Desktop Now Playing screen** — Full-screen overlay toggled by `store.fullScreenOpen`. Opened from the PlayerBar "Now Playing" button (desktop) or the track info area (mobile). Displays album art, accent-themed gradient background, waveform, lyrics toggle, and queue drawer.
 
 ---
 
