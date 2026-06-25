@@ -56,12 +56,12 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
       className="group grid grid-cols-[40px_1fr_60px] items-center gap-3 rounded-lg px-3 py-3 transition-colors duration-150"
       style={{
         background: isActive
-          ? "rgba(98,243,228,0.09)"
+          ? "rgba(98,243,228,0.13)"
           : "transparent",
       }}
       onMouseEnter={(e) => {
         if (!isActive) {
-          (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)";
+          (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.05)";
         }
       }}
       onMouseLeave={(e) => {

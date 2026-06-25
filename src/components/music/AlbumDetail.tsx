@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion, type Variants } from "framer-motion";
-import { Music, Play, Shuffle, ShoppingBag } from "lucide-react";
+import { Music, Shuffle, ShoppingBag } from "lucide-react";
 import { getAlbumCover } from "@/lib/albumCover";
 import { TrackRow } from "@/components/music/TrackRow";
 import { MaybeArtistLink, MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
@@ -149,8 +149,8 @@ export function AlbumDetail({
       >
         {/* ── LEFT: Art + Info ── */}
         <div
-          className="flex-shrink-0 md:w-[360px] lg:w-[400px] px-7 pt-8 pb-8 flex flex-col gap-5 border-r border-white/[0.06]"
-          style={{ background: "rgba(14,21,20,0.6)" }}
+          className="flex-shrink-0 md:w-[360px] lg:w-[400px] flex flex-col gap-6"
+          style={{ background: "#161d1c", padding: "32px 28px" }}
         >
           {/* Album art */}
           <motion.div
@@ -159,12 +159,11 @@ export function AlbumDetail({
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="w-full"
             style={{
-              borderRadius: 8,
+              borderRadius: 12,
               overflow: "hidden",
-              boxShadow: "0 16px 48px rgba(0,0,0,0.7)",
-              border: "1px solid rgba(255,255,255,0.06)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.8)",
               aspectRatio: "1 / 1",
-              background: album.bgColor || "#1a2120",
+              background: album.bgColor || "#0d1412",
             }}
           >
             {album.coverImage ? (
@@ -186,99 +185,81 @@ export function AlbumDetail({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut", delay: 0.08 }}
-            style={{ display: "flex", flexDirection: "column", gap: 6 }}
+            style={{ display: "flex", flexDirection: "column", gap: 8 }}
           >
-            <h1 className="font-[family-name:var(--font-bungee)] leading-[1.1] tracking-tight"
-              style={{ fontSize: "clamp(1.75rem, 4vw, 2.25rem)", color: "#62f3e4" }}
+            <h1
+              className="font-[family-name:var(--font-bungee)] leading-[1.05] tracking-tight"
+              style={{ fontSize: "2.25rem", color: "#62f3e4", margin: 0 }}
             >
               {album.title}
             </h1>
-            <p style={{ fontSize: 14, fontWeight: 500, color: "#dde4e2", margin: 0 }}>Jhodge</p>
+            <p style={{ fontSize: 15, fontWeight: 500, color: "#ffffff", margin: 0 }}>
+              Jhodge
+            </p>
             <p
               style={{
                 fontFamily: "var(--font-geist-mono), monospace",
                 fontSize: 11,
                 color: "#6b7c79",
                 textTransform: "uppercase",
-                letterSpacing: "0.14em",
+                letterSpacing: "0.12em",
                 margin: 0,
               }}
             >
-              {[year, `${songCount} ${songCount === 1 ? "track" : "tracks"}`, totalDuration]
+              {[year, `${songCount} ${songCount === 1 ? "TRACK" : "TRACKS"}`, totalDuration]
                 .filter(Boolean)
                 .join(" · ")}
             </p>
           </motion.div>
 
-          {/* Action buttons */}
+          {/* Action buttons — Shuffle circle + Buy pill (mirrors reference layout) */}
           <motion.div
-            style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}
+            style={{ display: "flex", alignItems: "center", gap: 16 }}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, ease: "easeOut", delay: 0.14 }}
           >
-            {/* Primary play — filled teal circle */}
-            <button
-              onClick={() => playFromAlbum(album)}
-              disabled={!album.tracks.length}
-              aria-label={`Play ${album.title}`}
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: "50%",
-                background: album.accentColor || "#62f3e4",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                border: "none",
-                cursor: "pointer",
-                opacity: album.tracks.length ? 1 : 0.4,
-              }}
-            >
-              <Play size={20} fill="#003733" style={{ marginLeft: 2, color: "#003733" }} />
-            </button>
-
             {/* Shuffle — outline circle */}
             <button
               onClick={handleShuffle}
               disabled={!album.tracks.length}
               aria-label="Shuffle play"
               style={{
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 borderRadius: "50%",
                 background: "transparent",
-                border: "1px solid rgba(255,255,255,0.18)",
+                border: `1px solid ${shuffle ? "#62f3e4" : "rgba(255,255,255,0.22)"}`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
                 cursor: "pointer",
                 opacity: album.tracks.length ? 1 : 0.4,
-                color: shuffle ? "#62f3e4" : "rgba(255,255,255,0.7)",
+                color: shuffle ? "#62f3e4" : "rgba(255,255,255,0.75)",
               }}
             >
-              <Shuffle size={15} />
+              <Shuffle size={16} />
             </button>
 
-            {/* Buy — pink pill */}
+            {/* Buy — ghost outline pill */}
             <button
               onClick={handleBuyAlbum}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 7,
+                gap: 8,
                 borderRadius: 9999,
-                padding: "8px 18px",
-                fontSize: 13,
+                padding: "10px 20px",
+                fontSize: 12,
                 fontWeight: 600,
-                color: "#3d0038",
-                background: "#ffabef",
-                border: "none",
+                color: "rgba(255,255,255,0.80)",
+                background: "transparent",
+                border: "1px solid rgba(255,255,255,0.22)",
                 cursor: "pointer",
                 flexShrink: 0,
-                letterSpacing: "-0.01em",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
               }}
             >
               <ShoppingBag size={14} />
@@ -315,25 +296,26 @@ export function AlbumDetail({
         </div>
 
         {/* ── RIGHT: Tracklist ── */}
-        <div className="flex-1 flex flex-col min-h-0 px-6 pt-8 pb-6 md:px-8 md:pt-8">
+        <div
+          className="flex-1 flex flex-col min-h-0"
+          style={{ background: "#242b2a", padding: "32px 32px 24px" }}
+        >
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut", delay: 0.05 }}
             style={{
               display: "flex",
-              alignItems: "center",
+              alignItems: "baseline",
               justifyContent: "space-between",
-              paddingBottom: 16,
-              marginBottom: 4,
-              borderBottom: "1px solid rgba(255,255,255,0.06)",
+              marginBottom: 20,
             }}
           >
             <h2
               style={{
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: 700,
-                color: "#dde4e2",
+                color: "#ffffff",
                 letterSpacing: "-0.01em",
                 margin: 0,
               }}
@@ -342,19 +324,17 @@ export function AlbumDetail({
             </h2>
             <span
               style={{
-                fontFamily: "var(--font-geist-mono), monospace",
-                fontSize: 11,
-                color: "#4a5e5b",
-                textTransform: "uppercase",
-                letterSpacing: "0.12em",
+                fontSize: 13,
+                color: "#6b7c79",
+                cursor: "default",
               }}
             >
-              {album.tracks.length} {album.tracks.length === 1 ? "track" : "tracks"}
+              {album.tracks.length} songs
             </span>
           </motion.div>
 
           {/* Track rows */}
-          <div className="flex-1 overflow-y-auto pt-1">
+          <div className="flex-1 overflow-y-auto">
             {album.tracks.length === 0 ? (
               <div className="py-10 text-center text-sm text-[#B3B3B3]">
                 Track list coming soon.
