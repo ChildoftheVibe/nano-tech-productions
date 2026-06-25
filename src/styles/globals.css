@@ -56,10 +56,8 @@
   --ntv-border: rgba(255, 255, 255, 0.08);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  font-weight: 400;
-}
+/* Bungee applied only via explicit utility classes (font-[family-name:var(--font-bungee)]).
+   Headings inherit body font (Inter/Geist) per 2027 design spec. */
 
 * {
   box-sizing: border-box;

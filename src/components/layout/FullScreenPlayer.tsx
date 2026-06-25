@@ -43,6 +43,7 @@ export function FullScreenPlayer() {
   const shuffle = usePlayerStore((s) => s.shuffle);
   const repeat = usePlayerStore((s) => s.repeat);
   const queueLen = usePlayerStore((s) => s.queue.length);
+  const queue = usePlayerStore((s) => s.queue);
 
   const openCheckout = useCheckoutStore((s) => s.open);
   const router = useRouter();
@@ -171,20 +172,19 @@ export function FullScreenPlayer() {
             dragElastic={{ top: 0, bottom: 0.4 }}
             onDragEnd={onDragEnd}
           >
-            {/* Drag handle + close */}
-            <div className="flex items-center justify-between pb-2">
+            {/* Header: close + NOW PLAYING label */}
+            <div className="flex items-center justify-between pb-4">
               <button
                 ref={closeButtonRef}
                 onClick={close}
                 aria-label="Minimize player"
-                className="-ml-2 flex h-10 w-10 items-center justify-center text-white/80 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
+                className="-ml-2 flex h-10 w-10 items-center justify-center text-white/70 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
               >
-                <ChevronDown size={28} aria-hidden="true" />
+                <ChevronDown size={24} aria-hidden="true" />
               </button>
-              <div
-                aria-hidden
-                className="h-1 w-10 rounded-full bg-white/40"
-              />
+              <span className="font-[family-name:var(--font-bungee)] text-sm tracking-wide text-[#ffabef]">
+                NOW PLAYING
+              </span>
               <div className="w-10" />
             </div>
 
@@ -220,7 +220,7 @@ export function FullScreenPlayer() {
                   {currentAlbum.title}
                 </div>
               )}
-              <div className="truncate font-[family-name:var(--font-bungee)] text-2xl leading-tight text-[#62f3e4]">
+              <div className="truncate font-[family-name:var(--font-bungee)] text-2xl leading-tight text-[#dde4e2]">
                 {currentTrack.title}
               </div>
               <div className="mt-1 truncate text-sm text-white/60">{features}</div>
@@ -311,8 +311,8 @@ export function FullScreenPlayer() {
               <motion.button
                 onClick={togglePlayPause}
                 aria-label={isPlaying ? "Pause" : "Play"}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-[#62f3e4] text-[#003733]"
-                style={{ boxShadow: "0 0 24px rgba(98, 243, 228, 0.4)" }}
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#090f0e]"
+                style={{ boxShadow: "0 0 24px rgba(255,255,255,0.25)" }}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.94 }}
               >
@@ -381,8 +381,8 @@ export function FullScreenPlayer() {
             </div>
           </motion.div>
 
-          {/* ── DESKTOP LAYOUT (hidden below md) ── */}
-          <div className="relative z-10 hidden h-full w-full md:flex">
+          {/* ── DESKTOP LAYOUT — centered art + huge Bungee title + side panels ── */}
+          <div className="relative z-10 hidden h-full w-full md:flex items-center justify-center">
             {/* Close button */}
             <button
               ref={closeButtonRef}
@@ -393,14 +393,42 @@ export function FullScreenPlayer() {
               <X size={20} aria-hidden="true" />
             </button>
 
-            {/* Left panel: art + track info + action buttons */}
-            <div className="w-1/2 flex flex-col items-center justify-center p-12 gap-8">
+            {/* Left glass panel: volume */}
+            <aside className="fixed left-8 top-1/2 -translate-y-1/2 z-20 hidden lg:flex">
+              <div className="glass-panel rounded-xl p-4 flex flex-col items-center gap-4 w-14">
+                <button
+                  onClick={() => setVolume(muted ? 0.7 : 0)}
+                  aria-label={muted ? "Unmute" : "Mute"}
+                  className="text-[#bbcac6] hover:text-[#62f3e4] transition-colors"
+                >
+                  {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                </button>
+                <div className="h-36 w-1 bg-white/10 rounded-full relative flex flex-col justify-end">
+                  <div
+                    className="w-full bg-[#62f3e4] rounded-full transition-all"
+                    style={{ height: `${Math.round(volume * 100)}%` }}
+                    aria-hidden="true"
+                  />
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={volume}
+                  onChange={(e) => setVolume(Number(e.target.value))}
+                  aria-label="Volume"
+                  className="sr-only"
+                />
+              </div>
+            </aside>
+
+            {/* Center: art + title + controls */}
+            <div className="flex flex-col items-center gap-6 w-full max-w-2xl px-8">
+              {/* Album art */}
               <div
-                className="w-full max-w-md aspect-square rounded-2xl overflow-hidden shadow-2xl"
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  animation: "subtle-drift 20s ease-in-out infinite",
-                }}
+                className="w-[280px] h-[280px] lg:w-[320px] lg:h-[320px] rounded-2xl overflow-hidden shadow-2xl flex-shrink-0 animate-drift"
+                style={{ background: "rgba(255,255,255,0.05)" }}
               >
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -417,58 +445,32 @@ export function FullScreenPlayer() {
                 )}
               </div>
 
+              {/* Track title (huge Bungee) + artist */}
               <div className="text-center">
                 {currentAlbum && (
-                  <div className="mb-1 font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-[0.2em] text-white/50">
+                  <div className="mb-2 font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-[0.2em] text-white/50">
                     {currentAlbum.title}
                   </div>
                 )}
-                <div className="font-[family-name:var(--font-bungee)] text-3xl text-[#62f3e4]">
-                  {currentTrack.title}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentTrack.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.3 }}
+                    className="font-[family-name:var(--font-bungee)] text-5xl lg:text-7xl leading-none tracking-tight uppercase text-[#dde4e2]"
+                  >
+                    {currentTrack.title}
+                  </motion.div>
+                </AnimatePresence>
+                <div className="mt-2 text-sm text-[#62f3e4] uppercase tracking-widest font-[family-name:var(--font-geist-mono)]">
+                  {features}
                 </div>
-                <div className="mt-1 text-sm text-white/60">{features}</div>
               </div>
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentTrack.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="flex flex-col items-center gap-3"
-                >
-                  {currentTrack.price > 0 && (
-                    <motion.button
-                      onClick={handleBuyTrack}
-                      aria-label={`Buy ${currentTrack.title} for $${currentTrack.price.toFixed(2)}`}
-                      className="flex items-center gap-2 rounded-full px-8 py-3 text-sm font-bold text-white"
-                      style={{ background: "#62f3e4" }}
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.96 }}
-                    >
-                      <ShoppingBag size={16} aria-hidden="true" />
-                      Buy Track · ${currentTrack.price.toFixed(2)}
-                    </motion.button>
-                  )}
-                  {currentAlbum && (
-                    <motion.button
-                      onClick={handleViewAlbum}
-                      aria-label={`View ${currentAlbum.title}`}
-                      className="rounded-full border border-[#62f3e4] px-8 py-3 text-sm font-semibold text-[#62f3e4] transition-colors hover:bg-[#62f3e4]/10"
-                      whileTap={{ scale: 0.96 }}
-                    >
-                      View Album →
-                    </motion.button>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* Right panel: controls */}
-            <div className="w-1/2 flex flex-col p-12 gap-6 justify-center">
-              {/* Progress bar + time */}
-              <div>
+              {/* Scrubber */}
+              <div className="w-full max-w-lg">
                 <input
                   type="range"
                   min={0}
@@ -485,39 +487,26 @@ export function FullScreenPlayer() {
                   aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
                   className="ntv-range h-1 w-full cursor-pointer accent-[#62f3e4]"
                 />
-                <div className="mt-2 flex items-center justify-between font-mono text-[12px] tabular-nums text-white/70">
+                <div className="mt-1 flex items-center justify-between font-mono text-[11px] tabular-nums text-white/50">
                   <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
                 </div>
               </div>
 
               {/* Transport controls */}
-              <div className="flex items-center justify-between">
-                <motion.button
-                  onClick={toggleShuffle}
-                  aria-label="Shuffle"
-                  className="p-2"
-                  whileTap={{ scale: 0.92 }}
-                >
-                  <Shuffle
-                    size={24}
-                    className={shuffle ? "text-[#62f3e4]" : "text-white/70"}
-                  />
+              <div className="flex items-center gap-8">
+                <motion.button onClick={toggleShuffle} aria-label="Shuffle" className="p-2" whileTap={{ scale: 0.92 }}>
+                  <Shuffle size={22} className={shuffle ? "text-[#62f3e4]" : "text-white/50"} />
                 </motion.button>
-                <motion.button
-                  onClick={previousAndPlay}
-                  aria-label="Previous track"
-                  className="p-2 text-white/90"
-                  whileTap={{ scale: 0.92 }}
-                >
+                <motion.button onClick={previousAndPlay} aria-label="Previous track" className="p-2 text-white/80" whileTap={{ scale: 0.92 }}>
                   <SkipBack size={32} fill="currentColor" />
                 </motion.button>
                 <motion.button
                   onClick={togglePlayPause}
                   aria-label={isPlaying ? "Pause" : "Play"}
-                  className="flex h-20 w-20 items-center justify-center rounded-full bg-[#62f3e4] text-[#003733]"
-                  style={{ boxShadow: "0 0 32px rgba(98, 243, 228, 0.4)" }}
-                  whileHover={{ scale: 1.04 }}
+                  className="flex h-20 w-20 items-center justify-center rounded-full bg-white text-[#090f0e]"
+                  style={{ boxShadow: "0 0 32px rgba(255,255,255,0.25)" }}
+                  whileHover={{ scale: 1.06 }}
                   whileTap={{ scale: 0.94 }}
                 >
                   {isPlaying ? (
@@ -526,65 +515,92 @@ export function FullScreenPlayer() {
                     <Play size={32} fill="currentColor" className="ml-1" />
                   )}
                 </motion.button>
-                <motion.button
-                  onClick={nextAndPlay}
-                  aria-label="Next track"
-                  className="p-2 text-white/90"
-                  whileTap={{ scale: 0.92 }}
-                >
+                <motion.button onClick={nextAndPlay} aria-label="Next track" className="p-2 text-white/80" whileTap={{ scale: 0.92 }}>
                   <SkipForward size={32} fill="currentColor" />
                 </motion.button>
-                <motion.button
-                  onClick={toggleRepeat}
-                  aria-label={`Repeat ${repeat}`}
-                  className="p-2"
-                  whileTap={{ scale: 0.92 }}
-                >
+                <motion.button onClick={toggleRepeat} aria-label={`Repeat ${repeat}`} className="p-2" whileTap={{ scale: 0.92 }}>
                   {repeat === "one" ? (
-                    <Repeat1 size={24} className="text-[#62f3e4]" />
+                    <Repeat1 size={22} className="text-[#62f3e4]" />
                   ) : (
-                    <Repeat
-                      size={24}
-                      className={repeat === "all" ? "text-[#62f3e4]" : "text-white/70"}
-                    />
+                    <Repeat size={22} className={repeat === "all" ? "text-[#62f3e4]" : "text-white/50"} />
                   )}
                 </motion.button>
               </div>
 
-              {/* Volume slider */}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setVolume(muted ? 0.7 : 0)}
-                  aria-label={muted ? "Unmute" : "Mute"}
-                  className="text-white/70"
+              {/* Buy / View Album actions */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentTrack.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center gap-3"
                 >
-                  {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                </button>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={volume}
-                  onChange={(e) => setVolume(Number(e.target.value))}
-                  aria-label="Volume"
-                  role="slider"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.round(volume * 100)}
-                  aria-valuetext={`${Math.round(volume * 100)} percent`}
-                  className="ntv-range h-1 flex-1 cursor-pointer accent-[#62f3e4]"
-                />
-              </div>
-
-              {/* Queue info */}
-              <div className="flex items-center gap-2 text-white/50">
-                <ListMusic size={18} />
-                <span className="text-sm">
-                  {queueLen} track{queueLen !== 1 ? "s" : ""} in queue
-                </span>
-              </div>
+                  {currentTrack.price > 0 && (
+                    <motion.button
+                      onClick={handleBuyTrack}
+                      aria-label={`Buy ${currentTrack.title}`}
+                      className="flex items-center gap-2 rounded-full px-6 py-2 text-sm font-bold text-[#003733]"
+                      style={{ background: "#62f3e4" }}
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.96 }}
+                    >
+                      <ShoppingBag size={14} aria-hidden="true" />
+                      Buy · ${currentTrack.price.toFixed(2)}
+                    </motion.button>
+                  )}
+                  {currentAlbum && (
+                    <motion.button
+                      onClick={handleViewAlbum}
+                      aria-label={`View ${currentAlbum.title}`}
+                      className="rounded-full border border-white/20 px-6 py-2 text-sm text-white/70 transition-colors hover:border-[#62f3e4]/40 hover:text-[#62f3e4]"
+                      whileTap={{ scale: 0.96 }}
+                    >
+                      View Album
+                    </motion.button>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
+
+            {/* Right glass panel: Up Next queue */}
+            <aside className="fixed right-8 top-1/2 -translate-y-1/2 z-20 hidden lg:flex">
+              <div className="glass-panel rounded-xl p-5 w-64 max-h-[420px] flex flex-col">
+                <p className="font-[family-name:var(--font-geist-mono)] text-[10px] text-[#b3b3b3] uppercase tracking-widest mb-3">
+                  Up Next
+                </p>
+                <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar">
+                  {queue.length > 1 ? (
+                    queue
+                      .filter((t) => t.id !== currentTrack?.id)
+                      .slice(0, 8)
+                      .map((t) => (
+                        <div
+                          key={t.id}
+                          className="flex items-center gap-3 cursor-pointer opacity-60 hover:opacity-100 transition-opacity"
+                        >
+                          <div className="w-9 h-9 rounded overflow-hidden bg-white/5 flex-shrink-0 flex items-center justify-center">
+                            <Music size={12} className="text-white/40" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-semibold text-[#dde4e2] truncate">{t.title}</p>
+                            <p className="text-[10px] text-[#b3b3b3] uppercase tracking-wider truncate">Jhodge</p>
+                          </div>
+                        </div>
+                      ))
+                  ) : (
+                    <p className="text-xs text-white/30 italic">No tracks queued</p>
+                  )}
+                </div>
+                <button
+                  className="mt-3 w-full py-2 rounded-lg text-[10px] font-[family-name:var(--font-geist-mono)] uppercase tracking-widest text-white/40 hover:text-white/70 transition-colors border border-white/10 hover:border-white/20"
+                  onClick={close}
+                >
+                  Open Full Queue
+                </button>
+              </div>
+            </aside>
           </div>
         </motion.div>
       ) : null}

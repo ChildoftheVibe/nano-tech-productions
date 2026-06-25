@@ -75,49 +75,55 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
 
   return (
     <div className="px-4 pt-2 pb-12 md:px-8">
-      <div className="pb-4 pt-1 md:pt-2 md:pb-6">
-        <h1 className="font-[family-name:var(--font-bungee)] text-2xl text-[#62f3e4] tracking-tight uppercase md:text-4xl">
+      <div className="pb-6 pt-2 md:pt-4 md:pb-8">
+        <h1 className="font-[family-name:var(--font-bungee)] text-4xl text-[#62f3e4] tracking-tight uppercase leading-none md:text-6xl lg:text-7xl">
           YOUR COLLECTION
         </h1>
-        <p className="mt-1 text-sm text-[#bbcac6]">
+        <p className="mt-2 text-sm text-[#bbcac6] md:text-base">
+          Curated experiences and saved moments.
+        </p>
+        <p className="mt-0.5 font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-widest text-[#bbcac6]/50">
           {albums.length} releases · browse the full catalog
         </p>
       </div>
 
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1">
-          {FILTER_OPTIONS.map((opt) => (
-            <button
-              key={opt.key}
-              type="button"
-              onClick={() => setFilter(opt.key)}
-              className={`rounded-full px-4 py-1.5 font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-widest transition-colors ${
-                filter === opt.key
-                  ? "border-b-2 border-[#62f3e4] text-[#62f3e4] pb-[5px]"
-                  : "text-[#bbcac6] hover:text-white pb-[7px]"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="ml-auto flex items-center gap-2">
-          <label htmlFor="library-sort" className="text-xs text-[#B3B3B3]">
-            Sort
-          </label>
-          <select
-            id="library-sort"
-            value={sort}
-            onChange={(e) => setSort(e.target.value as Sort)}
-            className="rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white outline-none focus:border-[#62f3e4]"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.key} value={opt.key}>
+      {/* Tab bar — border-b-2 active indicator per 2027 design spec */}
+      <div className="mb-6 border-b border-white/[0.08]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-xl">
+            {FILTER_OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => setFilter(opt.key)}
+                className={`pb-3 font-[family-name:var(--font-geist-mono)] text-xs uppercase tracking-widest transition-all duration-150 border-b-2 -mb-px ${
+                  filter === opt.key
+                    ? "border-[#62f3e4] text-[#62f3e4]"
+                    : "border-transparent text-[#bbcac6] hover:text-[#dde4e2]"
+                }`}
+              >
                 {opt.label}
-              </option>
+              </button>
             ))}
-          </select>
+          </div>
+
+          <div className="flex items-center gap-2 pb-3">
+            <label htmlFor="library-sort" className="text-xs text-[#B3B3B3]">
+              Sort
+            </label>
+            <select
+              id="library-sort"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as Sort)}
+              className="rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs font-semibold text-white outline-none focus:border-[#62f3e4]"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.key} value={opt.key}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -127,7 +133,7 @@ export function LibraryClient({ albums }: { albums: LibraryAlbum[] }) {
         </div>
       ) : (
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
           variants={containerStagger}
           initial="hidden"
           animate="visible"

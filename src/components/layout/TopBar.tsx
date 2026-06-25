@@ -14,11 +14,22 @@ export function TopBar() {
       className="sticky top-0 z-20 flex h-14 flex-shrink-0 items-center justify-between gap-4 px-4"
       style={{
         background:
-          "linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.1) 70%, transparent)",
-        backdropFilter: "blur(8px)",
+          "linear-gradient(to bottom, rgba(9,15,14,0.85), rgba(9,15,14,0.3) 70%, transparent)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
       }}
     >
-      <div className="flex items-center gap-2">
+      {/* Mobile: NTV brand wordmark (hidden on desktop where sidebar shows it) */}
+      <Link
+        href="/"
+        aria-label="NTV Vault home"
+        className="ntv-logo font-[family-name:var(--font-bungee)] text-[20px] tracking-tighter text-[#62f3e4] leading-none md:hidden"
+      >
+        NTV
+      </Link>
+
+      {/* Desktop: back/forward nav */}
+      <div className="hidden md:flex items-center gap-2">
         <motion.button
           onClick={() => router.back()}
           aria-label="Go back"

@@ -28,7 +28,7 @@ export function Sidebar({ initialAlbums }: Props) {
     <aside
       aria-label="Sidebar"
       className="hidden flex-shrink-0 flex-col md:flex"
-      style={{ width: 280, background: "#1a2120", borderRight: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ width: 320, background: "#1a2120", borderRight: "1px solid rgba(255,255,255,0.08)" }}
     >
       <div className="flex-shrink-0 px-6 pt-6 pb-4">
         <Link
@@ -144,17 +144,29 @@ export function Sidebar({ initialAlbums }: Props) {
         )}
       </ul>
 
-      <div
-        className="glass-panel mx-2 mb-3 flex-shrink-0 rounded-lg px-4 py-3 text-[11px] text-[#bbcac6]"
-      >
-        <div className="mb-1.5 flex flex-wrap gap-x-2 gap-y-1">
+      {/* Bottom panel: brand + links */}
+      <div className="glass-panel mx-2 mb-3 flex-shrink-0 rounded-lg p-4">
+        <div className="flex items-center gap-3 mb-3">
+          <div
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
+            style={{ background: "linear-gradient(135deg, #62f3e4 0%, #ffabef 100%)" }}
+            aria-hidden="true"
+          >
+            <span className="font-[family-name:var(--font-bungee)] text-xs font-bold text-[#003733]">NTV</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-[#dde4e2]">Nano Tech Vibe</p>
+            <p className="font-[family-name:var(--font-geist-mono)] text-[10px] text-[#62f3e4] uppercase tracking-widest">The Vault</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#bbcac6]">
           <Link href="/privacy" className="hover:text-white transition-colors duration-150">Privacy</Link>
           <span aria-hidden="true">·</span>
           <Link href="/terms" className="hover:text-white transition-colors duration-150">Terms</Link>
           <span aria-hidden="true">·</span>
           <Link href="/admin" className="hover:text-white transition-colors duration-150">Admin</Link>
         </div>
-        © 2026 Nano Tech Vibe
+        <p className="mt-1 text-[10px] text-[#bbcac6]/50">© 2026 Nano Tech Productions</p>
       </div>
     </aside>
   );

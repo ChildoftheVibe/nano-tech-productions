@@ -77,7 +77,7 @@ function SectionLabel({
         {eyebrow}
       </div>
       <div className="flex items-baseline gap-3">
-        <h2 className="font-[family-name:var(--font-bungee)] text-xl text-[#dde4e2] tracking-tight">{title}</h2>
+        <h2 className="font-[family-name:var(--font-bungee)] text-[24px] leading-tight text-[#dde4e2] tracking-tight">{title}</h2>
         {count && (
           <span className="font-[family-name:var(--font-geist-mono)] text-[11px] text-[#B3B3B3]">{count}</span>
         )}
@@ -144,7 +144,7 @@ export function HomeClient({
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         {latest ? (
-          <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-xl group cursor-pointer">
+          <div className="relative h-[360px] md:h-[450px] overflow-hidden rounded-xl group cursor-pointer">
             {/* Background cover image */}
             <div
               className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
@@ -210,12 +210,18 @@ export function HomeClient({
       {/* ── FEATURED ── */}
       <section className="pb-12 md:pb-16">
         <motion.div
-          className="mb-6 md:mb-8"
+          className="mb-6 md:mb-8 flex items-end justify-between"
           initial="hidden"
           animate={mounted ? "visible" : "hidden"}
           variants={sectionReveal}
         >
           <SectionLabel eyebrow="Curated" title="Featured" />
+          <Link
+            href="/library"
+            className="font-[family-name:var(--font-geist-mono)] text-[11px] uppercase tracking-widest text-[#62f3e4] hover:underline transition-colors flex-shrink-0"
+          >
+            View All
+          </Link>
         </motion.div>
         {featured.length === 0 ? (
           <div className="rounded-md border border-white/10 p-6 text-sm text-[#B3B3B3]">
@@ -261,6 +267,127 @@ export function HomeClient({
         )}
       </section>
 
+      {/* ── WEEKLY SELECTIONS ── */}
+      {latest && latest.tracks.length > 0 ? (
+        <section className="pb-12 md:pb-16">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+            {/* Track list */}
+            <div className="flex-1 min-w-0">
+              <motion.div
+                className="mb-6 md:mb-8"
+                initial="hidden"
+                animate={mounted ? "visible" : "hidden"}
+                variants={sectionReveal}
+              >
+                <SectionLabel eyebrow="From the Vault" title="Weekly Selections" />
+              </motion.div>
+              <motion.div
+                className="space-y-1"
+                variants={containerStagger}
+                initial="hidden"
+                animate={mounted ? "visible" : "hidden"}
+              >
+                {latest.tracks.slice(0, 6).map((track, idx) => {
+                  const isActive = currentTrack?.id === track.id;
+                  const durSec = Number(track.duration);
+                  const dur = durSec > 0
+                    ? `${Math.floor(durSec / 60)}:${String(Math.floor(durSec % 60)).padStart(2, "0")}`
+                    : (track.duration || "—");
+                  return (
+                    <motion.button
+                      key={track.id}
+                      variants={itemFadeUp}
+                      onClick={() => playFromAlbum(latest)}
+                      className={`w-full flex items-center gap-4 rounded-lg px-3 py-3 text-left transition-all group border-l-2 ${
+                        isActive
+                          ? "border-[#ffabef] bg-white/5"
+                          : "border-transparent hover:border-[#ffabef]/60 hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      <span className="font-[family-name:var(--font-geist-mono)] text-xs text-white/30 w-5 tabular-nums text-right flex-shrink-0">
+                        {String(idx + 1).padStart(2, "0")}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className={`text-sm font-semibold truncate ${isActive ? "text-[#62f3e4]" : "text-[#dde4e2]"}`}>
+                          {track.title}
+                        </div>
+                        <div className="text-xs text-[#b3b3b3] truncate">Jhodge</div>
+                      </div>
+                      {track.price > 0 && (
+                        <span className="text-[10px] font-[family-name:var(--font-geist-mono)] text-[#ffabef] flex-shrink-0">
+                          ${track.price.toFixed(2)}
+                        </span>
+                      )}
+                      <span className="font-[family-name:var(--font-geist-mono)] text-xs text-white/30 flex-shrink-0 tabular-nums">
+                        {dur}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </motion.div>
+              <div className="mt-4">
+                <Link
+                  href={`/album/${latest.slug}`}
+                  className="font-[family-name:var(--font-geist-mono)] text-[11px] uppercase tracking-widest text-[#62f3e4] hover:underline transition-colors"
+                >
+                  View Full Album →
+                </Link>
+              </div>
+            </div>
+
+            {/* Right glass card — NTV curation highlight */}
+            <div className="hidden lg:flex w-64 flex-shrink-0">
+              <div className="glass-panel rounded-xl p-6 w-full flex flex-col gap-5">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: "linear-gradient(135deg, #62f3e4 0%, #ffabef 100%)" }}
+                    aria-hidden="true"
+                  >
+                    <span className="font-[family-name:var(--font-bungee)] text-xs text-[#003733]">NTV</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#dde4e2]">Nano Tech Vibe</p>
+                    <p className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-widest text-[#62f3e4]">
+                      Curated by Jhodge
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className="w-full aspect-square rounded-lg overflow-hidden"
+                  style={{ background: latest.bgColor ?? "#1a2120" }}
+                >
+                  {latest.coverImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={getAlbumCover(latest.coverImage, "sm")}
+                      alt={latest.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : null}
+                </div>
+                <div>
+                  <p className="font-[family-name:var(--font-bungee)] text-lg leading-tight text-[#dde4e2] uppercase">
+                    {latest.title}
+                  </p>
+                  <p className="mt-1 text-xs text-[#b3b3b3] line-clamp-2">{latest.description}</p>
+                </div>
+                <motion.button
+                  onClick={() => playFromAlbum(latest)}
+                  disabled={!latest.tracks.length}
+                  className="w-full rounded-lg py-2.5 text-sm font-bold text-[#003733] disabled:opacity-40 teal-glow"
+                  style={{ background: "#62f3e4" }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  Listen Now
+                </motion.button>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {/* ── FEATURED ARTISTS ── */}
       {featuredArtists.length > 0 ? (
         <section className="pb-12 md:pb-14">
@@ -296,7 +423,7 @@ export function HomeClient({
       {/* ── THE COLLECTION ── */}
       <section className="pb-10 md:pb-12">
         <motion.div
-          className="mb-6 md:mb-8"
+          className="mb-6 md:mb-8 flex items-end justify-between"
           initial="hidden"
           animate={mounted ? "visible" : "hidden"}
           variants={sectionReveal}
@@ -306,9 +433,15 @@ export function HomeClient({
             title="The Collection"
             count={`${collection.length} / ${initialCollection.totalCount}`}
           />
+          <Link
+            href="/library"
+            className="font-[family-name:var(--font-geist-mono)] text-[11px] uppercase tracking-widest text-[#62f3e4] hover:underline transition-colors flex-shrink-0"
+          >
+            View All
+          </Link>
         </motion.div>
         <motion.div
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"
           variants={containerStagger}
           initial="hidden"
           animate={mounted ? "visible" : "hidden"}
