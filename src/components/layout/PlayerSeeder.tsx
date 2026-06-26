@@ -28,7 +28,7 @@ export function PlayerSeeder({
   tracks: Track[];
   isAdminCurated?: boolean;
 }) {
-  const { audioRef, ensureQueueSeeded } = usePlayer();
+  const { audioRef, ensureQueueSeeded, primePlayback } = usePlayer();
   const seeded = useRef(false);
 
   useEffect(() => {
@@ -40,9 +40,10 @@ export function PlayerSeeder({
 
     const { queue, first, album } = buildSeed(tracks, { ordered: isAdminCurated });
 
-    // Empty/failed server prefetch — recover with a client-side fetch.
+    // Empty/failed server prefetch — recover with a client-side fetch and
+    // start playback (autoplay or on first gesture).
     if (!first) {
-      void ensureQueueSeeded(false);
+      void ensureQueueSeeded(true);
       return;
     }
 
@@ -56,6 +57,12 @@ export function PlayerSeeder({
       audio.src = first.audioUrl;
       audio.load();
     }
+
+    // Start the music. primePlayback attempts autoplay immediately and, if the
+    // browser blocks it, arms a one-time gesture listener — so playback begins
+    // for every visitor (including returning ones, where the tap banner is
+    // suppressed) rather than requiring a manual play press.
+    primePlayback();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return null;

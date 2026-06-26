@@ -33,6 +33,11 @@ type PlayerContextValue = {
    *  Pass `autoplay` to begin playback once a track is loaded (used when the
    *  full-screen player opens onto an empty queue). Safe to call repeatedly. */
   ensureQueueSeeded: (autoplay?: boolean) => Promise<void>;
+  /** Attempt to start playback of the current track immediately. If the browser
+   *  blocks autoplay (no prior gesture / low media engagement), arm one-time
+   *  global gesture listeners that start playback on the user's first
+   *  interaction. Runs for every visitor — the one load-time auto-start path. */
+  primePlayback: () => void;
 };
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -64,6 +69,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const refetchingRef = useRef(false);
   const seedingRef = useRef(false);
+  const primedRef = useRef(false);
   const preloadAbortRef = useRef<AbortController | null>(null)
   const hasPlayedRef = useRef<boolean>(false)
 
@@ -564,6 +570,49 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [ensureSrc]);
 
+  const primePlayback = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // Start playback of whatever track is current, syncing the store on success.
+    const start = () => {
+      const a = audioRef.current;
+      if (!a) return;
+      const store = usePlayerStore.getState();
+      const track = store.currentTrack;
+      if (!track?.audioUrl) return;
+      ensureSrc(track);
+      const r = a.play();
+      if (r instanceof Promise) {
+        r.then(() => usePlayerStore.getState().setPlaying(true)).catch(() => {});
+      } else {
+        usePlayerStore.getState().setPlaying(true);
+      }
+    };
+
+    // Try to autoplay right now. Returning visitors with sufficient media
+    // engagement (Chrome MEI) — or an already-unlocked element — succeed here.
+    const r = audio.play();
+    if (r instanceof Promise) {
+      r.then(() => {
+        usePlayerStore.getState().setPlaying(true);
+      }).catch(() => {
+        // Blocked by autoplay policy — wait for the user's first interaction.
+        if (primedRef.current) return;
+        primedRef.current = true;
+        const onGesture = () => {
+          window.removeEventListener("pointerdown", onGesture);
+          window.removeEventListener("keydown", onGesture);
+          window.removeEventListener("touchstart", onGesture);
+          start();
+        };
+        window.addEventListener("pointerdown", onGesture, { once: true });
+        window.addEventListener("keydown", onGesture, { once: true });
+        window.addEventListener("touchstart", onGesture, { once: true });
+      });
+    }
+  }, [ensureSrc]);
+
   const ensureQueueSeeded = useCallback(
     async (autoplay = false) => {
       const store = usePlayerStore.getState();
@@ -571,14 +620,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       // Already populated — just (optionally) resume the loaded track.
       if (store.queue.length > 0) {
         if (autoplay && store.currentTrack?.audioUrl) {
-          const audio = ensureSrc(store.currentTrack);
-          if (audio) {
-            audio.play().catch((err) => {
-              console.warn("[PlayerContext] ensureQueueSeeded play() rejected:", err);
-              usePlayerStore.getState().setPlaying(false);
-            });
-            store.setPlaying(true);
-          }
+          ensureSrc(store.currentTrack);
+          primePlayback();
         }
         return;
       }
@@ -590,22 +633,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         const { queue, first, album } = buildSeed(fresh, { ordered: isAdminCurated });
         if (!first) return;
         store.setQueue(queue, first, album);
-        // Set src after the await; the user-gesture token is gone but the audio
-        // element is already unlocked by TapToStartBanner on first visit, so
-        // play() succeeds in practice. Fall back to paused on rejection.
-        const audio = ensureSrc(first);
-        if (autoplay && audio) {
-          audio.play().catch((err) => {
-            console.warn("[PlayerContext] ensureQueueSeeded play() rejected:", err);
-            usePlayerStore.getState().setPlaying(false);
-          });
-          usePlayerStore.getState().setPlaying(true);
-        }
+        // Set src after the await, then prime playback. primePlayback attempts
+        // autoplay and, if the browser blocks it, arms a one-time gesture
+        // listener — so playback starts even though the gesture token is gone.
+        ensureSrc(first);
+        if (autoplay) primePlayback();
       } finally {
         seedingRef.current = false;
       }
     },
-    [ensureSrc],
+    [ensureSrc, primePlayback],
   );
 
   return (
@@ -618,6 +655,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         nextAndPlay,
         previousAndPlay,
         ensureQueueSeeded,
+        primePlayback,
       }}
     >
       {children}
