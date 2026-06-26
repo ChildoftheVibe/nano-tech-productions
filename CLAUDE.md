@@ -67,9 +67,10 @@ src/
     supabase.ts            # client + admin instances
     auth.ts                # session/token management
     paypal.ts albumCover.ts cloudinary.ts discounts.ts
-    analytics.ts audit.ts rateLimit.ts logger.ts email.tsx
+    analytics.ts audit.ts rateLimit.ts logger.ts email.tsx playlistSeed.ts
   store/                   # playerStore, checkoutStore, previewStore (Zustand)
   context/PlayerContext.tsx # Audio element ref + player methods
+  components/layout/PlayerSeeder.tsx # Server-side queue seed (client component, rendered in layout)
   types/music.ts           # Album, Track, Artist domain types
 supabase/migrations/       # 0001_init → 0010_webauthn
 ```
@@ -116,7 +117,7 @@ RLS: public read on published content; service role has full access.
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET | `/api/albums` | List published albums (paginated) |
-| GET | `/api/playlist` | Continuous shuffle tracks |
+| GET | `/api/playlist` | Admin-curated queue (ordered) or shuffle fallback; returns `{ tracks, isAdminCurated }` |
 | GET | `/api/search?q=` | Full-text search albums/tracks/artists |
 | GET | `/api/instrumentals` | List beats/sounds (paginated) |
 | POST | `/api/discounts/validate` | Validate discount code |
@@ -138,8 +139,14 @@ CRUD for albums/tracks/artists/instrumentals/discounts; WAV vault streaming (5mi
 
 1. **Server Components by default** — `"use client"` only at interactivity boundaries
 2. **`unstable_cache`** — memoizes Supabase queries; CDN TTLs: albums 5min, search/playlist 1min, admin no-store
-3. **Zustand + localStorage** — `playerStore` manages all player state; only `volume` and `shuffle` persist to localStorage across refreshes. `queue`, `currentTrack`, and `currentAlbum` reset to empty on every page load and are re-seeded by `PlayerContext` on mount.
-4. **PlayerContext** — audio element ref, play/pause/next/prev/seek, analytics hooks. On mount, fetches `/api/playlist` (up to 500 published tracks), shuffles, promotes the first track with an album cover to `currentTrack`, and sets `audio.src` synchronously. All play-initiating actions call `audio.play()` directly from click handlers to preserve the user-gesture chain required by browser autoplay policy. `TapToStartBanner` (`src/components/layout/TapToStartBanner.tsx`) shows on first visit, calls `audio.play()` on any pointer/key event to unlock the audio element, and syncs `store.setPlaying(true)` on success. Vault-only tracks (no `audioUrl`) are excluded from the public queue.
+3. **Zustand + localStorage** — `playerStore` manages all player state; only `volume` and `shuffle` persist to localStorage across refreshes. `queue`, `currentTrack`, and `currentAlbum` reset to empty on every page load and are re-seeded by `PlayerSeeder` on mount.
+4. **PlayerSeeder + PlayerContext** — Queue seeding is split into two layers:
+   - **`PlayerSeeder`** (`src/components/layout/PlayerSeeder.tsx`) — `"use client"` component rendered inside `PlayerProvider` in `layout.tsx`. Receives up to 500 tracks + `isAdminCurated` flag as **props** pre-fetched server-side by the root layout (`getPlaylistTracks()` in the same `Promise.all` as `getAlbums`). On mount, calls `buildSeed(tracks, { ordered: isAdminCurated })` to build the queue (preserving admin order when curated, shuffling otherwise), promotes the first track with an album cover to position 0, calls `store.setQueue()`, and sets `audio.src` synchronously. If the server prefetch returned no tracks, falls back to `ensureQueueSeeded(false)` — a client-side `/api/playlist` fetch — so the queue is self-healing even if the server render failed.
+   - **`PlayerContext`** (`src/context/PlayerContext.tsx`) — audio element ref, play/pause/next/prev/seek, analytics hooks, **ongoing queue extension** (when fewer than 5 tracks remain, fetches `/api/playlist` and appends deduped tracks respecting `isAdminCurated`), and **`ensureQueueSeeded(autoplay?)`** (populates an empty queue on demand; used by `PlayerSeeder` fallback and `FullScreenPlayer` on open).
+   - **`playlistSeed.ts`** (`src/lib/playlistSeed.ts`) — shared `buildSeed(tracks, { ordered? })` helper. When `ordered=false` (default): shuffles + promotes first track with cover. When `ordered=true` (admin-curated): preserves position order, still promotes first track with cover to position 0.
+   - **Admin-curated queue** — `getPlaylistTracks()` checks the `playlist` table first (tracks the admin added via `/admin/playlist`, ordered by `position`, filtered by `is_active=true`). Returns `{ tracks, isAdminCurated: true }`. Falls back to all published tracks with `isAdminCurated: false` when the playlist table is empty. This result flows through `layout.tsx` → `PlayerSeeder` → `buildSeed` so admin ordering is preserved end-to-end for every visitor.
+   - All play-initiating actions call `audio.play()` directly from click handlers to preserve the user-gesture chain required by browser autoplay policy. `TapToStartBanner` (`src/components/layout/TapToStartBanner.tsx`) shows on first visit, calls `audio.play()` on any pointer/key event to unlock the audio element, and syncs `store.setPlaying(true)` on success. Vault-only tracks (no `audioUrl`) are excluded from the public queue.
+   - **FullScreenPlayer empty-queue recovery** — if the full-screen player is opened before the queue is seeded, it calls `ensureQueueSeeded(true)` (populate + start playing) instead of auto-closing.
 5. **SW (Serwist)** — navigate+`/api/*` → NetworkOnly; `/_next/static/*` → CacheFirst; Cloudinary images → CacheFirst 20MB; audio → CacheFirst 25MB/entry 50MB bucket; namespaced by `BUILD_ID` for auto-cleanup
 6. **Cloudinary pipeline** — MP3 320k on-the-fly transcode for streaming; signed vault URLs for WAV masters
 7. **PayPal checkout** — order created server-side (authoritative price), nonce cookie set on `create-order` and validated on `verify` (prevents replay), discount applied before order, webhook restricted to PayPal IP allowlist, single-use download tokens issued only after confirmed capture
