@@ -274,7 +274,7 @@ export const getPlaylistTracks = unstable_cache(
       );
       const { data: trackData, error: trackError } = await supabase
         .from("tracks")
-        .select(`${TRACK_COLUMNS}, albums(id, slug, title, cover_image, bg_color, accent_color)`)
+        .select(`${TRACK_COLUMNS}, albums(id, slug, title, cover_image, bg_color:background_color, accent_color)`)
         .in("id", orderedIds)
         .eq("is_published", true)
         .or("audio_url.not.is.null,public_audio_id.not.is.null");
@@ -301,7 +301,7 @@ export const getPlaylistTracks = unstable_cache(
     // queue even if audio_url was somehow left null.
     const { data, error } = await supabase
       .from("tracks")
-      .select(`${TRACK_COLUMNS}, albums(id, slug, title, cover_image, bg_color, accent_color)`)
+      .select(`${TRACK_COLUMNS}, albums(id, slug, title, cover_image, bg_color:background_color, accent_color)`)
       .eq("is_published", true)
       .or("audio_url.not.is.null,public_audio_id.not.is.null")
       .limit(PLAYLIST_MAX);
