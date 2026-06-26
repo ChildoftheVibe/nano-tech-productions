@@ -254,45 +254,43 @@ export type PlaylistTracksResult = {
   isAdminCurated: boolean;
 };
 
-type PlaylistAlbumRow = {
-  id: string;
-  slug: string;
-  title: string;
-  cover_image: string | null;
-  bg_color: string | null;
-  accent_color: string | null;
-};
-
-// Supabase returns FK-joined relations as arrays even for many-to-one.
-type PlaylistTrackRow = TrackRow & { albums: PlaylistAlbumRow[] | null };
-
-type PlaylistEntryRow = {
-  position: number;
-  tracks: PlaylistTrackRow[] | null;
-};
-
 export const getPlaylistTracks = unstable_cache(
   async (): Promise<PlaylistTracksResult> => {
-    // 1. Try the admin-curated playlist first (playlist table, ordered by position).
-    const { data: playlistData, error: playlistError } = await supabase
+    // 1. Try the admin-curated playlist first.
+    //    Two-step approach to avoid complex nested-join syntax that can fail silently:
+    //    a) Get ordered track IDs from the playlist table.
+    //    b) Fetch full track + album data for those IDs using the same reliable
+    //       query as the fallback, then restore position order in JS.
+    const { data: playlistEntries, error: playlistError } = await supabase
       .from("playlist")
-      .select(
-        `position, tracks!inner(${TRACK_COLUMNS}, albums(id, slug, title, cover_image, bg_color, accent_color))`,
-      )
+      .select("track_id, position")
       .eq("is_active", true)
       .order("position", { ascending: true })
       .limit(PLAYLIST_MAX);
 
-    if (!playlistError && playlistData && playlistData.length > 0) {
-      const tracks = (playlistData as unknown as PlaylistEntryRow[])
-        .flatMap((entry) => entry.tracks ?? [])
-        .filter((t) => !!t.is_published)
-        .map(mapTrack)
-        .filter((t) => !!t.audioUrl);
+    if (!playlistError && playlistEntries && playlistEntries.length > 0) {
+      const orderedIds = (playlistEntries as { track_id: string; position: number }[]).map(
+        (e) => e.track_id,
+      );
+      const { data: trackData, error: trackError } = await supabase
+        .from("tracks")
+        .select(`${TRACK_COLUMNS}, albums(id, slug, title, cover_image, bg_color, accent_color)`)
+        .in("id", orderedIds)
+        .eq("is_published", true)
+        .or("audio_url.not.is.null,public_audio_id.not.is.null");
 
-      if (tracks.length > 0) {
-        logInfo("[queries] getPlaylistTracks (admin curated)", { count: tracks.length });
-        return { tracks, isAdminCurated: true };
+      if (!trackError && trackData) {
+        const trackMap = new Map((trackData as TrackRow[]).map((t) => [t.id, t]));
+        const tracks = orderedIds
+          .map((id) => trackMap.get(id))
+          .filter((t): t is TrackRow => !!t)
+          .map(mapTrack)
+          .filter((t) => !!t.audioUrl);
+
+        if (tracks.length > 0) {
+          logInfo("[queries] getPlaylistTracks (admin curated)", { count: tracks.length });
+          return { tracks, isAdminCurated: true };
+        }
       }
     }
 
