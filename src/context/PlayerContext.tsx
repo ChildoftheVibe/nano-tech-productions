@@ -12,6 +12,7 @@ import {
   trackSeek,
 } from "@/lib/analytics";
 import type { Album, Track } from "@/types/music";
+import { buildSeed } from "@/lib/playlistSeed";
 import * as Sentry from '@sentry/nextjs'
 
 type PlayerContextValue = {
@@ -28,6 +29,10 @@ type PlayerContextValue = {
   nextAndPlay: () => void;
   /** Previous track + play directly. */
   previousAndPlay: () => void;
+  /** Guarantee the queue is populated, fetching `/api/playlist` if it's empty.
+   *  Pass `autoplay` to begin playback once a track is loaded (used when the
+   *  full-screen player opens onto an empty queue). Safe to call repeatedly. */
+  ensureQueueSeeded: (autoplay?: boolean) => Promise<void>;
 };
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -58,6 +63,7 @@ async function fetchPlaylist(): Promise<Track[]> {
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const refetchingRef = useRef(false);
+  const seedingRef = useRef(false);
   const preloadAbortRef = useRef<AbortController | null>(null)
   const hasPlayedRef = useRef<boolean>(false)
 
@@ -556,6 +562,50 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [ensureSrc]);
 
+  const ensureQueueSeeded = useCallback(
+    async (autoplay = false) => {
+      const store = usePlayerStore.getState();
+
+      // Already populated — just (optionally) resume the loaded track.
+      if (store.queue.length > 0) {
+        if (autoplay && store.currentTrack?.audioUrl) {
+          const audio = ensureSrc(store.currentTrack);
+          if (audio) {
+            audio.play().catch((err) => {
+              console.warn("[PlayerContext] ensureQueueSeeded play() rejected:", err);
+              usePlayerStore.getState().setPlaying(false);
+            });
+            store.setPlaying(true);
+          }
+        }
+        return;
+      }
+
+      if (seedingRef.current) return;
+      seedingRef.current = true;
+      try {
+        const fresh = await fetchPlaylist();
+        const { queue, first, album } = buildSeed(fresh);
+        if (!first) return;
+        store.setQueue(queue, first, album);
+        // Set src after the await; the user-gesture token is gone but the audio
+        // element is already unlocked by TapToStartBanner on first visit, so
+        // play() succeeds in practice. Fall back to paused on rejection.
+        const audio = ensureSrc(first);
+        if (autoplay && audio) {
+          audio.play().catch((err) => {
+            console.warn("[PlayerContext] ensureQueueSeeded play() rejected:", err);
+            usePlayerStore.getState().setPlaying(false);
+          });
+          usePlayerStore.getState().setPlaying(true);
+        }
+      } finally {
+        seedingRef.current = false;
+      }
+    },
+    [ensureSrc],
+  );
+
   return (
     <PlayerContext.Provider
       value={{
@@ -565,6 +615,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         playFromAlbum,
         nextAndPlay,
         previousAndPlay,
+        ensureQueueSeeded,
       }}
     >
       {children}

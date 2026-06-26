@@ -53,7 +53,8 @@ export function FullScreenPlayer() {
 
   // Use the PlayerContext helpers so audio.play() runs synchronously in the
   // click handler and the user-gesture token survives.
-  const { togglePlayPause, nextAndPlay, previousAndPlay, playFromTrack } = usePlayer();
+  const { togglePlayPause, nextAndPlay, previousAndPlay, playFromTrack, ensureQueueSeeded } =
+    usePlayer();
 
   const handleBuyTrack = () => {
     if (!currentTrack) return;
@@ -91,10 +92,20 @@ export function FullScreenPlayer() {
     };
   }, [open]);
 
-  // Auto-close if there's nothing to play.
+  // Opened onto an empty queue → populate it and start playing (opening the
+  // overlay is itself a user gesture, so playback is allowed). Only close if no
+  // track could be loaded after the seed attempt (genuinely empty catalog).
   useEffect(() => {
-    if (open && !currentTrack) close();
-  }, [open, currentTrack, close]);
+    if (!open || currentTrack) return;
+    let cancelled = false;
+    (async () => {
+      await ensureQueueSeeded(true);
+      if (!cancelled && !usePlayerStore.getState().currentTrack) close();
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, currentTrack, close, ensureQueueSeeded]);
 
   // Escape closes the overlay.
   useEffect(() => {
