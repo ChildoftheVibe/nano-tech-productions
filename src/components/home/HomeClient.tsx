@@ -348,8 +348,7 @@ export function HomeClient({
                   {album.title}
                 </div>
                 <div className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-wider text-[#b3b3b3]">
-                  {album.releaseDate?.slice(0, 4)} · {album.tracks.length}{" "}
-                  {album.tracks.length === 1 ? "track" : "tracks"}
+                  {album.releaseDate?.slice(0, 4)}
                 </div>
               </Link>
             </motion.div>
