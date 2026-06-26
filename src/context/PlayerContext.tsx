@@ -49,14 +49,14 @@ const shuffle = <T,>(arr: T[]): T[] => {
   return a;
 };
 
-async function fetchPlaylist(): Promise<Track[]> {
+async function fetchPlaylist(): Promise<{ tracks: Track[]; isAdminCurated: boolean }> {
   try {
     const res = await fetch("/api/playlist", { cache: "no-store" });
-    if (!res.ok) return [];
-    const json = (await res.json()) as { tracks?: Track[] };
-    return json.tracks ?? [];
+    if (!res.ok) return { tracks: [], isAdminCurated: false };
+    const json = (await res.json()) as { tracks?: Track[]; isAdminCurated?: boolean };
+    return { tracks: json.tracks ?? [], isAdminCurated: json.isAdminCurated ?? false };
   } catch {
-    return [];
+    return { tracks: [], isAdminCurated: false };
   }
 }
 
@@ -273,10 +273,12 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     refetchingRef.current = true;
     (async () => {
       try {
-        const fresh = await fetchPlaylist();
+        const { tracks: fresh, isAdminCurated } = await fetchPlaylist();
         if (!fresh.length) return;
         const known = new Set(usePlayerStore.getState().queue.map((t) => t.id));
-        const additions = shuffle(fresh).filter((t) => !known.has(t.id));
+        // Admin-curated tracks keep their position order; fallback tracks are shuffled.
+        const newTracks = isAdminCurated ? fresh : shuffle(fresh);
+        const additions = newTracks.filter((t) => !known.has(t.id));
         if (!additions.length) return;
         const store = usePlayerStore.getState();
         store.setQueue([...store.queue, ...additions]);
@@ -584,8 +586,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       if (seedingRef.current) return;
       seedingRef.current = true;
       try {
-        const fresh = await fetchPlaylist();
-        const { queue, first, album } = buildSeed(fresh);
+        const { tracks: fresh, isAdminCurated } = await fetchPlaylist();
+        const { queue, first, album } = buildSeed(fresh, { ordered: isAdminCurated });
         if (!first) return;
         store.setQueue(queue, first, album);
         // Set src after the await; the user-gesture token is gone but the audio

@@ -5,6 +5,6 @@ export const runtime = "nodejs";
 export const revalidate = 60;
 
 export async function GET() {
-  const tracks = await getPlaylistTracks();
-  return NextResponse.json({ tracks });
+  const result = await getPlaylistTracks();
+  return NextResponse.json(result);
 }

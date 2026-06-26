@@ -10,16 +10,23 @@ const shuffle = <T,>(arr: T[]): T[] => {
 };
 
 /**
- * Builds a shuffled player queue from a list of tracks, promoting the first
- * track that carries album cover art to position 0 (so the player opens with a
- * cover rather than a blank tile) and constructing the seed `Album` from that
- * track's joined album metadata.
+ * Builds a player queue from a list of tracks.
+ *
+ * When `ordered` is false (default) the queue is shuffled and the first track
+ * that carries album cover art is promoted to position 0.
+ *
+ * When `ordered` is true (admin-curated playlist) the tracks are used as-is
+ * (preserving the admin's position ordering); only the first track with cover
+ * art is moved to position 0 so the player can show album art immediately.
  *
  * Shared by `PlayerSeeder` (synchronous seed from server-prefetched tracks) and
  * `PlayerContext.ensureQueueSeeded` (client-side fallback fetch) so both paths
  * produce an identical queue shape.
  */
-export function buildSeed(tracks: Track[]): {
+export function buildSeed(
+  tracks: Track[],
+  { ordered = false }: { ordered?: boolean } = {},
+): {
   queue: Track[];
   first: Track | null;
   album: Album | null;
@@ -27,14 +34,14 @@ export function buildSeed(tracks: Track[]): {
   const playable = tracks.filter((t) => !!t.audioUrl);
   if (!playable.length) return { queue: [], first: null, album: null };
 
-  const shuffled = shuffle(playable);
+  const pool = ordered ? playable : shuffle(playable);
   const firstWithCover =
-    shuffled.find((t) => !!(t.albumId && t.albumCoverImage)) ?? null;
-  const first = firstWithCover ?? shuffled[0] ?? null;
+    pool.find((t) => !!(t.albumId && t.albumCoverImage)) ?? null;
+  const first = firstWithCover ?? pool[0] ?? null;
   const queue =
-    first && first !== shuffled[0]
-      ? [first, ...shuffled.filter((t) => t.id !== first.id)]
-      : shuffled;
+    first && first !== pool[0]
+      ? [first, ...pool.filter((t) => t.id !== first.id)]
+      : pool;
 
   const album: Album | null =
     first?.albumId && first.albumCoverImage

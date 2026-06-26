@@ -21,7 +21,13 @@ import type { Track } from "@/types/music";
  * /api/playlist fetch — so the queue still fills rather than staying empty for
  * the whole session.
  */
-export function PlayerSeeder({ tracks }: { tracks: Track[] }) {
+export function PlayerSeeder({
+  tracks,
+  isAdminCurated = false,
+}: {
+  tracks: Track[];
+  isAdminCurated?: boolean;
+}) {
   const { audioRef, ensureQueueSeeded } = usePlayer();
   const seeded = useRef(false);
 
@@ -32,7 +38,7 @@ export function PlayerSeeder({ tracks }: { tracks: Track[] }) {
     const store = usePlayerStore.getState();
     if (store.queue.length > 0 || store.currentTrack) return;
 
-    const { queue, first, album } = buildSeed(tracks);
+    const { queue, first, album } = buildSeed(tracks, { ordered: isAdminCurated });
 
     // Empty/failed server prefetch — recover with a client-side fetch.
     if (!first) {

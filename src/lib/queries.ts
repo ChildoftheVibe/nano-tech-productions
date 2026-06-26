@@ -247,8 +247,56 @@ export const getTracks = unstable_cache(
 
 const PLAYLIST_MAX = 500;
 
+export type PlaylistTracksResult = {
+  tracks: Track[];
+  /** True when the queue comes from the admin-managed playlist table (ordered
+   *  by position). False when falling back to all published tracks (shuffled). */
+  isAdminCurated: boolean;
+};
+
+type PlaylistAlbumRow = {
+  id: string;
+  slug: string;
+  title: string;
+  cover_image: string | null;
+  bg_color: string | null;
+  accent_color: string | null;
+};
+
+// Supabase returns FK-joined relations as arrays even for many-to-one.
+type PlaylistTrackRow = TrackRow & { albums: PlaylistAlbumRow[] | null };
+
+type PlaylistEntryRow = {
+  position: number;
+  tracks: PlaylistTrackRow[] | null;
+};
+
 export const getPlaylistTracks = unstable_cache(
-  async (): Promise<Track[]> => {
+  async (): Promise<PlaylistTracksResult> => {
+    // 1. Try the admin-curated playlist first (playlist table, ordered by position).
+    const { data: playlistData, error: playlistError } = await supabase
+      .from("playlist")
+      .select(
+        `position, tracks!inner(${TRACK_COLUMNS}, albums(id, slug, title, cover_image, bg_color, accent_color))`,
+      )
+      .eq("is_active", true)
+      .order("position", { ascending: true })
+      .limit(PLAYLIST_MAX);
+
+    if (!playlistError && playlistData && playlistData.length > 0) {
+      const tracks = (playlistData as unknown as PlaylistEntryRow[])
+        .flatMap((entry) => entry.tracks ?? [])
+        .filter((t) => !!t.is_published)
+        .map(mapTrack)
+        .filter((t) => !!t.audioUrl);
+
+      if (tracks.length > 0) {
+        logInfo("[queries] getPlaylistTracks (admin curated)", { count: tracks.length });
+        return { tracks, isAdminCurated: true };
+      }
+    }
+
+    // 2. Fall back: all published tracks with audio (shuffled by the client).
     // A track is playable when EITHER audio_url is set (legacy direct URL) OR
     // public_audio_id is set (new path — we derive an MP3 streaming URL from
     // it). Filter on that or-clause so newly-uploaded tracks land in the
@@ -261,12 +309,12 @@ export const getPlaylistTracks = unstable_cache(
       .limit(PLAYLIST_MAX);
     if (error) {
       logError(error, { caller: "queries.getPlaylistTracks" });
-      return [];
+      return { tracks: [], isAdminCurated: false };
     }
     const rows = (data ?? []) as TrackRow[];
     const tracks = rows.map(mapTrack).filter((t) => !!t.audioUrl);
     logInfo("[queries] getPlaylistTracks", { playable: tracks.length, total: rows.length });
-    return tracks;
+    return { tracks, isAdminCurated: false };
   },
   ["playlist-tracks"],
   { revalidate: 60, tags: ["playlist"] },

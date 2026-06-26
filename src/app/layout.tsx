@@ -62,10 +62,8 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const [{ albums: sidebarAlbums }, playlistTracks] = await Promise.all([
-    getAlbums({ page: 1, limit: 50 }),
-    getPlaylistTracks(),
-  ]);
+  const [{ albums: sidebarAlbums }, { tracks: playlistTracks, isAdminCurated }] =
+    await Promise.all([getAlbums({ page: 1, limit: 50 }), getPlaylistTracks()]);
 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${bungee.variable} h-full antialiased`}>
@@ -85,7 +83,7 @@ export default async function RootLayout({
         <Suspense fallback={null}>
           <AnalyticsProvider>
             <PlayerProvider>
-              <PlayerSeeder tracks={playlistTracks} />
+              <PlayerSeeder tracks={playlistTracks} isAdminCurated={isAdminCurated} />
               <RouteChangeFocus />
               <div style={{ display: "flex", height: "100vh", flexDirection: "column" }}>
                 <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
