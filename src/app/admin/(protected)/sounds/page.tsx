@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import type { Album, Instrumental } from "@/lib/db-types";
 import { SoundsManager } from "./SoundsManager";
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/auth";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { getAdminWavUrl } from "@/lib/cloudinary";
 import { clientIpFromHeaders, logAuditEvent } from "@/lib/audit";
 import { logError, logInfo } from "@/lib/logger";

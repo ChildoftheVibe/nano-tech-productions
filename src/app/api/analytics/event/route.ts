@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { clientIpFromHeaders } from "@/lib/audit";
 

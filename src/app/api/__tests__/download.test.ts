@@ -20,7 +20,7 @@ jest.mock("next/server", () => ({
   },
 }));
 
-jest.mock("@/lib/supabase", () => ({
+jest.mock("@/lib/db/admin", () => ({
   supabaseAdmin: { from: jest.fn(), rpc: jest.fn() },
 }));
 jest.mock("@/lib/cloudinary", () => ({
@@ -36,7 +36,7 @@ jest.mock("@/lib/rateLimit", () => ({
 jest.mock("@/lib/logger", () => ({ logError: jest.fn() }));
 
 import { GET } from "@/app/api/download/[token]/route";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { getPurchaseDownloadUrl } from "@/lib/cloudinary";
 import { checkRateLimitStrict } from "@/lib/rateLimit";
 

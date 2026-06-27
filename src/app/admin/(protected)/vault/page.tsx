@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { VaultClient, type VaultTrack } from "./VaultClient";
 
 export const dynamic = "force-dynamic";

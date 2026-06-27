@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { getPurchaseDownloadUrl } from "@/lib/cloudinary";
 import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
 import { checkRateLimitStrict } from "@/lib/rateLimit";

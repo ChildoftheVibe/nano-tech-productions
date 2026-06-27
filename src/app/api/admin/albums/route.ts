@@ -1,6 +1,6 @@
 import { revalidateTag } from "next/cache";
 import { requireAdmin, validateCsrf } from "@/lib/auth";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { logError } from "@/lib/logger";
 import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
 import type { AlbumInput } from "@/lib/db-types";

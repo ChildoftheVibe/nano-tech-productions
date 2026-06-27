@@ -1,7 +1,7 @@
 import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { requireAdmin, validateCsrf } from "@/lib/auth";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { clientIpFromHeaders, logAuditEvent } from "@/lib/audit";
 import { logError } from "@/lib/logger";
 

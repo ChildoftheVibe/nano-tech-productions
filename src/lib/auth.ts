@@ -3,7 +3,7 @@ import "server-only";
 import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import { cookies, headers } from "next/headers";
 import bcrypt from "bcryptjs";
-import { supabaseAdmin } from "./supabase";
+import { supabaseAdmin } from "./db/admin";
 
 export const ADMIN_COOKIE = "ntv_admin_session";
 const CSRF_COOKIE = "ntv-csrf";

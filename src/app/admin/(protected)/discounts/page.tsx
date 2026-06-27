@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import type { Album, DiscountCode } from "@/lib/db-types";
 import { DiscountsManager } from "./DiscountsManager";
 

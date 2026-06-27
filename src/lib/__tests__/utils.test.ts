@@ -1,5 +1,5 @@
 // Mock Supabase before importing modules that depend on it
-jest.mock("@/lib/supabase", () => ({
+jest.mock("@/lib/db/admin", () => ({
   supabaseAdmin: { rpc: jest.fn() },
 }));
 jest.mock("@/lib/logger", () => ({
@@ -10,7 +10,7 @@ jest.mock("@/lib/logger", () => ({
 
 import { formatPrice } from "../utils";
 import { checkRateLimit, checkRateLimitStrict } from "../rateLimit";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 
 const mockRpc = supabaseAdmin.rpc as jest.Mock;
 

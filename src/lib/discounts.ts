@@ -1,6 +1,6 @@
 import "server-only";
 
-import { supabaseAdmin } from "./supabase";
+import { supabaseAdmin } from "./db/admin";
 
 export type DiscountCheckItem = {
   id: string;

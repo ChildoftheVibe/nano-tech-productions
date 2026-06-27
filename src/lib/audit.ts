@@ -1,6 +1,6 @@
 import "server-only";
 
-import { supabaseAdmin } from "./supabase";
+import { supabaseAdmin } from "./db/admin";
 import { logError } from "@/lib/logger";
 
 export type AuditEvent = {

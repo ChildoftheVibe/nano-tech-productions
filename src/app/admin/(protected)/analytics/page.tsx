@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { AnalyticsClient, type AnalyticsData } from "./AnalyticsClient";
 
 export const dynamic = "force-dynamic";

@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { ArtistsManager, type AdminArtistRow } from "./ArtistsManager";
 import type { AdminTrackOption, AdminAlbumOption } from "./ArtistForm";
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { RegisterPasskey } from "@/components/admin/RegisterPasskey";
 
 export const dynamic = "force-dynamic";

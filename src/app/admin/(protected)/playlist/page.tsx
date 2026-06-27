@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { PlaylistManager, type PlaylistEntry, type TrackOption } from "./PlaylistManager";
 
 export const dynamic = "force-dynamic";

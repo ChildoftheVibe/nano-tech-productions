@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyAuthenticationResponse } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { createSession, setAdminCookie, setCsrfCookie } from "@/lib/auth";
 import { clientIpFromHeaders } from "@/lib/audit";
 import { logError } from "@/lib/logger";

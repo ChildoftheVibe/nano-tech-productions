@@ -2,12 +2,12 @@
  * @jest-environment node
  */
 
-jest.mock("@/lib/supabase", () => ({
+jest.mock("@/lib/db/admin", () => ({
   supabaseAdmin: { from: jest.fn() },
 }));
 
 import { validateDiscount } from "@/lib/discounts";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 
 const mockFrom = supabaseAdmin.from as jest.Mock;
 

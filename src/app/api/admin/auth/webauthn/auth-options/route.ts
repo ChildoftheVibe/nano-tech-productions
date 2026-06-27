@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/db/admin";
 import { checkRateLimitStrict } from "@/lib/rateLimit";
 import { clientIpFromHeaders } from "@/lib/audit";
 
