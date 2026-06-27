@@ -10,8 +10,15 @@ const config: Config = {
     "^server-only$": "<rootDir>/src/__mocks__/server-only.ts",
     "^@/(.*)$": "<rootDir>/src/$1",
   },
-  // Keep Playwright specs out of Jest's scan
-  testPathIgnorePatterns: ["/node_modules/", "/.next/", "<rootDir>/tests/"],
+  // Keep Playwright specs, agent worktree copies, and the separately-rooted
+  // nano-marketing-agent-repo sub-project out of Jest's scan
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/.next/",
+    "<rootDir>/tests/",
+    "<rootDir>/.claude/worktrees/",
+    "<rootDir>/nano-marketing-agent-repo/",
+  ],
 };
 
 export default createJestConfig(config);
