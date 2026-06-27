@@ -41,7 +41,7 @@ export default function AlbumCoverModal({
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#121212]/80"
           onClick={onClose}
         >
           <motion.div
@@ -61,7 +61,7 @@ export default function AlbumCoverModal({
             />
             <button
               onClick={onClose}
-              className="absolute top-2 right-2 p-1 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+              className="absolute top-2 right-2 p-1 rounded-full bg-[#121212]/50 text-white hover:bg-[#121212]/70 transition-colors"
               aria-label="Close"
             >
               <X size={24} />

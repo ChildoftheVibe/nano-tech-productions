@@ -136,7 +136,7 @@ export function SearchBar({
       />
       {showShortcut && !focused && !value ? (
         <kbd
-          className="hidden flex-shrink-0 rounded border border-white/15 bg-black/30 px-1.5 py-0.5 font-mono text-[10px] text-white/50 sm:inline-block"
+          className="hidden flex-shrink-0 rounded border border-white/15 bg-[#121212]/30 px-1.5 py-0.5 font-mono text-[10px] text-white/50 sm:inline-block"
           aria-hidden="true"
         >
           {isMac() ? "⌘K" : "Ctrl K"}

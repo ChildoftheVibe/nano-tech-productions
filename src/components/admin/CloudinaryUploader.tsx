@@ -162,7 +162,7 @@ export function CloudinaryUploader({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={progress !== null || disabled}
-          className="flex items-center gap-2 rounded border border-white/20 bg-black/30 px-3 py-2 text-sm hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center gap-2 rounded border border-white/20 bg-[#121212]/30 px-3 py-2 text-sm hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Upload size={14} />
           {progress !== null ? `Uploading… ${progress}%` : hasFile ? "Replace" : "Choose file"}

@@ -154,7 +154,7 @@ export function PreviewPlayer({ instrumental }: Props) {
           disabled={!canPlay}
           aria-label={playLabel}
           aria-pressed={isPlaying}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-black transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-[#121212] transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           style={{ background: "#62f3e4" }}
         >
           {isPlaying ? (

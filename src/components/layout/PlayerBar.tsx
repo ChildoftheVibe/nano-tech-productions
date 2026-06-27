@@ -308,7 +308,7 @@ export function PlayerBar() {
         ) : (
           <div className="flex w-full items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded bg-gradient-to-br from-[#62f3e4] to-[#ffabef]">
-              <span className="font-mono text-xs font-bold text-black">NTV</span>
+              <span className="font-mono text-xs font-bold text-[#121212]">NTV</span>
             </div>
             <div className="text-sm text-[#B3B3B3]">No track playing</div>
           </div>
@@ -417,7 +417,7 @@ export function PlayerBar() {
           ) : (
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded bg-gradient-to-br from-[#62f3e4] to-[#ffabef]">
-                <span className="font-mono text-xs font-bold text-black">NTV</span>
+                <span className="font-mono text-xs font-bold text-[#121212]">NTV</span>
               </div>
               <div className="text-sm text-[#B3B3B3]">No track playing</div>
             </div>

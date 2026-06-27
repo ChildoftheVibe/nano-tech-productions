@@ -215,7 +215,7 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
         <button
           onClick={addAllPublished}
           disabled={busy}
-          className="rounded-full bg-[#3DD6C8] px-4 py-2 text-sm font-medium text-black disabled:opacity-50"
+          className="rounded-full bg-[#3DD6C8] px-4 py-2 text-sm font-medium text-[#121212] disabled:opacity-50"
         >
           + Add all published tracks
         </button>
@@ -316,7 +316,7 @@ export function PlaylistManager({ initialEntries, tracks }: Props) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tracks…"
-            className="w-full max-w-sm rounded border border-white/15 bg-black/30 px-3 py-1.5 text-sm outline-none focus:border-[#3DD6C8]"
+            className="w-full max-w-sm rounded border border-white/15 bg-[#121212]/30 px-3 py-1.5 text-sm outline-none focus:border-[#3DD6C8]"
           />
           {search && (
             <button

@@ -145,7 +145,7 @@ function TopTable({
   return (
     <div className="overflow-hidden rounded-lg border border-white/10 bg-[#222121]">
       <table className="w-full text-sm">
-        <thead className="bg-black/20 text-left text-xs uppercase tracking-wider text-white/50">
+        <thead className="bg-[#121212]/20 text-left text-xs uppercase tracking-wider text-white/50">
           <tr>
             <th className="w-10 px-4 py-2">#</th>
             <th className="px-4 py-2">Title</th>
@@ -368,7 +368,7 @@ export function AnalyticsClient({ data }: { data: AnalyticsData }) {
                 href={data.posthogProjectUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded bg-[#3DD6C8] px-4 py-2 text-sm font-medium text-black"
+                className="inline-flex items-center gap-2 rounded bg-[#3DD6C8] px-4 py-2 text-sm font-medium text-[#121212]"
               >
                 <ExternalLink size={14} /> Open PostHog dashboard
               </a>
@@ -377,7 +377,7 @@ export function AnalyticsClient({ data }: { data: AnalyticsData }) {
                 href="https://us.posthog.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded bg-[#3DD6C8] px-4 py-2 text-sm font-medium text-black"
+                className="inline-flex items-center gap-2 rounded bg-[#3DD6C8] px-4 py-2 text-sm font-medium text-[#121212]"
               >
                 <ExternalLink size={14} /> Open PostHog
               </a>
@@ -389,7 +389,7 @@ export function AnalyticsClient({ data }: { data: AnalyticsData }) {
             </p>
           </div>
           <p className="mt-4 text-xs text-white/40">
-            Set <code className="rounded bg-black/30 px-1 py-0.5">POSTHOG_PROJECT_URL</code> in
+            Set <code className="rounded bg-[#121212]/30 px-1 py-0.5">POSTHOG_PROJECT_URL</code> in
             .env.local to deep-link directly into your project.
           </p>
         </div>

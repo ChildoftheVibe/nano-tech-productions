@@ -59,7 +59,7 @@ export default function GlobalError({ error, reset }: Props) {
             style={{
               marginTop: "2rem",
               background: "#62f3e4",
-              color: "#000",
+              color: "#121212",
               border: "none",
               borderRadius: 9999,
               padding: "0.625rem 1.5rem",

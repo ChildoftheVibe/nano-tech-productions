@@ -130,7 +130,7 @@ export default async function AdminOrdersPage({
         <>
           <div className="overflow-x-auto rounded-lg border border-white/10 bg-[#222121]">
             <table className="w-full text-sm">
-              <thead className="bg-black/20 text-left text-xs uppercase tracking-wider text-white/50">
+              <thead className="bg-[#121212]/20 text-left text-xs uppercase tracking-wider text-white/50">
                 <tr>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">PayPal ID</th>

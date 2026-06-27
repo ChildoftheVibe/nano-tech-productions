@@ -469,7 +469,7 @@ export function ArtistForm({
           onChange={setTrackSearch}
         />
         {trackMatches.length > 0 ? (
-          <ul className="mt-2 max-h-48 overflow-y-auto rounded border border-white/10 bg-black/30">
+          <ul className="mt-2 max-h-48 overflow-y-auto rounded border border-white/10 bg-[#121212]/30">
             {trackMatches.map((t) => (
               <li key={t.id}>
                 <button
@@ -552,7 +552,7 @@ export function ArtistForm({
           onChange={setAlbumSearch}
         />
         {albumMatches.length > 0 ? (
-          <ul className="mt-2 max-h-48 overflow-y-auto rounded border border-white/10 bg-black/30">
+          <ul className="mt-2 max-h-48 overflow-y-auto rounded border border-white/10 bg-[#121212]/30">
             {albumMatches.map((a) => (
               <li key={a.id}>
                 <button
@@ -623,7 +623,7 @@ export function ArtistForm({
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-full bg-[#3DD6C8] px-5 py-2 text-sm font-bold text-black hover:brightness-110 disabled:opacity-50"
+          className="rounded-full bg-[#3DD6C8] px-5 py-2 text-sm font-bold text-[#121212] hover:brightness-110 disabled:opacity-50"
         >
           {submitting ? "Saving…" : artistId ? "Save Changes" : "Create Artist"}
         </button>

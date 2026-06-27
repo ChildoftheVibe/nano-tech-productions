@@ -118,7 +118,7 @@ export function AlbumsManager({
     <div>
       <button
         onClick={() => setMode({ kind: "create" })}
-        className="mb-4 rounded-full bg-[#3DD6C8] px-4 py-2 font-medium text-black"
+        className="mb-4 rounded-full bg-[#3DD6C8] px-4 py-2 font-medium text-[#121212]"
       >
         + Add album
       </button>
@@ -129,7 +129,7 @@ export function AlbumsManager({
         <>
           <div className="overflow-x-auto rounded-lg border border-white/10 bg-[#222121]">
             <table className="w-full text-sm">
-              <thead className="bg-black/20 text-left text-xs uppercase tracking-wider text-white/50">
+              <thead className="bg-[#121212]/20 text-left text-xs uppercase tracking-wider text-white/50">
                 <tr>
                   <th scope="col" className="px-4 py-3">Cover</th>
                   <th scope="col" className="px-4 py-3">Title</th>

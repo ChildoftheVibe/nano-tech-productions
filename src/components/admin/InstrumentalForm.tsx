@@ -181,7 +181,7 @@ export function InstrumentalForm({
           <button
             type="submit"
             disabled={saving}
-            className="rounded-full bg-[#3DD6C8] px-3 py-1.5 text-sm font-bold text-black disabled:opacity-50"
+            className="rounded-full bg-[#3DD6C8] px-3 py-1.5 text-sm font-bold text-[#121212] disabled:opacity-50"
           >
             {saving ? "Saving…" : "Save"}
           </button>
@@ -265,7 +265,7 @@ export function InstrumentalForm({
             <select
               value={form.album_id}
               onChange={(e) => set("album_id", e.target.value)}
-              className="w-full rounded border border-white/15 bg-black/40 px-3 py-2 text-sm"
+              className="w-full rounded border border-white/15 bg-[#121212]/40 px-3 py-2 text-sm"
             >
               <option value="">— Select album —</option>
               {albums.map((a) => (

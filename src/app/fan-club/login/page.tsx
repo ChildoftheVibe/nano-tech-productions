@@ -234,7 +234,7 @@ export default function FanClubLoginPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
-                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-black/60"
+                        className="w-full rounded-lg border border-white/[0.09] bg-[#121212]/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-[#121212]/60"
                       />
                     </label>
 
@@ -250,7 +250,7 @@ export default function FanClubLoginPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••••"
-                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-black/60"
+                        className="w-full rounded-lg border border-white/[0.09] bg-[#121212]/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-[#121212]/60"
                       />
                     </label>
 
@@ -271,7 +271,7 @@ export default function FanClubLoginPage() {
                     <motion.button
                       type="submit"
                       disabled={status === "loading" || !email || !password}
-                      className="w-full rounded-full py-3 font-mono text-sm font-bold uppercase tracking-[0.18em] text-black disabled:opacity-40"
+                      className="w-full rounded-full py-3 font-mono text-sm font-bold uppercase tracking-[0.18em] text-[#121212] disabled:opacity-40"
                       style={{ background: "#62f3e4" }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.97 }}

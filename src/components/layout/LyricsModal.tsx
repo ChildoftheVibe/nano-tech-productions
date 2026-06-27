@@ -107,7 +107,7 @@ export function LyricsModal() {
       {open && currentTrack ? (
         <motion.div
           key="lyrics-overlay"
-          className="fixed inset-0 z-[9998] bg-black/85 backdrop-blur-lg"
+          className="fixed inset-0 z-[9998] bg-[#121212]/85 backdrop-blur-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.25, ease: "easeIn" } }}

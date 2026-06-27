@@ -95,7 +95,7 @@ export function AlbumCard({
       )}
       {showHoverPlay && onPlay ? (
         <>
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
+          <div className="absolute inset-0 bg-[#121212]/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
           <button
             onClick={(e) => {
               e.preventDefault();

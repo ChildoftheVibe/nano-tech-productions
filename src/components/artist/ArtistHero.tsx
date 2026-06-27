@@ -194,7 +194,7 @@ export function ArtistHero({ artist }: { artist: Artist }) {
               rel="noopener noreferrer"
               aria-label={link.label}
               title={link.label}
-              className="ntv-artist-social flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/30 text-white/70 transition-colors hover:text-white"
+              className="ntv-artist-social flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-[#121212]/30 text-white/70 transition-colors hover:text-white"
               style={
                 { ["--hover-color" as string]: link.hoverColor } as React.CSSProperties
               }

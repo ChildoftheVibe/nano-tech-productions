@@ -36,7 +36,7 @@ export function TopBar() {
         <motion.button
           onClick={() => router.back()}
           aria-label="Go back"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#121212]/40 text-white hover:bg-[#121212]/60"
           whileTap={{ scale: 0.88 }}
         >
           <ChevronLeft size={20} />
@@ -44,7 +44,7 @@ export function TopBar() {
         <motion.button
           onClick={() => router.forward()}
           aria-label="Go forward"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#121212]/40 text-white hover:bg-[#121212]/60"
           whileTap={{ scale: 0.88 }}
         >
           <ChevronRight size={20} />

@@ -134,7 +134,7 @@ export function TracksManager({
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <button
           onClick={() => setMode({ kind: "create" })}
-          className="rounded-full bg-[#3DD6C8] px-4 py-2 font-medium text-black"
+          className="rounded-full bg-[#3DD6C8] px-4 py-2 font-medium text-[#121212]"
         >
           + Add track
         </button>
@@ -165,7 +165,7 @@ export function TracksManager({
             style={{ maxHeight: "calc(100vh - 240px)" }}
           >
             <table className="w-full text-sm">
-              <thead className="bg-black/20 text-left text-xs uppercase tracking-wider text-white/50">
+              <thead className="bg-[#121212]/20 text-left text-xs uppercase tracking-wider text-white/50">
                 <tr>
                   <th scope="col" className="px-4 py-3">#</th>
                   <th scope="col" className="px-4 py-3">Title</th>

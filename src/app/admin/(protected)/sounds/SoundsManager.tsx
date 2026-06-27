@@ -128,7 +128,7 @@ export function SoundsManager({
             <select
               value={typeFilter}
               onChange={(e) => updateFilter("type", e.target.value)}
-              className="ml-2 rounded border border-white/15 bg-black/40 px-2 py-1 text-sm"
+              className="ml-2 rounded border border-white/15 bg-[#121212]/40 px-2 py-1 text-sm"
             >
               <option value="">All</option>
               <option value="single">Singles</option>
@@ -140,7 +140,7 @@ export function SoundsManager({
             <select
               value={albumFilter}
               onChange={(e) => updateFilter("album", e.target.value)}
-              className="ml-2 rounded border border-white/15 bg-black/40 px-2 py-1 text-sm"
+              className="ml-2 rounded border border-white/15 bg-[#121212]/40 px-2 py-1 text-sm"
             >
               <option value="">All</option>
               <option value="none">— (no album)</option>
@@ -156,20 +156,20 @@ export function SoundsManager({
         <button
           type="button"
           onClick={() => setMode({ kind: "create" })}
-          className="inline-flex items-center gap-2 rounded-full bg-[#3DD6C8] px-3 py-1.5 text-sm font-bold text-black"
+          className="inline-flex items-center gap-2 rounded-full bg-[#3DD6C8] px-3 py-1.5 text-sm font-bold text-[#121212]"
         >
           <Plus size={14} /> Add Instrumental
         </button>
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded border border-white/10 bg-black/30 p-8 text-center">
+        <div className="rounded border border-white/10 bg-[#121212]/30 p-8 text-center">
           <Music size={28} className="mx-auto mb-2 text-[#3DD6C8]" />
           <p className="text-sm text-white/70">No instrumentals yet.</p>
           <button
             type="button"
             onClick={() => setMode({ kind: "create" })}
-            className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#3DD6C8] px-3 py-1.5 text-sm font-bold text-black"
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#3DD6C8] px-3 py-1.5 text-sm font-bold text-[#121212]"
           >
             <Plus size={14} /> Add your first instrumental
           </button>
@@ -177,7 +177,7 @@ export function SoundsManager({
       ) : (
         <div className="overflow-x-auto rounded border border-white/10">
           <table className="w-full min-w-[900px] text-sm">
-            <thead className="bg-black/40 text-left text-[11px] uppercase tracking-wider text-white/60">
+            <thead className="bg-[#121212]/40 text-left text-[11px] uppercase tracking-wider text-white/60">
               <tr>
                 <th scope="col" className="px-3 py-2">Cover</th>
                 <th scope="col" className="px-3 py-2">Title</th>

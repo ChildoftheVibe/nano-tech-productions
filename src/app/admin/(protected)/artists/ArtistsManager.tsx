@@ -230,7 +230,7 @@ export function ArtistsManager({ initialArtists, allTracks, allAlbums }: Props) 
         <button
           type="button"
           onClick={() => setView({ mode: "new" })}
-          className="inline-flex items-center gap-2 rounded bg-[#3DD6C8] px-4 py-2 text-sm font-bold text-black hover:brightness-110"
+          className="inline-flex items-center gap-2 rounded bg-[#3DD6C8] px-4 py-2 text-sm font-bold text-[#121212] hover:brightness-110"
         >
           <Plus size={16} />
           Add New Artist

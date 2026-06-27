@@ -122,7 +122,7 @@ export default function AdminLoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="w-full rounded border border-white/15 bg-black/30 px-3 py-2 outline-none focus:border-[#3DD6C8]"
+            className="w-full rounded border border-white/15 bg-[#121212]/30 px-3 py-2 outline-none focus:border-[#3DD6C8]"
           />
         </label>
 
@@ -135,7 +135,7 @@ export default function AdminLoginPage() {
         <button
           type="submit"
           disabled={submitting || !password}
-          className="w-full rounded bg-[#3DD6C8] py-2.5 font-medium text-black transition-opacity disabled:opacity-50"
+          className="w-full rounded bg-[#3DD6C8] py-2.5 font-medium text-[#121212] transition-opacity disabled:opacity-50"
         >
           {submitting ? "Signing in…" : "Sign in"}
         </button>

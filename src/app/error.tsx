@@ -45,7 +45,7 @@ export default function GlobalRouteError({ error, reset }: Props) {
       </p>
       {isDev ? (
         <pre
-          className="mt-6 max-w-2xl overflow-auto rounded border border-white/10 bg-black/40 p-4 text-left font-mono text-[11px] text-white/70"
+          className="mt-6 max-w-2xl overflow-auto rounded border border-white/10 bg-[#121212]/40 p-4 text-left font-mono text-[11px] text-white/70"
           style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
         >
           {error.message}
@@ -65,7 +65,7 @@ export default function GlobalRouteError({ error, reset }: Props) {
         <button
           type="button"
           onClick={() => reset()}
-          className="inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-bold text-black transition-transform hover:scale-105"
+          className="inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-bold text-[#121212] transition-transform hover:scale-105"
           style={{ background: "#62f3e4" }}
         >
           Try Again

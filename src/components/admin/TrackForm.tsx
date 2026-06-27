@@ -537,7 +537,7 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-full bg-[#3DD6C8] px-4 py-2 font-medium text-black disabled:opacity-50"
+          className="rounded-full bg-[#3DD6C8] px-4 py-2 font-medium text-[#121212] disabled:opacity-50"
         >
           {submitting ? "Saving…" : initial ? "Save changes" : "Create track"}
         </button>

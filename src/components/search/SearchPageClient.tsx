@@ -418,7 +418,7 @@ export function SearchPageClient() {
                     : `name:${artist.name}`;
                   const avatarEl = (
                     <span
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full font-bold text-black"
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full font-bold text-[#121212]"
                       style={{ background: "#62f3e4" }}
                     >
                       {artist.profileImage ? (

@@ -122,7 +122,7 @@ export function DiscountsManager({ initialDiscounts, albums }: Props) {
     <div>
       <button
         onClick={() => setMode({ kind: "create" })}
-        className="mb-4 rounded-full bg-[#3DD6C8] px-4 py-2 font-medium text-black"
+        className="mb-4 rounded-full bg-[#3DD6C8] px-4 py-2 font-medium text-[#121212]"
       >
         + Create code
       </button>
@@ -132,7 +132,7 @@ export function DiscountsManager({ initialDiscounts, albums }: Props) {
       ) : (
         <div className="overflow-x-auto rounded-lg border border-white/10 bg-[#222121]">
           <table className="w-full text-sm">
-            <thead className="bg-black/20 text-left text-xs uppercase tracking-wider text-white/50">
+            <thead className="bg-[#121212]/20 text-left text-xs uppercase tracking-wider text-white/50">
               <tr>
                 <th className="px-4 py-3">Code</th>
                 <th className="px-4 py-3">Off</th>

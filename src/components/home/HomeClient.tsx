@@ -157,9 +157,9 @@ export function HomeClient({
               }}
             />
             {/* Scrim */}
-            <div className="absolute inset-0 bg-black/40 z-10 pointer-events-none" />
+            <div className="absolute inset-0 bg-[#121212]/40 z-10 pointer-events-none" />
             {/* Gradient overlay at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-gradient-to-t from-black/90 via-black/30 to-transparent z-10 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-gradient-to-t from-[#121212]/90 via-[#121212]/30 to-transparent z-10 pointer-events-none" />
             {/* Content */}
             <div className="absolute bottom-0 left-0 p-8 md:p-12 z-20 max-w-2xl">
               <div className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-[0.3em] text-[#ffabef] mb-3">
@@ -407,7 +407,7 @@ export function HomeClient({
               </div>
               <motion.button
                 onClick={togglePlayPause}
-                className="mt-4 flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold text-black"
+                className="mt-4 flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold text-[#121212]"
                 style={{ background: currentAlbum?.accentColor ?? "#62f3e4" }}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}

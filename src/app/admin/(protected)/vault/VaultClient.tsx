@@ -189,7 +189,7 @@ export function VaultClient({ tracks }: { tracks: VaultTrack[] }) {
         These are your irreplaceable master files. All access is logged.
       </div>
 
-      <div className="mb-6 rounded border border-white/10 bg-black/30 p-4">
+      <div className="mb-6 rounded border border-white/10 bg-[#121212]/30 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="text-xs uppercase tracking-wider text-white/60">Vault Player</div>
@@ -224,7 +224,7 @@ export function VaultClient({ tracks }: { tracks: VaultTrack[] }) {
       ) : (
         <div className="overflow-x-auto rounded border border-white/10">
           <table className="w-full min-w-[900px] text-sm">
-            <thead className="bg-black/40 text-left text-[11px] uppercase tracking-wider text-white/60">
+            <thead className="bg-[#121212]/40 text-left text-[11px] uppercase tracking-wider text-white/60">
               <tr>
                 <th className="px-3 py-2">Album</th>
                 <th className="px-3 py-2">Track</th>
@@ -286,7 +286,7 @@ export function VaultClient({ tracks }: { tracks: VaultTrack[] }) {
                       </button>
                     </div>
                     {logsForTrackId === t.id ? (
-                      <div className="mt-2 max-h-48 overflow-y-auto rounded border border-white/10 bg-black/40 p-2 text-[11px] text-white/80">
+                      <div className="mt-2 max-h-48 overflow-y-auto rounded border border-white/10 bg-[#121212]/40 p-2 text-[11px] text-white/80">
                         {logsLoading ? (
                           <div>Loading…</div>
                         ) : logs.length === 0 ? (

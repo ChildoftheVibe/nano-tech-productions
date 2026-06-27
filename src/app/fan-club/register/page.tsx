@@ -243,7 +243,7 @@ export default function FanClubRegisterPage() {
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         placeholder="Your name"
-                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-black/60"
+                        className="w-full rounded-lg border border-white/[0.09] bg-[#121212]/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-[#121212]/60"
                       />
                     </label>
 
@@ -259,7 +259,7 @@ export default function FanClubRegisterPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
-                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-black/60"
+                        className="w-full rounded-lg border border-white/[0.09] bg-[#121212]/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-[#121212]/60"
                       />
                     </label>
 
@@ -276,7 +276,7 @@ export default function FanClubRegisterPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Min 8 characters"
-                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-black/60"
+                        className="w-full rounded-lg border border-white/[0.09] bg-[#121212]/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-[#121212]/60"
                       />
                     </label>
 
@@ -292,7 +292,7 @@ export default function FanClubRegisterPage() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Repeat password"
-                        className="w-full rounded-lg border border-white/[0.09] bg-black/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-black/60"
+                        className="w-full rounded-lg border border-white/[0.09] bg-[#121212]/50 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-[#62f3e4]/40 focus:bg-[#121212]/60"
                       />
                     </label>
 
@@ -319,7 +319,7 @@ export default function FanClubRegisterPage() {
                         !password ||
                         !confirmPassword
                       }
-                      className="w-full rounded-full py-3 font-mono text-sm font-bold uppercase tracking-[0.18em] text-black disabled:opacity-40"
+                      className="w-full rounded-full py-3 font-mono text-sm font-bold uppercase tracking-[0.18em] text-[#121212] disabled:opacity-40"
                       style={{ background: "#62f3e4" }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.97 }}

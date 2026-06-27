@@ -296,7 +296,7 @@ function CheckoutModalContent({
                   value={discountInput}
                   onChange={(e) => setDiscountInput(e.target.value)}
                   placeholder="Enter code"
-                  className="flex-1 rounded border border-white/15 bg-black/30 px-3 py-2 text-sm outline-none focus:border-[#62f3e4]"
+                  className="flex-1 rounded border border-white/15 bg-[#121212]/30 px-3 py-2 text-sm outline-none focus:border-[#62f3e4]"
                   disabled={discount.applied || validating}
                 />
                 {discount.applied ? (
@@ -361,7 +361,7 @@ function CheckoutModalContent({
             {!paypalReady ? (
               <div className="rounded border border-yellow-500/40 bg-yellow-500/10 p-3 text-xs text-yellow-200">
                 PayPal client ID is not configured. Set
-                <code className="mx-1 rounded bg-black/30 px-1">
+                <code className="mx-1 rounded bg-[#121212]/30 px-1">
                   NEXT_PUBLIC_PAYPAL_CLIENT_ID
                 </code>
                 in your environment.
@@ -685,7 +685,7 @@ function SuccessView({
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="ntv-btn block rounded-full px-5 py-2 text-sm font-bold text-black"
+              className="ntv-btn block rounded-full px-5 py-2 text-sm font-bold text-[#121212]"
               style={{ background: "#62f3e4" }}
             >
               Download{" "}
