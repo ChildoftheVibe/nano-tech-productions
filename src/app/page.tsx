@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import {
   getAlbums,
-  getAlbum,
+  getLatestAlbum,
   getFeaturedAlbums,
   getFeaturedArtists,
   getTracks,
@@ -21,7 +21,7 @@ async function HomeData() {
   const [featured, latest, initialCollection, featuredArtists, tracksResult] =
     await Promise.all([
       getFeaturedAlbums(),
-      getAlbum("nano-tech-purple"),
+      getLatestAlbum(),
       getAlbums({ page: 1, limit: PAGE_SIZE, published: true }),
       getFeaturedArtists(),
       getTracks({ published: true, limit: 6 }),

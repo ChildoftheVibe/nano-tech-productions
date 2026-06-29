@@ -201,6 +201,30 @@ export const getFeaturedAlbums = unstable_cache(
   { revalidate: 300, tags: ["albums", "featured"] },
 );
 
+export const getLatestAlbum = unstable_cache(
+  async (): Promise<Album | null> => {
+    const { data, error } = await supabase
+      .from("albums")
+      .select(`${ALBUM_COLUMNS}, tracks(${TRACK_COLUMNS})`)
+      .eq("is_published", true)
+      .order("release_date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) {
+      if (error) logError(error, { caller: "queries.getLatestAlbum" });
+      return null;
+    }
+    const row = data as AlbumRow;
+    const tracks = (row.tracks ?? [])
+      .filter((t) => t.is_published)
+      .map(mapTrack)
+      .sort((a, b) => a.trackNumber - b.trackNumber);
+    return mapAlbum(row, tracks);
+  },
+  ["album-latest"],
+  { revalidate: 300, tags: ["albums"] },
+);
+
 export const getAlbum = unstable_cache(
   async (slug: string): Promise<Album | null> => {
     const { data, error } = await supabase
