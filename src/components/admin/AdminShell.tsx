@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Users,
   Volume2,
+  Star,
 } from "lucide-react";
 
 const NAV = [
@@ -25,6 +26,7 @@ const NAV = [
   { href: "/admin/discounts", label: "Discounts", icon: Tag },
   { href: "/admin/orders", label: "Orders", icon: Receipt },
   { href: "/admin/playlist", label: "Playlist", icon: ListMusic },
+  { href: "/admin/featured", label: "Featured", icon: Star },
   { href: "/admin/vault", label: "Vault", icon: ShieldCheck, accent: "#EB41DF" },
 ];
 

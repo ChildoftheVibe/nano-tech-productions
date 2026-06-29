@@ -173,11 +173,32 @@ export const getAlbums = unstable_cache(
 
 export const getFeaturedAlbums = unstable_cache(
   async (): Promise<Album[]> => {
+    // Prefer the admin-curated featured_albums list; fall back to the first 3
+    // published albums when no entries have been configured yet.
+    const { data } = await supabase
+      .from("featured_albums")
+      .select(`position, album:albums(${ALBUM_COLUMNS})`)
+      .eq("is_active", true)
+      .order("position", { ascending: true, nullsFirst: false });
+
+    if (data && data.length > 0) {
+      const rows = data as Array<{
+        position: number | null;
+        album: AlbumRow | AlbumRow[] | null;
+      }>;
+      return rows.flatMap(({ album }) => {
+        const a = Array.isArray(album) ? album[0] : album;
+        if (!a) return [];
+        return [mapAlbum(a)];
+      });
+    }
+
+    // Fallback: no featured rows configured — return first 3 published albums.
     const { albums } = await getAlbums({ page: 1, limit: 3, published: true });
     return albums;
   },
   ["albums-featured"],
-  { revalidate: 300, tags: ["albums"] },
+  { revalidate: 300, tags: ["albums", "featured"] },
 );
 
 export const getAlbum = unstable_cache(
