@@ -33,6 +33,8 @@ type PlayerContextValue = {
    *  Pass `autoplay` to begin playback once a track is loaded (used when the
    *  full-screen player opens onto an empty queue). Safe to call repeatedly. */
   ensureQueueSeeded: (autoplay?: boolean) => Promise<void>;
+  /** Fetch an album by slug (if its tracks aren't loaded) then play it. */
+  playAlbumBySlug: (slug: string) => Promise<void>;
   /** Attempt to start playback of the current track immediately. If the browser
    *  blocks autoplay (no prior gesture / low media engagement), arm one-time
    *  global gesture listeners that start playback on the user's first
@@ -645,6 +647,20 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     [ensureSrc, primePlayback],
   );
 
+  const playAlbumBySlug = useCallback(
+    async (slug: string) => {
+      try {
+        const res = await fetch(`/api/albums/${encodeURIComponent(slug)}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const album = (await res.json()) as import("@/types/music").Album;
+        playFromAlbum(album);
+      } catch {
+        // silently ignore fetch errors — player state unchanged
+      }
+    },
+    [playFromAlbum],
+  );
+
   return (
     <PlayerContext.Provider
       value={{
@@ -652,6 +668,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         togglePlayPause,
         playFromTrack,
         playFromAlbum,
+        playAlbumBySlug,
         nextAndPlay,
         previousAndPlay,
         ensureQueueSeeded,

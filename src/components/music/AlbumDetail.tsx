@@ -179,6 +179,7 @@ export function AlbumDetail({
               bgColor={album.bgColor}
               title={album.title}
               size="lg"
+              onPlay={album.tracks.length ? handlePlay : undefined}
             />
           </motion.div>
 

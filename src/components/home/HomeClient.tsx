@@ -10,7 +10,6 @@ import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { usePageEngagement } from "@/lib/usePageEngagement";
 import type { Album, AlbumListResult, Artist, Track } from "@/types/music";
-import { getAlbumCover } from "@/lib/albumCover";
 
 const PAGE_SIZE =
   Number(process.env.NEXT_PUBLIC_ALBUMS_PER_PAGE) > 0
@@ -102,7 +101,7 @@ export function HomeClient({
 
   usePageEngagement("/");
 
-  const { playFromAlbum, togglePlayPause } = usePlayer();
+  const { playFromAlbum, playAlbumBySlug, togglePlayPause } = usePlayer();
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const currentAlbum = usePlayerStore((s) => s.currentAlbum);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
@@ -147,17 +146,24 @@ export function HomeClient({
       >
         {latest ? (
           <div className="relative h-[360px] md:h-[450px] overflow-hidden rounded-xl group cursor-pointer">
-            {/* Background cover image */}
+            {/* Accent gradient background */}
             <div
               className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
               style={{
-                backgroundImage: `url(${getAlbumCover(latest.coverImage, "lg")})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
+                background: `linear-gradient(135deg, ${latest.accentColor} 0%, #121212 100%)`,
               }}
             />
+            {/* Nano Tech logo, centered */}
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+              {/* Static brand asset in /public — not an album cover, so no getAlbumCover() */}
+              <img
+                src="/assets/ntp-logo.svg"
+                alt="Nano Tech"
+                className="h-40 w-40 md:h-56 md:w-56 object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
             {/* Scrim */}
-            <div className="absolute inset-0 bg-[#121212]/40 z-10 pointer-events-none" />
+            <div className="absolute inset-0 bg-[#121212]/30 z-10 pointer-events-none" />
             {/* Gradient overlay at bottom */}
             <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-gradient-to-t from-[#121212]/90 via-[#121212]/30 to-transparent z-10 pointer-events-none" />
             {/* Content */}
@@ -246,7 +252,7 @@ export function HomeClient({
                   size="md"
                   href={`/album/${album.slug}`}
                   showHoverPlay
-                  onPlay={() => playFromAlbum(album)}
+                  onPlay={() => void playAlbumBySlug(album.slug)}
                   priority={idx < 6}
                   fetchPriority={idx < 3 ? "high" : undefined}
                 />
@@ -330,27 +336,26 @@ export function HomeClient({
         >
           {collection.map((album) => (
             <motion.div key={album.id} variants={itemFadeUp}>
-              <Link href={`/album/${album.slug}`} className="group block">
-                <div
-                  className="aspect-square w-full overflow-hidden rounded-lg mb-2"
-                  style={{ background: album.bgColor }}
-                >
-                  {album.coverImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={getAlbumCover(album.coverImage, "md")}
-                      alt={album.title}
-                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : null}
-                </div>
-                <div className="truncate text-sm font-semibold text-[#dde4e2] mb-1 transition-colors group-hover:text-[#62f3e4]">
-                  {album.title}
+              <AlbumCard
+                album={album}
+                size="md"
+                href={`/album/${album.slug}`}
+                showHoverPlay
+                onPlay={() => void playAlbumBySlug(album.slug)}
+              />
+              <div className="mt-2.5 space-y-1">
+                <div className="truncate text-sm font-semibold text-[#dde4e2] leading-tight">
+                  <Link
+                    href={`/album/${album.slug}`}
+                    className="hover:text-[#62f3e4] transition-colors duration-200"
+                  >
+                    {album.title}
+                  </Link>
                 </div>
                 <div className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-wider text-[#b3b3b3]">
                   {album.releaseDate?.slice(0, 4)}
                 </div>
-              </Link>
+              </div>
             </motion.div>
           ))}
         </motion.div>

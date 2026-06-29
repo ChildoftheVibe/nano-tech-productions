@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Music } from "lucide-react";
+import { Music, Play } from "lucide-react";
 import { getAlbumCover, getCoverVideo } from "@/lib/albumCover";
 
 /**
@@ -28,6 +28,8 @@ type Props = {
   title: string;
   /** Cloudinary delivery size for both image and video. */
   size?: "md" | "lg" | number;
+  /** Called when the user taps/clicks the cover to play the album. */
+  onPlay?: () => void;
 };
 
 export function AlbumCoverCarousel({
@@ -37,6 +39,7 @@ export function AlbumCoverCarousel({
   bgColor,
   title,
   size = "lg",
+  onPlay,
 }: Props) {
   const slides: Slide[] = [];
   if (coverImage) slides.push({ kind: "image", src: getAlbumCover(coverImage, size) });
@@ -105,7 +108,7 @@ export function AlbumCoverCarousel({
 
   return (
     <div
-      className="relative w-full select-none"
+      className={`relative w-full select-none${onPlay ? " group" : ""}`}
       style={{
         borderRadius: 12,
         overflow: "hidden",
@@ -182,6 +185,29 @@ export function AlbumCoverCarousel({
             />
           ))}
         </div>
+      ) : null}
+
+      {/* Play overlay — shown on hover when onPlay is provided */}
+      {onPlay ? (
+        <>
+          <div className="absolute inset-0 bg-[#121212]/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20" />
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPlay();
+            }}
+            aria-label="Play album"
+            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 focus-visible:outline-none z-20"
+          >
+            <span
+              className="flex h-16 w-16 items-center justify-center rounded-full shadow-xl"
+              style={{ background: accent, boxShadow: `0 0 28px ${accent}66` }}
+            >
+              <Play size={26} fill="#003733" className="ml-1 text-[#003733]" aria-hidden="true" />
+            </span>
+          </button>
+        </>
       ) : null}
     </div>
   );

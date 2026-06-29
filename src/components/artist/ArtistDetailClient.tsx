@@ -33,7 +33,7 @@ function artistTrackToTrack(t: ArtistTrack): Track {
 }
 
 export function ArtistDetailClient({ artist }: { artist: Artist }) {
-  const { playFromTrack } = usePlayer();
+  const { playFromTrack, playAlbumBySlug } = usePlayer();
   const albums = artist.albums ?? [];
   const tracks = artist.tracks ?? [];
 
@@ -70,7 +70,13 @@ export function ArtistDetailClient({ artist }: { artist: Artist }) {
               };
               return (
                 <div key={a.id} className="flex flex-col">
-                  <AlbumCard album={albumForCard} size="md" href={`/album/${a.slug}`} />
+                  <AlbumCard
+                    album={albumForCard}
+                    size="md"
+                    href={`/album/${a.slug}`}
+                    showHoverPlay
+                    onPlay={() => void playAlbumBySlug(a.slug)}
+                  />
                   <div className="mt-2 truncate text-sm font-semibold text-white">
                     <Link href={`/album/${a.slug}`} className="hover:underline">
                       {a.title}
