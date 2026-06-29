@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { X } from "lucide-react";
 import type { Album } from "@/lib/db-types";
 import { adminFetch } from "@/lib/adminFetch";
 import { CloudinaryUploader } from "./CloudinaryUploader";
+
+const MAX_COVER_VIDEOS = 4;
 
 type Props = {
   initial?: Album;
@@ -74,6 +77,9 @@ export function AlbumForm({ initial, onSaved, onCancel }: Props) {
   const [form, setForm] = useState(() =>
     initial ? fromAlbum(initial) : emptyForm(),
   );
+  const [coverVideos, setCoverVideos] = useState<string[]>(
+    () => initial?.cover_videos ?? [],
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,7 +99,7 @@ export function AlbumForm({ initial, onSaved, onCancel }: Props) {
       const res = await adminFetch(url, {
         method,
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, cover_videos: coverVideos }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -109,6 +115,7 @@ export function AlbumForm({ initial, onSaved, onCancel }: Props) {
   const slug = String(form.slug ?? "");
   const slugReady = SLUG_RE.test(slug);
   const coverFolder = slugReady ? `ntp/${slug}/cover` : "ntp/images/covers";
+  const videoFolder = slugReady ? `ntp/${slug}/cover-videos` : "ntp/video/covers";
 
   return (
     <form onSubmit={onSubmit} className="space-y-3 text-white">
@@ -136,6 +143,59 @@ export function AlbumForm({ initial, onSaved, onCancel }: Props) {
         onUploaded={(r) => set("cover_image", r.url)}
         onClear={() => set("cover_image", "")}
       />
+
+      {/* Cover videos — up to 4 short looping clips played in the cover carousel */}
+      <div className="space-y-2">
+        <span className="block text-sm text-white/70">
+          Cover videos
+          <span className="ml-2 text-xs text-white/40">
+            up to {MAX_COVER_VIDEOS}, 5–7s loops · the cover image stays slide 1
+          </span>
+        </span>
+
+        {coverVideos.length > 0 ? (
+          <ul className="space-y-1">
+            {coverVideos.map((v, i) => (
+              <li
+                key={`${v}-${i}`}
+                className="flex items-center gap-2 rounded border border-white/10 bg-[#121212]/30 px-2 py-1.5"
+              >
+                <span className="rounded bg-[#3DD6C8]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#3DD6C8]">
+                  {i + 1}
+                </span>
+                <span className="flex-1 truncate text-xs text-white/60">{v}</span>
+                <button
+                  type="button"
+                  aria-label={`Remove cover video ${i + 1}`}
+                  onClick={() =>
+                    setCoverVideos((prev) => prev.filter((_, j) => j !== i))
+                  }
+                  className="text-white/50 hover:text-white"
+                >
+                  <X size={14} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {coverVideos.length < MAX_COVER_VIDEOS ? (
+          <CloudinaryUploader
+            folder={videoFolder}
+            resourceType="video"
+            accept="video/*"
+            label={`Add cover video (${coverVideos.length}/${MAX_COVER_VIDEOS})`}
+            helpText={`MP4 or WebM, 5–7s loop. Uploads to /${videoFolder}.`}
+            disabled={!slugReady}
+            disabledReason="Enter a slug first (lowercase letters, digits, _ or - only)."
+            onUploaded={(r) => setCoverVideos((prev) => [...prev, r.url])}
+          />
+        ) : (
+          <p className="text-[11px] text-white/40">
+            Maximum of {MAX_COVER_VIDEOS} cover videos reached.
+          </p>
+        )}
+      </div>
 
       {TEXT_FIELDS.map((f) => (
         <label key={f.key as string} className="block">

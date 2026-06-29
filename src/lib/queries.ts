@@ -22,7 +22,7 @@ import type {
 } from "@/types/music";
 
 const ALBUM_COLUMNS =
-  "id, slug, title, description, release_date, cover_image, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, is_published";
+  "id, slug, title, description, release_date, cover_image, cover_videos, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, is_published";
 const TRACK_COLUMNS =
   "id, album_id, title, track_number, duration, price, audio_url, public_audio_id, features, is_published, credits, lyrics, has_lyrics";
 
@@ -33,6 +33,7 @@ type AlbumRow = {
   description: string | null;
   release_date: string | null;
   cover_image: string | null;
+  cover_videos: string[] | null;
   background_color: string | null;
   accent_color: string | null;
   spotify_url: string | null;
@@ -112,6 +113,9 @@ const mapAlbum = (row: AlbumRow, tracks: Track[] = []): Album => ({
   description: row.description ?? "",
   releaseDate: row.release_date ?? "",
   coverImage: row.cover_image ?? "",
+  coverVideos: Array.isArray(row.cover_videos)
+    ? row.cover_videos.filter((v): v is string => typeof v === "string" && v.length > 0)
+    : [],
   bgColor: row.background_color ?? "#393838",
   accentColor: row.accent_color ?? "#3DD6C8",
   spotifyUrl: row.spotify_url ?? "",

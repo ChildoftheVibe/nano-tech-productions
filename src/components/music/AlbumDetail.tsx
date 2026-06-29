@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion, type Variants } from "framer-motion";
-import { Music, Shuffle, ShoppingBag } from "lucide-react";
-import { getAlbumCover } from "@/lib/albumCover";
+import { Play, Shuffle, ShoppingBag } from "lucide-react";
 import { TrackRow } from "@/components/music/TrackRow";
+import { AlbumCoverCarousel } from "@/components/music/AlbumCoverCarousel";
 import { MaybeArtistLink, MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
@@ -109,10 +109,22 @@ export function AlbumDetail({
     openCheckout(albumCheckoutItem(album, ALBUM_PRICE));
   };
 
+  const handlePlay = () => {
+    if (shuffle) toggleShuffle();
+    playFromAlbum(album);
+  };
+
   const handleShuffle = () => {
     if (!shuffle) toggleShuffle();
     playFromAlbum(album);
   };
+
+  const typeLabel =
+    album.album_type === "single"
+      ? "Single"
+      : album.album_type === "ep"
+        ? "EP"
+        : "Full Album";
 
   const featuredArtists = Array.from(
     new Set(album.tracks.flatMap((t) => t.features ?? [])),
@@ -153,32 +165,21 @@ export function AlbumDetail({
           className="flex-shrink-0 md:w-[360px] lg:w-[400px] flex flex-col gap-6"
           style={{ background: "#161d1c", padding: "32px 28px" }}
         >
-          {/* Album art */}
+          {/* Album art — static cover + up to 4 looping cover videos */}
           <motion.div
             initial={{ scale: 0.96, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="w-full"
-            style={{
-              borderRadius: 12,
-              overflow: "hidden",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.8)",
-              aspectRatio: "1 / 1",
-              background: album.bgColor || "#0d1412",
-            }}
           >
-            {album.coverImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={getAlbumCover(album.coverImage, "lg")}
-                alt={`${album.title} album cover`}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Music size={64} style={{ color: album.accentColor || "#62f3e4", opacity: 0.5 }} />
-              </div>
-            )}
+            <AlbumCoverCarousel
+              coverImage={album.coverImage}
+              coverVideos={album.coverVideos}
+              accent={accent}
+              bgColor={album.bgColor}
+              title={album.title}
+              size="lg"
+            />
           </motion.div>
 
           {/* Title + Meta */}
@@ -188,6 +189,19 @@ export function AlbumDetail({
             transition={{ duration: 0.3, ease: "easeOut", delay: 0.08 }}
             style={{ display: "flex", flexDirection: "column", gap: 8 }}
           >
+            <span
+              style={{
+                fontFamily: "var(--font-geist-mono), monospace",
+                fontSize: 11,
+                color: accent,
+                textTransform: "uppercase",
+                letterSpacing: "0.18em",
+                fontWeight: 600,
+                margin: 0,
+              }}
+            >
+              {typeLabel}
+            </span>
             <h1
               className="font-[family-name:var(--font-bungee)] leading-[1.05] tracking-tight"
               style={{ fontSize: "2.25rem", color: accent, margin: 0 }}
@@ -215,11 +229,39 @@ export function AlbumDetail({
 
           {/* Action buttons — Shuffle circle + Buy pill (mirrors reference layout) */}
           <motion.div
-            style={{ display: "flex", alignItems: "center", gap: 16 }}
+            style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, ease: "easeOut", delay: 0.14 }}
           >
+            {/* Play — filled accent pill (primary CTA, matches album accent) */}
+            <button
+              onClick={handlePlay}
+              disabled={!album.tracks.length}
+              aria-label="Play album"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                borderRadius: 8,
+                padding: "12px 22px",
+                fontSize: 12,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                background: accent,
+                color: "#003733",
+                cursor: "pointer",
+                flexShrink: 0,
+                border: "none",
+                opacity: album.tracks.length ? 1 : 0.4,
+                boxShadow: `0 0 20px ${accent}4d`,
+              }}
+            >
+              <Play size={14} fill="#003733" />
+              Play
+            </button>
+
             {/* Shuffle — outline rounded-rect pill */}
             <button
               onClick={handleShuffle}

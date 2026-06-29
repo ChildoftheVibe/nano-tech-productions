@@ -11,6 +11,7 @@ const ALBUM_FIELDS = [
   "description",
   "release_date",
   "cover_image",
+  "cover_videos",
   "background_color",
   "accent_color",
   "spotify_url",

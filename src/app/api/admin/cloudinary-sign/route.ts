@@ -21,6 +21,11 @@ function isAllowedFolder(folder: string): boolean {
     const slug = folder.slice("ntp/".length, -"/cover".length);
     return SLUG_RE.test(slug);
   }
+  // Per-slug cover videos folder: ntp/<slug>/cover-videos
+  if (folder.startsWith("ntp/") && folder.endsWith("/cover-videos")) {
+    const slug = folder.slice("ntp/".length, -"/cover-videos".length);
+    return SLUG_RE.test(slug);
+  }
   // Artist images: ntp/artists/<slug>/{profile,banner}. Also allow the
   // _pending placeholder so the form can preview before a slug is finalized.
   if (folder.startsWith("ntp/artists/")) {

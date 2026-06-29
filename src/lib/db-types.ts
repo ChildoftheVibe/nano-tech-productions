@@ -5,6 +5,7 @@ export type Album = {
   description: string | null;
   release_date: string | null;
   cover_image: string | null;
+  cover_videos: string[];
   background_color: string;
   accent_color: string;
   spotify_url: string | null;

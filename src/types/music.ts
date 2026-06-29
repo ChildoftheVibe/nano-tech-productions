@@ -5,6 +5,8 @@ export type Album = {
   description: string;
   releaseDate: string;
   coverImage: string;
+  /** Up to 4 short (5-7s) looping videos shown in the cover carousel. */
+  coverVideos?: string[];
   bgColor: string;
   accentColor: string;
   spotifyUrl: string;

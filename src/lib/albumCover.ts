@@ -1,6 +1,7 @@
 const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
 const CLOUDINARY_HOST = "res.cloudinary.com";
 const COVERS_FOLDER = "ntp/images/covers";
+const COVER_VIDEOS_FOLDER = "ntp/video/covers";
 
 export type AlbumCoverSize = "sm" | "md" | "lg" | number;
 
@@ -48,4 +49,40 @@ export function getAlbumCover(
 
   const id = input.includes("/") ? input : `${COVERS_FOLDER}/${input}`;
   return `https://${CLOUDINARY_HOST}/${cloudName}/image/upload/${transform}/${id}`;
+}
+
+/**
+ * Build an optimized Cloudinary delivery URL for a looping cover video. Accepts
+ * a bare publicId, an already-baked Cloudinary URL, or a local path (returned
+ * as-is). Cloudinary applies q_auto and a square c_fill crop at the requested
+ * size and delivers MP4 (H.264) so the `<video>` element streams a right-sized,
+ * widely-supported clip on a single CDN hop. Mirrors getAlbumCover so cover
+ * videos honor the same bandwidth discipline as cover images.
+ *
+ * Client-safe — pulls from NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, no secrets.
+ */
+export function getCoverVideo(
+  input: string,
+  size: AlbumCoverSize = "lg",
+): string {
+  if (!input) return "";
+  const w = typeof size === "number" ? size : SIZE_PX[size];
+  const transform = `q_auto,w_${w},h_${w},c_fill,f_mp4,vc_h264`;
+
+  if (/^https?:\/\//.test(input)) {
+    const marker = "/video/upload/";
+    const idx = input.indexOf(marker);
+    if (idx < 0) return input;
+    const head = input.slice(0, idx + marker.length);
+    const tail = input.slice(idx + marker.length);
+    // Leave URLs that already carry a transform segment untouched — splicing a
+    // second transform in produces an unresolvable URL.
+    if (/^(?:[a-z]{1,2}_[^/]+,)*[a-z]{1,2}_[^/]+\//.test(tail)) return input;
+    return `${head}${transform}/${tail}`;
+  }
+
+  if (input.startsWith("/")) return input;
+
+  const id = input.includes("/") ? input : `${COVER_VIDEOS_FOLDER}/${input}`;
+  return `https://${CLOUDINARY_HOST}/${cloudName}/video/upload/${transform}/${id}`;
 }
