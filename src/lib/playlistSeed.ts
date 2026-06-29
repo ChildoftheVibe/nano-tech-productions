@@ -1,5 +1,29 @@
 import type { Album, Track } from "@/types/music";
 
+/**
+ * Build a minimal Album from the album metadata embedded on a playlist Track
+ * (populated by the album join in `getPlaylistTracks`). Returns null when the
+ * track carries no embedded cover — e.g. tracks fetched as part of a full Album
+ * query, where the caller already holds the real Album. Used to keep the
+ * player's `currentAlbum` in sync as a mixed-album queue advances, so every
+ * track shows its own cover/accent when it plays.
+ */
+export function albumFromTrack(track: Track | null | undefined): Album | null {
+  if (!track?.albumId || !track.albumCoverImage) return null;
+  return {
+    id: track.albumId,
+    slug: track.albumSlug ?? "",
+    title: track.albumTitle ?? "",
+    description: "",
+    releaseDate: "",
+    coverImage: track.albumCoverImage,
+    bgColor: track.albumBgColor ?? "#090f0e",
+    accentColor: track.albumAccentColor ?? "#62f3e4",
+    spotifyUrl: "",
+    tracks: [],
+  };
+}
+
 const shuffle = <T,>(arr: T[]): T[] => {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -43,21 +67,7 @@ export function buildSeed(
       ? [first, ...pool.filter((t) => t.id !== first.id)]
       : pool;
 
-  const album: Album | null =
-    first?.albumId && first.albumCoverImage
-      ? {
-          id: first.albumId,
-          slug: first.albumSlug ?? "",
-          title: first.albumTitle ?? "",
-          description: "",
-          releaseDate: "",
-          coverImage: first.albumCoverImage,
-          bgColor: first.albumBgColor ?? "#090f0e",
-          accentColor: first.albumAccentColor ?? "#62f3e4",
-          spotifyUrl: "",
-          tracks: [],
-        }
-      : null;
+  const album = albumFromTrack(first);
 
   return { queue, first, album };
 }

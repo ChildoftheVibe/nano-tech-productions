@@ -61,15 +61,19 @@ type TrackRow = {
   lyrics: string | null;
   has_lyrics: boolean | null;
   // Present only when the query includes an album join (playlist query).
-  // Supabase returns related rows as an array even for many-to-one joins.
-  albums?: {
-    id: string;
-    slug: string;
-    title: string;
-    cover_image: string | null;
-    bg_color: string | null;
-    accent_color: string | null;
-  }[] | null;
+  // PostgREST returns a many-to-one embed (tracks.album_id -> albums) as a
+  // single object, but supabase-js has historically typed it as an array — so
+  // accept either shape and normalize in mapTrack.
+  albums?: AlbumEmbed | AlbumEmbed[] | null;
+};
+
+type AlbumEmbed = {
+  id: string;
+  slug: string;
+  title: string;
+  cover_image: string | null;
+  bg_color: string | null;
+  accent_color: string | null;
 };
 
 /** Build the streaming URL a Track exposes to the player.
@@ -86,25 +90,30 @@ function resolveAudioUrl(row: TrackRow): string | undefined {
   return row.audio_url ?? undefined;
 }
 
-const mapTrack = (row: TrackRow): Track => ({
-  id: row.id,
-  albumId: row.album_id ?? "",
-  title: row.title,
-  trackNumber: row.track_number ?? 0,
-  duration: row.duration ?? "0:00",
-  price: Number(row.price ?? 0),
-  features: row.features ?? undefined,
-  audioUrl: resolveAudioUrl(row),
-  credits: row.credits ?? {},
-  lyrics: row.lyrics,
-  has_lyrics: !!row.has_lyrics,
-  // Album metadata — only present when row includes an album join.
-  albumCoverImage: row.albums?.[0]?.cover_image ?? undefined,
-  albumBgColor: row.albums?.[0]?.bg_color ?? undefined,
-  albumAccentColor: row.albums?.[0]?.accent_color ?? undefined,
-  albumSlug: row.albums?.[0]?.slug ?? undefined,
-  albumTitle: row.albums?.[0]?.title ?? undefined,
-});
+const mapTrack = (row: TrackRow): Track => {
+  // Normalize the embedded album, which PostgREST returns as an object for a
+  // many-to-one join (older clients may surface it as a single-element array).
+  const album = Array.isArray(row.albums) ? row.albums[0] : row.albums;
+  return {
+    id: row.id,
+    albumId: row.album_id ?? "",
+    title: row.title,
+    trackNumber: row.track_number ?? 0,
+    duration: row.duration ?? "0:00",
+    price: Number(row.price ?? 0),
+    features: row.features ?? undefined,
+    audioUrl: resolveAudioUrl(row),
+    credits: row.credits ?? {},
+    lyrics: row.lyrics,
+    has_lyrics: !!row.has_lyrics,
+    // Album metadata — only present when row includes an album join.
+    albumCoverImage: album?.cover_image ?? undefined,
+    albumBgColor: album?.bg_color ?? undefined,
+    albumAccentColor: album?.accent_color ?? undefined,
+    albumSlug: album?.slug ?? undefined,
+    albumTitle: album?.title ?? undefined,
+  };
+};
 
 const mapAlbum = (row: AlbumRow, tracks: Track[] = []): Album => ({
   id: row.id,
@@ -495,7 +504,8 @@ export const searchContent = unstable_cache(
     return {
       albums: albumRows.map((row) => mapAlbum(row)),
       tracks: trackRows.map((row) => {
-        const slug = row.albums?.[0]?.slug ?? null;
+        const albumRel = Array.isArray(row.albums) ? row.albums[0] : row.albums;
+        const slug = albumRel?.slug ?? null;
         return { ...mapTrack(row), albumSlug: slug };
       }),
       artists,

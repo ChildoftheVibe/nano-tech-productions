@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { Album, Track } from "@/types/music";
+import { albumFromTrack } from "@/lib/playlistSeed";
 
 export type RepeatMode = "off" | "all" | "one";
 export type ConnectionStatus = 'ok' | 'reconnecting' | 'interference'
@@ -60,6 +61,21 @@ const shuffleArray = <T,>(arr: T[]): T[] => {
 const indexOfTrack = (queue: Track[], track: Track | null) =>
   track ? queue.findIndex((t) => t.id === track.id) : -1;
 
+// State patch for switching the active track. When the track carries embedded
+// album metadata (mixed playlist queues), also swap currentAlbum so the player
+// shows that track's own cover/accent. Tracks from a full-album queue have no
+// embedded metadata, so currentAlbum is left untouched (it already holds the
+// real album).
+const advanceTo = (track: Track) => {
+  const album = albumFromTrack(track);
+  return {
+    currentTrack: track,
+    currentTime: 0,
+    isPlaying: true,
+    ...(album ? { currentAlbum: album } : {}),
+  };
+};
+
 export const usePlayerStore = create<PlayerState>()(
   persist(
     (set, get) => ({
@@ -88,7 +104,9 @@ export const usePlayerStore = create<PlayerState>()(
         const inQueue = queue.some((t) => t.id === track.id);
         set({
           currentTrack: track,
-          currentAlbum: album,
+          // Prefer the explicitly-passed album; otherwise derive it from the
+          // track's embedded playlist metadata so the cover is never blank.
+          currentAlbum: album ?? albumFromTrack(track),
           queue: inQueue ? queue : [track, ...queue],
           isPlaying: true,
           currentTime: 0,
@@ -129,7 +147,7 @@ export const usePlayerStore = create<PlayerState>()(
         // Walk forward for the next track that's actually playable.
         for (let i = idx + 1; i < queue.length; i++) {
           if (queue[i].audioUrl) {
-            set({ currentTrack: queue[i], currentTime: 0, isPlaying: true });
+            set(advanceTo(queue[i]));
             return;
           }
         }
@@ -138,7 +156,7 @@ export const usePlayerStore = create<PlayerState>()(
         if (repeat === "all") {
           for (let i = 0; i < queue.length; i++) {
             if (queue[i].audioUrl) {
-              set({ currentTrack: queue[i], currentTime: 0, isPlaying: true });
+              set(advanceTo(queue[i]));
               return;
             }
           }
@@ -158,7 +176,7 @@ export const usePlayerStore = create<PlayerState>()(
         for (let step = 1; step <= queue.length; step++) {
           const target = (idx - step + queue.length) % queue.length;
           if (queue[target]?.audioUrl) {
-            set({ currentTrack: queue[target], currentTime: 0, isPlaying: true });
+            set(advanceTo(queue[target]));
             return;
           }
         }
