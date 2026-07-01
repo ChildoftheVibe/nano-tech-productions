@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { adminFetch } from "@/lib/adminFetch";
 import { useState } from "react";
 import { AlbumForm } from "@/components/admin/AlbumForm";
+import { AlbumMediaManager, type AlbumMediaEntry } from "@/components/admin/AlbumMediaManager";
 import type { Album } from "@/lib/db-types";
 
 type Props = {
@@ -31,7 +32,10 @@ export function AlbumsManager({
 }: Props) {
   const router = useRouter();
   const [mode, setMode] = useState<
-    { kind: "list" } | { kind: "create" } | { kind: "edit"; album: Album }
+    | { kind: "list" }
+    | { kind: "create" }
+    | { kind: "edit"; album: Album }
+    | { kind: "media"; album: AlbumWithTrackCount; initialEntries: AlbumMediaEntry[] }
   >({ kind: "list" });
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [albums, setAlbums] = useState<AlbumWithTrackCount[]>(initialAlbums);
@@ -55,6 +59,27 @@ export function AlbumsManager({
         ),
       );
       router.refresh();
+    } finally {
+      setPendingId(null);
+    }
+  }
+
+  async function onOpenMedia(album: AlbumWithTrackCount) {
+    setPendingId(album.id);
+    try {
+      const res = await adminFetch(`/api/admin/album-media?album_id=${album.id}`);
+      const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+      const raw = Array.isArray(json.entries) ? json.entries : [];
+      const entries: AlbumMediaEntry[] = raw.map((e: Record<string, unknown>) => ({
+        id: String(e.id ?? ""),
+        url: String(e.url ?? ""),
+        publicId: String(e.public_id ?? ""),
+        mediaType: e.media_type === "video" ? "video" : "image",
+        position: typeof e.position === "number" ? e.position : null,
+        caption: typeof e.caption === "string" ? e.caption : null,
+        createdAt: String(e.created_at ?? ""),
+      }));
+      setMode({ kind: "media", album, initialEntries: entries });
     } finally {
       setPendingId(null);
     }
@@ -109,6 +134,19 @@ export function AlbumsManager({
             router.refresh();
           }}
           onCancel={() => setMode({ kind: "list" })}
+        />
+      </div>
+    );
+  }
+
+  if (mode.kind === "media") {
+    return (
+      <div className="max-w-2xl">
+        <AlbumMediaManager
+          albumId={mode.album.id}
+          albumTitle={mode.album.title}
+          initialEntries={mode.initialEntries}
+          onBack={() => setMode({ kind: "list" })}
         />
       </div>
     );
@@ -199,6 +237,13 @@ export function AlbumsManager({
                           >
                             Tracks
                           </Link>
+                          <button
+                            onClick={() => void onOpenMedia(album)}
+                            disabled={pending}
+                            className="rounded-full border border-purple-400/40 px-2.5 py-1 text-xs text-purple-300 hover:bg-purple-500/10 disabled:opacity-50"
+                          >
+                            Media
+                          </button>
                           <button
                             onClick={() => setMode({ kind: "edit", album })}
                             className="rounded-full border border-white/15 px-2.5 py-1 text-xs hover:bg-white/5"

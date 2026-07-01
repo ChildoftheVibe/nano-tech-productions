@@ -57,7 +57,7 @@ src/
     sw.ts                  # Service worker (Serwist)
   components/
     layout/                # Sidebar, TopBar, PlayerBar, MobileTabBar, FullScreenPlayer, LyricsModal
-    music/                 # AlbumCard, AlbumDetail, AlbumHero, TrackRow
+    music/                 # AlbumCard, AlbumDetail, AlbumHero, TrackRow, AlbumMediaGallery
     artist/                # ArtistCard, ArtistHero, ArtistDetailClient
     admin/                 # AlbumForm, TrackForm, InstrumentalForm, CloudinaryUploader, DiscountForm, AdminShell
     paypal/                # CheckoutHost, CheckoutModal
@@ -107,6 +107,8 @@ supabase/migrations/       # 0001_init → 0010_webauthn
 
 **audit_logs**: `event_type, performed_by, ip_address, user_agent, metadata, timestamp` — append-only
 
+**album_media**: `id, album_id (→ albums), url, public_id, media_type (image|video), position, caption, created_at` — gallery images/videos per album; public read via RLS
+
 RLS: public read on published content; service role has full access.
 
 ---
@@ -128,10 +130,12 @@ RLS: public read on published content; service role has full access.
 | GET | `/api/download/instrumental/[token]` | Token-gated instrumental download |
 | POST | `/api/tracks/played` | Increment play count (fire-and-forget) |
 | POST | `/api/analytics/event` | Custom analytics events |
+| GET | `/api/albums/[slug]/media` | Public gallery media for an album (images + videos) |
+| POST | `/api/analytics/event` | Custom analytics events |
 | POST | `/api/analytics/geo` | Geolocation tracking |
 
 ### Admin (`/api/admin/*`, session-protected)
-CRUD for albums/tracks/artists/instrumentals/discounts; WAV vault streaming (5min/15min expiry); Cloudinary signed uploads; WebAuthn; audit logs; cron jobs.
+CRUD for albums/tracks/artists/instrumentals/discounts; WAV vault streaming (5min/15min expiry); Cloudinary signed uploads; WebAuthn; audit logs; cron jobs; album media gallery (`/api/admin/album-media`, `/api/admin/album-media/[id]`).
 
 ---
 
@@ -159,6 +163,8 @@ CRUD for albums/tracks/artists/instrumentals/discounts; WAV vault streaming (5mi
 14. **Audio CORS** — all `<audio>` elements carry `crossOrigin="anonymous"` to prevent `ERR_BLOCKED_BY_RESPONSE` on Cloudinary-served audio.
 15. **Cron auth** — `/api/cron/*` routes validate `Authorization: Bearer <CRON_SECRET>` from `vercel.json` cron config; reject requests without it.
 16. **Desktop Now Playing screen** — Full-screen overlay toggled by `store.fullScreenOpen`. Opened from the PlayerBar "Now Playing" button (desktop) or the track info area (mobile). Displays album art, accent-themed gradient background, waveform, lyrics toggle, and queue drawer.
+17. **Album detail modals** — `AlbumDetail` has two accent-colored modals: (a) **Credits modal** — `BookOpen` button, only rendered when the album has credits; shows all production credits per track. (b) **Media gallery modal** — `Images` button always visible; lazy-fetches `GET /api/albums/[slug]/media` on first open; `AlbumMediaGallery` component supports swipe, keyboard nav, thumbnail strip, and captions. Both modals use the album's `accentColor` for borders, glows, and accent bars.
+18. **Album media admin** — `AlbumsManager` has a "Media" button per album row that fetches existing entries from `GET /api/admin/album-media?album_id=` and opens `AlbumMediaManager` inline. Upload via Cloudinary; drag-to-reorder; delete. Media stored in `album_media` table.
 
 ---
 

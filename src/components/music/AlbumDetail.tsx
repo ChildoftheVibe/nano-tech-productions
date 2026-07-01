@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { motion, type Variants } from "framer-motion";
-import { Play, Shuffle, ShoppingBag } from "lucide-react";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { Play, Shuffle, ShoppingBag, BookOpen, X, Images } from "lucide-react";
 import { TrackRow } from "@/components/music/TrackRow";
 import { AlbumCoverCarousel } from "@/components/music/AlbumCoverCarousel";
 import { MaybeArtistLink, MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
+import { AlbumMediaGallery, type GalleryItem } from "@/components/music/AlbumMediaGallery";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { useCheckoutStore, albumCheckoutItem } from "@/store/checkoutStore";
@@ -32,8 +33,6 @@ const CREDIT_ROLE_LABELS: Array<{ key: keyof TrackCredits; label: string }> = [
   { key: "artwork", label: "Artwork" },
   { key: "lyrics", label: "Lyrics by" },
 ];
-
-const COLLAPSED_LIMIT = 8;
 
 type CreditLine = { label: string; names: string[] };
 
@@ -135,23 +134,27 @@ export function AlbumDetail({
   const creditTracks = album.tracks
     .map((t) => ({ track: t, lines: buildCreditEntries(t.credits) }))
     .filter((g) => g.lines.length > 0);
-  const totalCreditLines = creditTracks.reduce((n, g) => n + g.lines.length, 0);
-  const hasAnyCredits = totalCreditLines > 0;
-  const [showAllCredits, setShowAllCredits] = useState(false);
+  const hasAnyCredits = creditTracks.length > 0;
+  const [creditsModalOpen, setCreditsModalOpen] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [galleryLoaded, setGalleryLoaded] = useState(false);
 
-  const visibleCreditTracks = (() => {
-    if (!hasAnyCredits) return [];
-    if (showAllCredits || totalCreditLines <= COLLAPSED_LIMIT) return creditTracks;
-    let remaining = COLLAPSED_LIMIT;
-    const out: Array<{ track: typeof album.tracks[number]; lines: CreditLine[] }> = [];
-    for (const g of creditTracks) {
-      if (remaining <= 0) break;
-      const take = g.lines.slice(0, remaining);
-      out.push({ track: g.track, lines: take });
-      remaining -= take.length;
+  async function openGallery() {
+    if (!galleryLoaded) {
+      try {
+        const res = await fetch(`/api/albums/${album.slug}/media`);
+        if (res.ok) {
+          const json = (await res.json()) as { media: GalleryItem[] };
+          setGalleryItems(json.media ?? []);
+        }
+      } catch {
+        // silently fall through — gallery opens empty rather than blocking
+      }
+      setGalleryLoaded(true);
     }
-    return out;
-  })();
+    setGalleryOpen(true);
+  }
 
   return (
     <div className="text-white min-h-full">
@@ -315,6 +318,58 @@ export function AlbumDetail({
               <ShoppingBag size={14} />
               Buy · ${albumPrice.toFixed(2)}
             </button>
+
+            {/* Credits — only shown when credits exist */}
+            {hasAnyCredits && (
+              <button
+                onClick={() => setCreditsModalOpen(true)}
+                aria-label="View production credits"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  borderRadius: 8,
+                  padding: "12px 20px",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  background: "transparent",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  color: "rgba(255,255,255,0.65)",
+                }}
+              >
+                <BookOpen size={14} />
+                Credits
+              </button>
+            )}
+
+            {/* Media gallery button */}
+            <button
+              onClick={() => void openGallery()}
+              aria-label="View album media gallery"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                borderRadius: 8,
+                padding: "12px 20px",
+                fontSize: 12,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                background: "transparent",
+                cursor: "pointer",
+                flexShrink: 0,
+                border: "1px solid rgba(255,255,255,0.18)",
+                color: "rgba(255,255,255,0.65)",
+              }}
+            >
+              <Images size={14} />
+              Media
+            </button>
           </motion.div>
 
           {/* Description */}
@@ -431,43 +486,180 @@ export function AlbumDetail({
         </div>
       </motion.div>
 
-      {/* ── CREDITS SECTION ── */}
-      {hasAnyCredits ? (
-        <section className="border-t border-white/5 px-6 py-8 md:px-8">
-          <h2 className="mb-4 font-mono text-sm font-bold uppercase tracking-[0.25em] text-white">
-            Production Credits
-          </h2>
-          <div className="space-y-5">
-            {visibleCreditTracks.map(({ track, lines }) => (
-              <div key={track.id}>
-                <h3 className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#B3B3B3]">
-                  {track.title}
-                </h3>
-                <ul className="space-y-0.5">
-                  {lines.map((line) => (
-                    <li key={`${track.id}-${line.label}`} className="text-xs text-[#B3B3B3]">
-                      <span className="text-white/80">{line.label}:</span>{" "}
-                      <MaybeArtistLinkList
-                        names={line.names}
-                        slugsByName={artistSlugsByName}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          {totalCreditLines > COLLAPSED_LIMIT ? (
-            <button
-              type="button"
-              onClick={() => setShowAllCredits((v) => !v)}
-              className="mt-4 text-xs font-semibold text-[#62f3e4] hover:brightness-110"
+      {/* ── CREDITS MODAL ── */}
+      <AnimatePresence>
+        {creditsModalOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              key="credits-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setCreditsModalOpen(false)}
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.72)",
+                zIndex: 50,
+                backdropFilter: "blur(4px)",
+              }}
+            />
+            {/* Panel */}
+            <motion.div
+              key="credits-panel"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Production Credits"
+              initial={{ opacity: 0, scale: 0.95, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 16 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                zIndex: 51,
+                width: "min(560px, calc(100vw - 32px))",
+                maxHeight: "min(680px, calc(100vh - 80px))",
+                display: "flex",
+                flexDirection: "column",
+                borderRadius: 16,
+                background: "#161d1c",
+                border: `1px solid ${accent}26`,
+                boxShadow: `0 0 60px ${accent}22, 0 24px 64px rgba(0,0,0,0.6)`,
+                overflow: "hidden",
+              }}
             >
-              {showAllCredits ? "Show fewer credits" : "Show all credits"}
-            </button>
-          ) : null}
-        </section>
-      ) : null}
+              {/* Modal header */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "20px 24px 16px",
+                  borderBottom: `1px solid ${accent}20`,
+                  flexShrink: 0,
+                }}
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-geist-mono), monospace",
+                      fontSize: 10,
+                      color: accent,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.2em",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Production Credits
+                  </span>
+                  <span style={{ fontSize: 16, fontWeight: 700, color: "#dde4e2" }}>
+                    {album.title}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setCreditsModalOpen(false)}
+                  aria-label="Close credits"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.10)",
+                    color: "#bbcac6",
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Scrollable content */}
+              <div
+                className="no-scrollbar"
+                style={{ overflowY: "auto", padding: "20px 24px 28px", flex: 1 }}
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                  {creditTracks.map(({ track, lines }) => (
+                    <div key={track.id}>
+                      <p
+                        style={{
+                          fontFamily: "var(--font-geist-mono), monospace",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.2em",
+                          color: accent,
+                          marginBottom: 10,
+                        }}
+                      >
+                        {track.title}
+                      </p>
+                      <ul style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        {lines.map((line) => (
+                          <li
+                            key={`${track.id}-${line.label}`}
+                            style={{
+                              display: "flex",
+                              gap: 8,
+                              fontSize: 13,
+                              alignItems: "baseline",
+                            }}
+                          >
+                            <span
+                              style={{
+                                color: "#6b7c79",
+                                whiteSpace: "nowrap",
+                                minWidth: 140,
+                                fontFamily: "var(--font-geist-mono), monospace",
+                                fontSize: 11,
+                              }}
+                            >
+                              {line.label}
+                            </span>
+                            <span style={{ color: "#dde4e2" }}>
+                              <MaybeArtistLinkList
+                                names={line.names}
+                                slugsByName={artistSlugsByName}
+                              />
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer accent bar */}
+              <div
+                style={{
+                  height: 3,
+                  background: `linear-gradient(90deg, ${accent}00, ${accent}, ${accent}00)`,
+                  flexShrink: 0,
+                }}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ── MEDIA GALLERY MODAL ── */}
+      <AlbumMediaGallery
+        items={galleryItems}
+        accent={accent}
+        albumTitle={album.title}
+        open={galleryOpen}
+        onClose={() => setGalleryOpen(false)}
+      />
 
       <section className="border-t border-white/5 px-6 py-8 md:px-8">
         {featuredArtists.length > 0 ? (
