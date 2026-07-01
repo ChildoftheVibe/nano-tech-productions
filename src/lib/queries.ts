@@ -22,7 +22,7 @@ import type {
 } from "@/types/music";
 
 const ALBUM_COLUMNS =
-  "id, slug, title, description, release_date, cover_image, cover_videos, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, is_published";
+  "id, slug, title, description, release_date, cover_image, cover_videos, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, price, is_published";
 const TRACK_COLUMNS =
   "id, album_id, title, track_number, duration, price, audio_url, public_audio_id, features, is_published, credits, lyrics, has_lyrics";
 
@@ -41,6 +41,7 @@ type AlbumRow = {
   youtube_url: string | null;
   amazon_url: string | null;
   copyright: string | null;
+  price: number | null;
   is_published: boolean;
   album_type?: string | null;
   tracks?: TrackRow[];
@@ -132,6 +133,7 @@ const mapAlbum = (row: AlbumRow, tracks: Track[] = []): Album => ({
   youtubeUrl: row.youtube_url ?? undefined,
   amazonUrl: row.amazon_url ?? undefined,
   copyright: row.copyright ?? undefined,
+  price: row.price ?? 9.99,
   tracks,
   album_type: (row.album_type as Album['album_type']) ?? 'album',
 });
@@ -1008,4 +1010,34 @@ export const getEPs = unstable_cache(
   },
   ['albums-eps'],
   { revalidate: 300, tags: ['albums'] },
+);
+
+export type HeroMedia = {
+  id: string;
+  url: string;
+  mediaType: "image" | "video";
+};
+
+export const getActiveHeroMedia = unstable_cache(
+  async (): Promise<HeroMedia | null> => {
+    const { data, error } = await supabase
+      .from("hero_media")
+      .select("id, url, media_type")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) {
+      logError(error, { caller: "queries.getActiveHeroMedia" });
+      return null;
+    }
+    if (!data) return null;
+    return {
+      id: (data as { id: string }).id,
+      url: (data as { url: string }).url,
+      mediaType: (data as { media_type: string }).media_type as "image" | "video",
+    };
+  },
+  ["hero-media-active"],
+  { revalidate: 300, tags: ["hero-media"] },
 );

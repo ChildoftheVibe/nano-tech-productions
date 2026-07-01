@@ -16,6 +16,7 @@ export type Album = {
   streaming_links?: Record<string, string>;
   album_type?: 'album' | 'ep' | 'single';
   copyright?: string;
+  price?: number;
   tracks: Track[];
 };
 

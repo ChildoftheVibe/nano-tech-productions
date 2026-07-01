@@ -49,6 +49,7 @@ function emptyForm(): Record<string, string | boolean> {
     youtube_url: "",
     amazon_url: "",
     copyright: "© Nano Tech Productions. All rights reserved.",
+    price: "9.99",
     album_type: 'album',
     is_published: false,
   };
@@ -68,6 +69,7 @@ function fromAlbum(a: Album): Record<string, string | boolean> {
     youtube_url: a.youtube_url ?? "",
     amazon_url: a.amazon_url ?? "",
     copyright: a.copyright ?? "",
+    price: String(a.price ?? "9.99"),
     album_type: a.album_type ?? 'album',
     is_published: a.is_published,
   };
@@ -210,6 +212,23 @@ export function AlbumForm({ initial, onSaved, onCancel }: Props) {
           />
         </label>
       ))}
+
+      <label className="block">
+        <span className="mb-1 block text-sm text-white/70">Album price (USD)</span>
+        <div className="relative">
+          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/40">$</span>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            required
+            placeholder="9.99"
+            value={String(form.price ?? "9.99")}
+            onChange={(e) => set("price", e.target.value)}
+            className="w-full rounded border border-white/20 bg-transparent py-2 pl-7 pr-3 outline-none focus:border-[#3DD6C8]"
+          />
+        </div>
+      </label>
 
       <label className="block">
         <span className="mb-1 block text-sm text-white/70">Release Type</span>

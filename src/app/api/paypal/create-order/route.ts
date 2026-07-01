@@ -76,7 +76,7 @@ export async function POST(req: Request) {
   const albumRows = albumIds.length
     ? await supabaseAdmin
         .from("albums")
-        .select("id, title, is_published")
+        .select("id, title, price, is_published")
         .in("id", albumIds)
     : { data: [], error: null };
 
@@ -89,9 +89,6 @@ export async function POST(req: Request) {
 
   const trackById = new Map((trackRows.data ?? []).map((t) => [t.id as string, t]));
   const albumById = new Map((albumRows.data ?? []).map((a) => [a.id as string, a]));
-
-  // Album price is fixed at $9.99 unless customized later.
-  const ALBUM_PRICE = 9.99;
 
   const lineItems: PayPalLineItem[] = [];
   let subtotal = 0;
@@ -119,10 +116,11 @@ export async function POST(req: Request) {
           { status: 400, headers: noStore },
         );
       }
-      subtotal += ALBUM_PRICE;
+      const albumPrice = Number((row as Record<string, unknown>).price ?? 9.99);
+      subtotal += albumPrice;
       lineItems.push({
         name: (row.title as string) ?? "Album",
-        unit_amount: { currency_code: "USD", value: ALBUM_PRICE.toFixed(2) },
+        unit_amount: { currency_code: "USD", value: albumPrice.toFixed(2) },
         quantity: "1",
       });
     }

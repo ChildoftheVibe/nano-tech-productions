@@ -13,6 +13,7 @@ export type Album = {
   youtube_url: string | null;
   amazon_url: string | null;
   copyright: string | null;
+  price: number;
   is_published: boolean;
   album_type?: 'album' | 'ep' | 'single';
   created_at: string;

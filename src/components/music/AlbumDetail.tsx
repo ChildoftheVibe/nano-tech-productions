@@ -17,7 +17,7 @@ import {
 import { usePageEngagement } from "@/lib/usePageEngagement";
 import type { Album, Track, TrackCredits } from "@/types/music";
 
-const ALBUM_PRICE = 9.99;
+const DEFAULT_ALBUM_PRICE = 9.99;
 
 const CREDIT_ROLE_LABELS: Array<{ key: keyof TrackCredits; label: string }> = [
   { key: "produced_by", label: "Produced by" },
@@ -104,9 +104,11 @@ export function AlbumDetail({
   );
   usePageEngagement(`/album/${album.slug}`, onUnmount);
 
+  const albumPrice = album.price ?? DEFAULT_ALBUM_PRICE;
+
   const handleBuyAlbum = () => {
     trackPurchaseIntent(null, album.id, `/album/${album.slug}`);
-    openCheckout(albumCheckoutItem(album, ALBUM_PRICE));
+    openCheckout(albumCheckoutItem(album, albumPrice));
   };
 
   const handlePlay = () => {
@@ -311,7 +313,7 @@ export function AlbumDetail({
               }}
             >
               <ShoppingBag size={14} />
-              Buy · ${ALBUM_PRICE.toFixed(2)}
+              Buy · ${albumPrice.toFixed(2)}
             </button>
           </motion.div>
 
