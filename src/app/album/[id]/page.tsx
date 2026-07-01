@@ -7,6 +7,7 @@ import {
   getAllAlbumSlugs,
   getPublishedArtistSlugByName,
 } from "@/lib/queries";
+import { getAlbumCover } from "@/lib/albumCover";
 import { AlbumDetail } from "@/components/music/AlbumDetail";
 import { AlbumDetailSkeleton } from "@/components/ui/skeletons/AlbumDetailSkeleton";
 import type { Album } from "@/types/music";
@@ -40,7 +41,13 @@ export async function generateMetadata({
   const title = `${album.title} by Jhodge`;
   const description =
     album.description?.trim() || `${album.title} — a Nano Tech Vibe release.`;
-  const image = album.coverImage || "/og-default.png";
+  // Share/OG image must be an absolute URL at a social-friendly size. Route the
+  // cover through getAlbumCover so bare Cloudinary publicIds resolve to a real
+  // delivery URL (a raw publicId would be an unresolvable relative path and
+  // crawlers would silently drop the preview image).
+  const image = album.coverImage
+    ? getAlbumCover(album.coverImage, 1200)
+    : "/og-default.png";
   const canonicalPath = `/album/${album.slug}`;
 
   return {

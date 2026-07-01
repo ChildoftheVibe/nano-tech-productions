@@ -54,7 +54,12 @@ export const metadata: Metadata = {
     follow: true,
   },
   icons: {
-    icon: '/icons/icon-192.png',
+    icon: [
+      { url: '/assets/ntp-logo.svg', type: 'image/svg+xml' },
+      { url: '/icons/favicon-32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    shortcut: '/favicon.ico',
     apple: '/icons/icon-192.png',
   },
 };

@@ -87,6 +87,13 @@ export function PlayerBar() {
     currentAlbum?.coverImage && currentAlbum.accentColor
       ? currentAlbum.accentColor
       : "#62f3e4"
+  // On mobile the mini-player tints toward the current album's accent color so
+  // the bar on the home screen visually matches the song that's playing. Falls
+  // back to the flat surface color when there's no accent (no track / no cover).
+  const mobilePlayerBg =
+    accentColor && currentAlbum?.coverImage
+      ? `linear-gradient(180deg, ${accentColor}26 0%, ${accentColor}0d 48%, #090f0e 100%)`
+      : "#090f0e"
 
   const muted = volume === 0;
   const toggleMute = () => {
@@ -227,7 +234,10 @@ export function PlayerBar() {
       />
 
       {/* Mobile single-row layout */}
-      <div className="flex h-full items-center gap-3 px-3 pt-1 md:hidden">
+      <div
+        className="flex h-full items-center gap-3 px-3 pt-1 md:hidden"
+        style={{ background: mobilePlayerBg, transition: "background 0.4s ease" }}
+      >
         {currentTrack ? (
           <>
             <button
