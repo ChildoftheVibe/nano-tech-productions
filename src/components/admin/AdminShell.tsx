@@ -14,6 +14,7 @@ import {
   Users,
   Volume2,
   Star,
+  ImagePlay,
 } from "lucide-react";
 
 const NAV = [
@@ -27,6 +28,7 @@ const NAV = [
   { href: "/admin/orders", label: "Orders", icon: Receipt },
   { href: "/admin/playlist", label: "Playlist", icon: ListMusic },
   { href: "/admin/featured", label: "Featured", icon: Star },
+  { href: "/admin/hero", label: "Hero Media", icon: ImagePlay },
   { href: "/admin/vault", label: "Vault", icon: ShieldCheck, accent: "#EB41DF" },
 ];
 

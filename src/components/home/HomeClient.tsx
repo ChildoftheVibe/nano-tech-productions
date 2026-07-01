@@ -10,6 +10,7 @@ import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { usePageEngagement } from "@/lib/usePageEngagement";
 import type { Album, AlbumListResult, Artist, Track } from "@/types/music";
+import type { HeroMedia } from "@/lib/queries";
 
 const PAGE_SIZE =
   Number(process.env.NEXT_PUBLIC_ALBUMS_PER_PAGE) > 0
@@ -59,6 +60,7 @@ type Props = {
   initialCollection: AlbumListResult;
   featuredArtists: Artist[];
   weeklyTracks: Track[];
+  heroMedia?: HeroMedia | null;
 };
 
 function SectionLabel({
@@ -92,6 +94,7 @@ export function HomeClient({
   initialCollection,
   featuredArtists,
   weeklyTracks,
+  heroMedia,
 }: Props) {
   const greeting = useSyncExternalStore(
     subscribeNoop,
@@ -146,22 +149,46 @@ export function HomeClient({
       >
         {latest ? (
           <div className="relative h-[360px] md:h-[450px] overflow-hidden rounded-xl group cursor-pointer">
-            {/* Accent gradient background */}
-            <div
-              className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
-              style={{
-                background: `linear-gradient(135deg, ${latest.accentColor} 0%, #121212 100%)`,
-              }}
-            />
-            {/* Nano Tech logo, centered */}
-            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-              {/* Static brand asset in /public — not an album cover, so no getAlbumCover() */}
-              <img
-                src="/assets/ntp-logo.svg"
-                alt="Nano Tech"
-                className="h-40 w-40 md:h-56 md:w-56 object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-105"
-              />
-            </div>
+            {/* Background: admin hero media (image/video) or fallback gradient */}
+            {heroMedia ? (
+              heroMedia.mediaType === "video" ? (
+                <video
+                  src={heroMedia.url}
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                />
+              ) : (
+                // Static brand asset path from Cloudinary — intentionally not using getAlbumCover()
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={heroMedia.url}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              )
+            ) : (
+              <>
+                {/* Accent gradient background */}
+                <div
+                  className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
+                  style={{
+                    background: `linear-gradient(135deg, ${latest.accentColor} 0%, #121212 100%)`,
+                  }}
+                />
+                {/* Nano Tech logo, centered — shown only when no hero media is set */}
+                <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+                  {/* Static brand asset in /public — not an album cover, so no getAlbumCover() */}
+                  <img
+                    src="/assets/ntp-logo.svg"
+                    alt="Nano Tech"
+                    className="h-40 w-40 md:h-56 md:w-56 object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-105"
+                  />
+                </div>
+              </>
+            )}
             {/* Scrim */}
             <div className="absolute inset-0 bg-[#121212]/30 z-10 pointer-events-none" />
             {/* Gradient overlay at bottom */}

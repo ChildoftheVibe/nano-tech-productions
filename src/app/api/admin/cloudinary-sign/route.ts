@@ -54,6 +54,8 @@ function isAllowedFolder(folder: string): boolean {
     );
     return SLUG_RE.test(slug);
   }
+  // Hero media (images and videos for the home page hero section).
+  if (folder === "ntp/hero") return true;
   return false;
 }
 

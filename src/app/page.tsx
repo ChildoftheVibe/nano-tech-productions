@@ -5,6 +5,7 @@ import {
   getFeaturedAlbums,
   getFeaturedArtists,
   getTracks,
+  getActiveHeroMedia,
 } from "@/lib/queries";
 import { HomeClient } from "@/components/home/HomeClient";
 import { HomeSkeleton } from "@/components/ui/skeletons/HomeSkeleton";
@@ -18,13 +19,14 @@ const PAGE_SIZE =
 export const revalidate = 300;
 
 async function HomeData() {
-  const [featured, latest, initialCollection, featuredArtists, tracksResult] =
+  const [featured, latest, initialCollection, featuredArtists, tracksResult, heroMedia] =
     await Promise.all([
       getFeaturedAlbums(),
       getLatestAlbum(),
       getAlbums({ page: 1, limit: PAGE_SIZE, published: true }),
       getFeaturedArtists(),
       getTracks({ published: true, limit: 6 }),
+      getActiveHeroMedia(),
     ]);
 
   // Preload the first six above-the-fold cover URLs so the browser can race
@@ -45,6 +47,7 @@ async function HomeData() {
         initialCollection={initialCollection}
         featuredArtists={featuredArtists}
         weeklyTracks={tracksResult.tracks}
+        heroMedia={heroMedia}
       />
     </>
   );
