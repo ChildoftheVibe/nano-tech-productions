@@ -13,7 +13,7 @@ export async function GET() {
 
   const { data, error } = await supabaseAdmin
     .from("hero_media")
-    .select("id, url, public_id, media_type, is_active, created_at")
+    .select("id, url, public_id, media_type, is_active, position, created_at")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -37,6 +37,29 @@ export async function POST(request: Request) {
   }
 
   const b = body as Record<string, unknown>;
+  const action = typeof b.action === "string" ? b.action : "upload";
+
+  // ── reorder ──────────────────────────────────────────────────────────────
+  if (action === "reorder") {
+    const order = b.order;
+    if (!Array.isArray(order) || !order.every((v) => typeof v === "string"))
+      return Response.json({ error: "order must be array of ids" }, { status: 400 });
+
+    for (let i = 0; i < order.length; i++) {
+      const { error } = await supabaseAdmin
+        .from("hero_media")
+        .update({ position: i + 1 })
+        .eq("id", order[i] as string);
+      if (error) {
+        logError(error, { caller: "admin/hero reorder", id: order[i] });
+        return Response.json({ error: "operation_failed" }, { status: 500 });
+      }
+    }
+    revalidateTag("hero-media", { expire: 0 });
+    return Response.json({ ok: true });
+  }
+
+  // ── upload (default) ─────────────────────────────────────────────────────
   const url = typeof b.url === "string" ? b.url.trim() : "";
   const publicId = typeof b.public_id === "string" ? b.public_id.trim() : "";
   const mediaType = b.media_type === "video" ? "video" : "image";

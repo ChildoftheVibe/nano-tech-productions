@@ -7,6 +7,8 @@ import { logAuditEvent } from "@/lib/audit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const MAX_ACTIVE = 10;
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -28,26 +30,54 @@ export async function PATCH(
   const b = body as Record<string, unknown>;
   const isActive = Boolean(b.is_active);
 
-  // When activating, deactivate all other entries first.
   if (isActive) {
-    const { error: deactivateError } = await supabaseAdmin
+    // Count how many are already active (excluding this one in case it's a re-activate).
+    const { count, error: countErr } = await supabaseAdmin
       .from("hero_media")
-      .update({ is_active: false })
+      .select("id", { count: "exact", head: true })
+      .eq("is_active", true)
       .neq("id", id);
-    if (deactivateError) {
-      logError(deactivateError, { caller: "admin/hero PATCH deactivate others" });
+
+    if (countErr) {
+      logError(countErr, { caller: "admin/hero PATCH count" });
       return Response.json({ error: "operation_failed" }, { status: 500 });
     }
-  }
+    if ((count ?? 0) >= MAX_ACTIVE)
+      return Response.json(
+        { error: `Carousel is full — max ${MAX_ACTIVE} active items` },
+        { status: 400 },
+      );
 
-  const { error } = await supabaseAdmin
-    .from("hero_media")
-    .update({ is_active: isActive })
-    .eq("id", id);
+    // Assign the next available carousel position.
+    const { data: maxRow } = await supabaseAdmin
+      .from("hero_media")
+      .select("position")
+      .eq("is_active", true)
+      .order("position", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
 
-  if (error) {
-    logError(error, { caller: "admin/hero PATCH" });
-    return Response.json({ error: "operation_failed" }, { status: 500 });
+    const nextPos = ((maxRow?.position as number | null | undefined) ?? 0) + 1;
+
+    const { error } = await supabaseAdmin
+      .from("hero_media")
+      .update({ is_active: true, position: nextPos })
+      .eq("id", id);
+
+    if (error) {
+      logError(error, { caller: "admin/hero PATCH activate" });
+      return Response.json({ error: "operation_failed" }, { status: 500 });
+    }
+  } else {
+    const { error } = await supabaseAdmin
+      .from("hero_media")
+      .update({ is_active: false, position: null })
+      .eq("id", id);
+
+    if (error) {
+      logError(error, { caller: "admin/hero PATCH deactivate" });
+      return Response.json({ error: "operation_failed" }, { status: 500 });
+    }
   }
 
   await logAuditEvent({

@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion, type Variants } from "framer-motion";
-import { Pause, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { AlbumCard } from "@/components/music/AlbumCard";
 import { ArtistCard } from "@/components/artist/ArtistCard";
 import { usePlayerStore } from "@/store/playerStore";
@@ -60,7 +60,7 @@ type Props = {
   initialCollection: AlbumListResult;
   featuredArtists: Artist[];
   weeklyTracks: Track[];
-  heroMedia?: HeroMedia | null;
+  heroMedia?: HeroMedia[] | null;
 };
 
 function SectionLabel({
@@ -119,6 +119,33 @@ export function HomeClient({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // ── Hero carousel ──────────────────────────────────────────────────────────
+  const slides = heroMedia && heroMedia.length > 0 ? heroMedia : null;
+  const [slideIdx, setSlideIdx] = useState(0);
+  const [heroPaused, setHeroPaused] = useState(false);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+  const goTo = useCallback(
+    (idx: number) => {
+      if (!slides) return;
+      setSlideIdx((idx + slides.length) % slides.length);
+    },
+    [slides],
+  );
+
+  // Auto-advance every 6 s, pause on hover or when only 1 slide.
+  useEffect(() => {
+    if (!slides || slides.length <= 1 || heroPaused) return;
+    const t = setInterval(() => goTo(slideIdx + 1), 6000);
+    return () => clearInterval(t);
+  }, [slides, slideIdx, heroPaused, goTo]);
+
+  // Restart the active video whenever the slide changes.
+  useEffect(() => {
+    const vid = videoRefs.current[slideIdx];
+    if (vid) { vid.currentTime = 0; void vid.play(); }
+  }, [slideIdx]);
+
   const loadMore = async () => {
     if (loading || !hasMore) return;
     setLoading(true);
@@ -148,26 +175,37 @@ export function HomeClient({
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         {latest ? (
-          <div className="relative h-[360px] md:h-[450px] overflow-hidden rounded-xl group cursor-pointer">
-            {/* Background: admin hero media (image/video) or fallback gradient */}
-            {heroMedia ? (
-              heroMedia.mediaType === "video" ? (
-                <video
-                  src={heroMedia.url}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                />
-              ) : (
-                // Static brand asset path from Cloudinary — intentionally not using getAlbumCover()
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={heroMedia.url}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
+          <div
+            className="relative h-[360px] md:h-[450px] overflow-hidden rounded-xl group cursor-pointer"
+            onMouseEnter={() => setHeroPaused(true)}
+            onMouseLeave={() => setHeroPaused(false)}
+          >
+            {/* Background: carousel of admin hero media, or fallback gradient + logo */}
+            {slides ? (
+              slides.map((media, idx) =>
+                media.mediaType === "video" ? (
+                  <video
+                    key={media.id}
+                    ref={(el) => { videoRefs.current[idx] = el; }}
+                    src={media.url}
+                    className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000"
+                    style={{ opacity: idx === slideIdx ? 1 : 0 }}
+                    autoPlay={idx === slideIdx}
+                    muted
+                    loop
+                    playsInline
+                  />
+                ) : (
+                  // Cloudinary hero image — intentionally not using getAlbumCover()
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={media.id}
+                    src={media.url}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000"
+                    style={{ opacity: idx === slideIdx ? 1 : 0 }}
+                  />
+                ),
               )
             ) : (
               <>
@@ -178,7 +216,7 @@ export function HomeClient({
                     background: `linear-gradient(135deg, ${latest.accentColor} 0%, #121212 100%)`,
                   }}
                 />
-                {/* Nano Tech logo, centered — shown only when no hero media is set */}
+                {/* Nano Tech logo — shown only when no hero media is configured */}
                 <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
                   {/* Static brand asset in /public — not an album cover, so no getAlbumCover() */}
                   <img
@@ -193,6 +231,43 @@ export function HomeClient({
             <div className="absolute inset-0 bg-[#121212]/30 z-10 pointer-events-none" />
             {/* Gradient overlay at bottom */}
             <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-gradient-to-t from-[#121212]/90 via-[#121212]/30 to-transparent z-10 pointer-events-none" />
+
+            {/* Prev / Next arrows — only when >1 slide */}
+            {slides && slides.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); goTo(slideIdx - 1); }}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-30 rounded-full bg-black/40 p-2 text-white/80 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
+                  aria-label="Previous slide"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); goTo(slideIdx + 1); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-30 rounded-full bg-black/40 p-2 text-white/80 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
+                  aria-label="Next slide"
+                >
+                  <ChevronRight size={20} />
+                </button>
+
+                {/* Dot indicators */}
+                <div className="absolute bottom-4 right-4 z-30 flex gap-1.5">
+                  {slides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => { e.stopPropagation(); goTo(idx); }}
+                      aria-label={`Go to slide ${idx + 1}`}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        idx === slideIdx
+                          ? "w-5 bg-[#62f3e4]"
+                          : "w-1.5 bg-white/40 hover:bg-white/70"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
             {/* Content */}
             <div className="absolute bottom-0 left-0 p-8 md:p-12 z-20 max-w-2xl">
               <div className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-[0.3em] text-[#ffabef] mb-3">

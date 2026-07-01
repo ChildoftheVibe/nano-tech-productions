@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminHeroPage() {
   const { data, error } = await supabaseAdmin
     .from("hero_media")
-    .select("id, url, public_id, media_type, is_active, created_at")
+    .select("id, url, public_id, media_type, is_active, position, created_at")
     .order("created_at", { ascending: false });
 
   type HeroRow = {
@@ -15,6 +15,7 @@ export default async function AdminHeroPage() {
     public_id: string;
     media_type: string;
     is_active: boolean;
+    position: number | null;
     created_at: string;
   };
 
@@ -24,6 +25,7 @@ export default async function AdminHeroPage() {
     publicId: r.public_id,
     mediaType: r.media_type as "image" | "video",
     isActive: r.is_active,
+    position: r.position,
     createdAt: r.created_at,
   }));
 
@@ -31,9 +33,10 @@ export default async function AdminHeroPage() {
     <main className="p-8">
       <h1 className="mb-2 text-2xl font-semibold">Hero Media</h1>
       <p className="mb-6 max-w-2xl text-sm text-white/60">
-        Upload images or videos to display as the home page hero background.
-        Only one entry can be active at a time. When no media is active, the
-        default Nano Tech logo is shown.
+        Upload images or videos for the home page hero carousel. Up to 10 slides
+        can be active at once. Drag slides in the Carousel Order section to
+        change the sequence. When no slides are active, the default Nano Tech
+        logo is shown.
       </p>
 
       {error ? (

@@ -1019,24 +1019,21 @@ export type HeroMedia = {
 };
 
 export const getActiveHeroMedia = unstable_cache(
-  async (): Promise<HeroMedia | null> => {
+  async (): Promise<HeroMedia[]> => {
     const { data, error } = await supabase
       .from("hero_media")
       .select("id, url, media_type")
       .eq("is_active", true)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .order("position", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true })
+      .limit(10);
     if (error) {
       logError(error, { caller: "queries.getActiveHeroMedia" });
-      return null;
+      return [];
     }
-    if (!data) return null;
-    return {
-      id: (data as { id: string }).id,
-      url: (data as { url: string }).url,
-      mediaType: (data as { media_type: string }).media_type as "image" | "video",
-    };
+    return ((data ?? []) as Array<{ id: string; url: string; media_type: string }>).map(
+      (r) => ({ id: r.id, url: r.url, mediaType: r.media_type as "image" | "video" }),
+    );
   },
   ["hero-media-active"],
   { revalidate: 300, tags: ["hero-media"] },
