@@ -16,6 +16,7 @@ export type Album = {
   price: number;
   is_published: boolean;
   album_type?: 'album' | 'ep' | 'single';
+  light_mode: boolean;
   created_at: string;
   updated_at: string;
 };

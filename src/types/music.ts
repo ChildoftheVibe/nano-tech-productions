@@ -17,6 +17,8 @@ export type Album = {
   album_type?: 'album' | 'ep' | 'single';
   copyright?: string;
   price?: number;
+  /** When true, the album detail page renders with a light theme. */
+  lightMode?: boolean;
   tracks: Track[];
 };
 

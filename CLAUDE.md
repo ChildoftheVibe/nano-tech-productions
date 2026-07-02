@@ -79,7 +79,7 @@ supabase/migrations/       # 0001_init → 0010_webauthn
 
 ## Database Schema
 
-**albums**: `id, slug, title, description, release_date, cover_image, bg_color, accent_color, streaming_links (JSONB), is_published`
+**albums**: `id, slug, title, description, release_date, cover_image, bg_color, accent_color, streaming_links (JSONB), light_mode, is_published`
 
 **tracks**: `id, album_id, title, track_number, duration, price, audio_url, public_audio_id, vault_audio_id, features (JSONB), credits (JSONB), lyrics, has_lyrics, play_count, download_count, is_published`
 
@@ -165,6 +165,7 @@ CRUD for albums/tracks/artists/instrumentals/discounts; WAV vault streaming (5mi
 16. **Desktop Now Playing screen** — Full-screen overlay toggled by `store.fullScreenOpen`. Opened from the PlayerBar "Now Playing" button (desktop) or the track info area (mobile). Displays album art, accent-themed gradient background, waveform, lyrics toggle, and queue drawer.
 17. **Album detail modals** — `AlbumDetail` has two accent-colored modals: (a) **Credits modal** — `BookOpen` button, only rendered when the album has credits; shows all production credits per track. (b) **Media gallery modal** — `Images` button always visible; lazy-fetches `GET /api/albums/[slug]/media` on first open; `AlbumMediaGallery` component supports swipe, keyboard nav, thumbnail strip, and captions. Both modals use the album's `accentColor` for borders, glows, and accent bars.
 18. **Album media admin** — `AlbumsManager` has a "Media" button per album row that fetches existing entries from `GET /api/admin/album-media?album_id=` and opens `AlbumMediaManager` inline. Upload via Cloudinary; drag-to-reorder; delete. Media stored in `album_media` table.
+19. **Album light mode** — per-album `light_mode` flag (DB column, defaults `false`), toggled from the admin `AlbumForm`. Flows through `mapAlbum` → `Album.lightMode`. `AlbumDetail` + `TrackRow` read shared theme tokens from `getAlbumTheme(light)` (`src/lib/albumTheme.ts`) to swap surfaces/text/borders between dark (default) and light; the album's `accentColor` is unchanged in both. Root exposes `--album-hover` CSS vars for child hover states. Media viewers (`AlbumCoverCarousel`, `AlbumMediaGallery`) stay dark by design.
 
 ---
 

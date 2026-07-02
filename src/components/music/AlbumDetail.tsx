@@ -8,6 +8,7 @@ import { AlbumCoverCarousel } from "@/components/music/AlbumCoverCarousel";
 import { MaybeArtistLink, MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
 import { AlbumMediaGallery, type GalleryItem } from "@/components/music/AlbumMediaGallery";
 import { getAlbumCover } from "@/lib/albumCover";
+import { getAlbumTheme } from "@/lib/albumTheme";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { useCheckoutStore, albumCheckoutItem } from "@/store/checkoutStore";
@@ -90,6 +91,7 @@ export function AlbumDetail({
   const openCheckout = useCheckoutStore((s) => s.open);
 
   const accent = album.accentColor || "#62f3e4";
+  const theme = getAlbumTheme(album.lightMode);
   const year = album.releaseDate?.slice(0, 4) ?? "";
   const songCount = album.tracks.length;
   const totalDuration = calcTotalDuration(album.tracks);
@@ -158,7 +160,16 @@ export function AlbumDetail({
   }
 
   return (
-    <div className="text-white min-h-full">
+    <div
+      className="min-h-full"
+      style={{
+        color: theme.textPrimary,
+        // Exposed for className-based hover states in TrackRow menus and modal
+        // buttons so they resolve to the active theme.
+        "--album-hover": theme.hoverBg,
+        "--album-hover-strong": theme.hoverBgStrong,
+      } as React.CSSProperties}
+    >
       {/* ── TWO-COLUMN LAYOUT ── */}
       <motion.div
         className="flex flex-col md:flex-row md:gap-0 md:min-h-[calc(100vh-80px)]"
@@ -169,7 +180,7 @@ export function AlbumDetail({
         {/* ── LEFT: Art + Info ── */}
         <div
           className="flex-shrink-0 md:w-[360px] lg:w-[400px] flex flex-col gap-6 relative overflow-hidden isolate"
-          style={{ background: "#161d1c", padding: "32px 28px" }}
+          style={{ background: theme.panelBg, padding: "32px 28px" }}
         >
           {/* Ambient stage backdrop: blurred cover art + scrim, sits behind content */}
           {album.coverImage && (
@@ -184,8 +195,7 @@ export function AlbumDetail({
               <div
                 className="absolute inset-0"
                 style={{
-                  background:
-                    "linear-gradient(to bottom, rgba(22,29,28,0.6) 0%, rgba(22,29,28,0.85) 60%, rgba(22,29,28,0.95) 100%)",
+                  background: `linear-gradient(to bottom, rgba(${theme.scrimRgb},0.6) 0%, rgba(${theme.scrimRgb},0.85) 60%, rgba(${theme.scrimRgb},0.95) 100%)`,
                 }}
               />
               <div className="absolute inset-0 film-grain" />
@@ -235,14 +245,14 @@ export function AlbumDetail({
             >
               {album.title}
             </h1>
-            <p style={{ fontSize: 15, fontWeight: 500, color: "#ffffff", margin: 0 }}>
+            <p style={{ fontSize: 15, fontWeight: 500, color: theme.textStrong, margin: 0 }}>
               Jhodge
             </p>
             <p
               style={{
                 fontFamily: "var(--font-geist-mono), monospace",
                 fontSize: 11,
-                color: "#6b7c79",
+                color: theme.textMuted,
                 textTransform: "uppercase",
                 letterSpacing: "0.12em",
                 margin: 0,
@@ -308,8 +318,8 @@ export function AlbumDetail({
                 cursor: "pointer",
                 flexShrink: 0,
                 opacity: album.tracks.length ? 1 : 0.4,
-                border: `1px solid ${shuffle ? accent : "rgba(255,255,255,0.22)"}`,
-                color: shuffle ? accent : "rgba(255,255,255,0.80)",
+                border: `1px solid ${shuffle ? accent : theme.borderStrong}`,
+                color: shuffle ? accent : theme.textSecondary,
               }}
             >
               <Shuffle size={14} />
@@ -358,8 +368,8 @@ export function AlbumDetail({
                   background: "transparent",
                   cursor: "pointer",
                   flexShrink: 0,
-                  border: "1px solid rgba(255,255,255,0.18)",
-                  color: "rgba(255,255,255,0.65)",
+                  border: `1px solid ${theme.borderStrong}`,
+                  color: theme.textSecondary,
                 }}
               >
                 <BookOpen size={14} />
@@ -384,8 +394,8 @@ export function AlbumDetail({
                 background: "transparent",
                 cursor: "pointer",
                 flexShrink: 0,
-                border: "1px solid rgba(255,255,255,0.18)",
-                color: "rgba(255,255,255,0.65)",
+                border: `1px solid ${theme.borderStrong}`,
+                color: theme.textSecondary,
               }}
             >
               <Images size={14} />
@@ -402,7 +412,7 @@ export function AlbumDetail({
               style={{
                 fontSize: 13,
                 lineHeight: 1.65,
-                color: "#bbcac6",
+                color: theme.textSecondary,
                 margin: 0,
               }}
             >
@@ -423,11 +433,19 @@ export function AlbumDetail({
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border hover:border-[#62f3e4] hover:text-[#62f3e4] transition-colors font-[family-name:var(--font-geist-mono)] uppercase tracking-wider"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border transition-colors font-[family-name:var(--font-geist-mono)] uppercase tracking-wider"
                     style={{
-                      borderColor: "rgba(255,255,255,0.12)",
-                      color: "#6b7c79",
+                      borderColor: theme.border,
+                      color: theme.textMuted,
                       fontSize: 10,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = accent;
+                      e.currentTarget.style.color = accent;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = theme.border;
+                      e.currentTarget.style.color = theme.textMuted;
                     }}
                   >
                     {platform}
@@ -441,7 +459,7 @@ export function AlbumDetail({
         {/* ── RIGHT: Tracklist ── */}
         <div
           className="flex-1 flex flex-col min-h-0"
-          style={{ background: "#090f0e", padding: "32px 32px 24px" }}
+          style={{ background: theme.trackBg, padding: "32px 32px 24px" }}
         >
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -453,7 +471,7 @@ export function AlbumDetail({
               justifyContent: "space-between",
               paddingBottom: 14,
               marginBottom: 12,
-              borderBottom: "1px solid rgba(255,255,255,0.08)",
+              borderBottom: `1px solid ${theme.border}`,
             }}
           >
             <h2
@@ -470,7 +488,7 @@ export function AlbumDetail({
               style={{
                 fontFamily: "var(--font-geist-mono), monospace",
                 fontSize: 11,
-                color: "#6b7c79",
+                color: theme.textMuted,
                 textTransform: "uppercase",
                 letterSpacing: "0.12em",
                 cursor: "default",
@@ -483,7 +501,7 @@ export function AlbumDetail({
           {/* Track rows */}
           <div className="flex-1 overflow-y-auto">
             {album.tracks.length === 0 ? (
-              <div className="py-10 text-center text-sm text-[#B3B3B3]">
+              <div className="py-10 text-center text-sm" style={{ color: theme.textMuted }}>
                 Track list coming soon.
               </div>
             ) : (
@@ -498,6 +516,7 @@ export function AlbumDetail({
                       track={track}
                       album={album}
                       artistSlugsByName={artistSlugsByName}
+                      theme={theme}
                     />
                   </motion.div>
                 ))}
@@ -548,7 +567,7 @@ export function AlbumDetail({
                 display: "flex",
                 flexDirection: "column",
                 borderRadius: 16,
-                background: "#161d1c",
+                background: theme.panelBg,
                 border: `1px solid ${accent}26`,
                 boxShadow: `0 0 60px ${accent}22, 0 24px 64px rgba(0,0,0,0.6)`,
                 overflow: "hidden",
@@ -578,7 +597,7 @@ export function AlbumDetail({
                   >
                     Production Credits
                   </span>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: "#dde4e2" }}>
+                  <span style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary }}>
                     {album.title}
                   </span>
                 </div>
@@ -592,9 +611,9 @@ export function AlbumDetail({
                     width: 36,
                     height: 36,
                     borderRadius: "50%",
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.10)",
-                    color: "#bbcac6",
+                    background: theme.hoverBgStrong,
+                    border: `1px solid ${theme.borderStrong}`,
+                    color: theme.textSecondary,
                     cursor: "pointer",
                     flexShrink: 0,
                   }}
@@ -637,7 +656,7 @@ export function AlbumDetail({
                           >
                             <span
                               style={{
-                                color: "#6b7c79",
+                                color: theme.textMuted,
                                 whiteSpace: "nowrap",
                                 minWidth: 140,
                                 fontFamily: "var(--font-geist-mono), monospace",
@@ -646,7 +665,7 @@ export function AlbumDetail({
                             >
                               {line.label}
                             </span>
-                            <span style={{ color: "#dde4e2" }}>
+                            <span style={{ color: theme.textPrimary }}>
                               <MaybeArtistLinkList
                                 names={line.names}
                                 slugsByName={artistSlugsByName}
@@ -682,10 +701,16 @@ export function AlbumDetail({
         onClose={() => setGalleryOpen(false)}
       />
 
-      <section className="border-t border-white/5 px-6 py-8 md:px-8">
+      <section
+        className="px-6 py-8 md:px-8"
+        style={{ background: theme.trackBg, borderTop: `1px solid ${theme.border}` }}
+      >
         {featuredArtists.length > 0 ? (
           <div>
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#B3B3B3]">
+            <h3
+              className="mb-2 text-xs font-semibold uppercase tracking-[0.2em]"
+              style={{ color: theme.textMuted }}
+            >
               Featured Artists
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -694,17 +719,21 @@ export function AlbumDetail({
                   key={name}
                   name={name}
                   slugsByName={artistSlugsByName}
-                  className="rounded-full border border-white/15 px-4 py-1.5 text-xs text-white"
+                  className="rounded-full border px-4 py-1.5 text-xs"
+                  style={{ borderColor: theme.borderStrong, color: theme.textPrimary }}
                 />
               ))}
             </div>
           </div>
         ) : null}
         <div className={featuredArtists.length > 0 ? "mt-6" : ""}>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#B3B3B3]">
+          <h3
+            className="mb-2 text-xs font-semibold uppercase tracking-[0.2em]"
+            style={{ color: theme.textMuted }}
+          >
             Credits
           </h3>
-          <p className="text-xs text-white/60">
+          <p className="text-xs" style={{ color: theme.textMuted }}>
             {album.copyright ?? "© Nano Tech Productions. All rights reserved."}
           </p>
         </div>

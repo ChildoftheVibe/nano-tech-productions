@@ -6,6 +6,7 @@ import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { useCheckoutStore, trackCheckoutItem } from "@/store/checkoutStore";
 import { MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
+import { getAlbumTheme, type AlbumTheme } from "@/lib/albumTheme";
 import type { Album, Track, TrackCredits } from "@/types/music";
 
 const CREDIT_LABELS: Array<{ key: keyof TrackCredits; label: string }> = [
@@ -26,11 +27,14 @@ type Props = {
   track: Track;
   album: Album;
   artistSlugsByName?: Record<string, string>;
+  /** Album page theme; falls back to the album's own light/dark setting. */
+  theme?: AlbumTheme;
 };
 
 const UNAVAILABLE_MESSAGE_MS = 2200;
 
-export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
+export function TrackRow({ track, album, artistSlugsByName = {}, theme }: Props) {
+  const t = theme ?? getAlbumTheme(album.lightMode);
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const addToQueue = usePlayerStore((s) => s.addToQueue);
@@ -132,7 +136,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
         style={{ background: isActive ? `${accent}66` : "transparent" }}
         onMouseEnter={(e) => {
           if (!isActive)
-            (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.05)";
+            (e.currentTarget as HTMLDivElement).style.background = t.hoverBg;
         }}
         onMouseLeave={(e) => {
           if (!isActive)
@@ -165,11 +169,11 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
             <span className="relative flex h-5 w-5 items-center justify-center">
               <span
                 className="absolute inset-0 flex items-center justify-center group-hover:opacity-0 transition-opacity duration-100"
-                style={{ fontFamily: "var(--font-geist-mono), monospace", fontSize: 13, color: "#6b7c79", lineHeight: 1 }}
+                style={{ fontFamily: "var(--font-geist-mono), monospace", fontSize: 13, color: t.textMuted, lineHeight: 1 }}
               >
                 {String(track.trackNumber).padStart(2, "0")}
               </span>
-              <Play size={14} fill="currentColor" className="opacity-0 group-hover:opacity-100 transition-opacity duration-100 text-white" />
+              <Play size={14} fill="currentColor" className="opacity-0 group-hover:opacity-100 transition-opacity duration-100" style={{ color: t.textPrimary }} />
             </span>
           )}
         </button>
@@ -179,7 +183,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
           <button
             onClick={handleClick}
             className="block w-full truncate text-left font-medium transition-none"
-            style={{ fontSize: 15, color: isActive ? accent : "#dde4e2", boxShadow: "none" }}
+            style={{ fontSize: 15, color: isActive ? accent : t.textPrimary, boxShadow: "none" }}
           >
             {track.title}
           </button>
@@ -190,7 +194,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
           ) : (
             <div
               className="truncate"
-              style={{ fontSize: 12, letterSpacing: "0.04em", textTransform: "uppercase", color: "#6b7c79" }}
+              style={{ fontSize: 12, letterSpacing: "0.04em", textTransform: "uppercase", color: t.textMuted }}
             >
               Jhodge
               {track.features?.length ? (
@@ -206,7 +210,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
         {/* Duration */}
         <div
           className="text-right text-xs"
-          style={{ fontFamily: "var(--font-geist-mono), monospace", color: isActive ? "#9db8b4" : "#6b7c79" }}
+          style={{ fontFamily: "var(--font-geist-mono), monospace", color: isActive ? t.textMutedActive : t.textMuted }}
         >
           {track.duration}
         </div>
@@ -218,7 +222,7 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
             aria-label="Track options"
             aria-expanded={menuOpen}
             className="flex h-7 w-7 items-center justify-center rounded-full transition-opacity opacity-100 md:opacity-0 md:group-hover:opacity-100"
-            style={{ color: isActive ? accent : "#6b7c79", boxShadow: "none" }}
+            style={{ color: isActive ? accent : t.textMuted, boxShadow: "none" }}
           >
             <MoreVertical size={16} />
           </button>
@@ -226,36 +230,36 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
           {menuOpen && (
             <div
               className="absolute right-0 top-8 z-50 min-w-[188px] rounded-xl border py-1.5 shadow-2xl"
-              style={{ background: "#1a2120", borderColor: "rgba(255,255,255,0.10)" }}
+              style={{ background: t.menuBg, borderColor: t.borderStrong }}
             >
               <button
                 onClick={handleAddToQueue}
-                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-white/5"
-                style={{ color: "#dde4e2", boxShadow: "none" }}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--album-hover)]"
+                style={{ color: t.textPrimary, boxShadow: "none" }}
               >
                 <ListPlus size={15} style={{ color: accent, flexShrink: 0 }} />
                 Add to Queue
               </button>
               <button
                 onClick={handleBuy}
-                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-white/5"
-                style={{ color: "#dde4e2", boxShadow: "none" }}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--album-hover)]"
+                style={{ color: t.textPrimary, boxShadow: "none" }}
               >
                 <ShoppingCart size={15} style={{ color: accent, flexShrink: 0 }} />
                 Buy · ${track.price.toFixed(2)}
               </button>
               <button
                 onClick={handleShare}
-                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-white/5"
-                style={{ color: "#dde4e2", boxShadow: "none" }}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--album-hover)]"
+                style={{ color: t.textPrimary, boxShadow: "none" }}
               >
                 <Share2 size={15} style={{ color: accent, flexShrink: 0 }} />
                 Share Track
               </button>
               <button
                 onClick={handleCredits}
-                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-white/5"
-                style={{ color: "#dde4e2", boxShadow: "none" }}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--album-hover)]"
+                style={{ color: t.textPrimary, boxShadow: "none" }}
               >
                 <Info size={15} style={{ color: accent, flexShrink: 0 }} />
                 View Credits
@@ -274,12 +278,12 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
         >
           <div
             className="w-full max-w-sm rounded-2xl p-6"
-            style={{ background: "#1a2120", border: "1px solid rgba(255,255,255,0.10)" }}
+            style={{ background: t.menuBg, border: `1px solid ${t.borderStrong}` }}
             onClick={(e) => e.stopPropagation()}
           >
             <p
               className="mb-1 text-[10px] uppercase tracking-[0.18em]"
-              style={{ fontFamily: "var(--font-geist-mono), monospace", color: "#6b7c79" }}
+              style={{ fontFamily: "var(--font-geist-mono), monospace", color: t.textMuted }}
             >
               Credits
             </p>
@@ -293,18 +297,18 @@ export function TrackRow({ track, album, artistSlugsByName = {} }: Props) {
               <ul className="space-y-2">
                 {creditLines.map((line) => (
                   <li key={line.label} className="text-sm">
-                    <span style={{ color: "#6b7c79" }}>{line.label}: </span>
-                    <span style={{ color: "#dde4e2" }}>{line.names.join(", ")}</span>
+                    <span style={{ color: t.textMuted }}>{line.label}: </span>
+                    <span style={{ color: t.textPrimary }}>{line.names.join(", ")}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm" style={{ color: "#6b7c79" }}>No credits available for this track.</p>
+              <p className="text-sm" style={{ color: t.textMuted }}>No credits available for this track.</p>
             )}
             <button
               onClick={() => setCreditsOpen(false)}
-              className="mt-6 w-full rounded-xl py-2.5 text-sm font-semibold transition-colors hover:bg-white/10"
-              style={{ background: "rgba(255,255,255,0.06)", color: "#dde4e2", boxShadow: "none" }}
+              className="mt-6 w-full rounded-xl py-2.5 text-sm font-semibold transition-colors hover:bg-[var(--album-hover-strong)]"
+              style={{ background: t.hoverBgStrong, color: t.textPrimary, boxShadow: "none" }}
             >
               Close
             </button>

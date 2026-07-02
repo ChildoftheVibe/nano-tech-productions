@@ -51,6 +51,7 @@ function emptyForm(): Record<string, string | boolean> {
     copyright: "© Nano Tech Productions. All rights reserved.",
     price: "9.99",
     album_type: 'album',
+    light_mode: false,
     is_published: false,
   };
 }
@@ -71,6 +72,7 @@ function fromAlbum(a: Album): Record<string, string | boolean> {
     copyright: a.copyright ?? "",
     price: String(a.price ?? "9.99"),
     album_type: a.album_type ?? 'album',
+    light_mode: a.light_mode ?? false,
     is_published: a.is_published,
   };
 }
@@ -243,6 +245,21 @@ export function AlbumForm({ initial, onSaved, onCancel }: Props) {
           <option value="single">Single</option>
         </select>
         <span className="mt-1 block text-xs text-white/50">EPs have 8 tracks or fewer.</span>
+      </label>
+
+      <label className="flex items-start gap-2">
+        <input
+          type="checkbox"
+          className="mt-0.5"
+          checked={Boolean(form.light_mode)}
+          onChange={(e) => set("light_mode", e.target.checked)}
+        />
+        <span className="text-sm">
+          Light mode
+          <span className="mt-0.5 block text-xs text-white/50">
+            Renders this album&rsquo;s page with a light theme instead of the default dark theme.
+          </span>
+        </span>
       </label>
 
       <label className="flex items-center gap-2">

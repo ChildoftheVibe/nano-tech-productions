@@ -20,6 +20,7 @@ const ALBUM_FIELDS = [
   "amazon_url",
   "copyright",
   "price",
+  "light_mode",
   "is_published",
 ] as const;
 

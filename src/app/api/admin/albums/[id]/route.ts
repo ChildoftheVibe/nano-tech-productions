@@ -19,6 +19,7 @@ const ALBUM_FIELDS = [
   "youtube_url",
   "amazon_url",
   "copyright",
+  "light_mode",
   "is_published",
 ] as const;
 
