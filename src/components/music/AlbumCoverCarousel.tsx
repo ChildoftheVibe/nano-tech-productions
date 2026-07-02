@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Music, Play } from "lucide-react";
-import { getAlbumCover, getCoverVideo } from "@/lib/albumCover";
+import { getAlbumCover, getCoverVideo, getCoverVideoPoster } from "@/lib/albumCover";
 
 /**
  * Square album-cover surface that auto-advances through the static cover image
@@ -18,7 +18,7 @@ const SWIPE_THRESHOLD = 40; // px before a drag counts as a swipe
 
 type Slide =
   | { kind: "image"; src: string }
-  | { kind: "video"; src: string };
+  | { kind: "video"; src: string; poster: string };
 
 type Props = {
   coverImage: string;
@@ -44,7 +44,12 @@ export function AlbumCoverCarousel({
   const slides: Slide[] = [];
   if (coverImage) slides.push({ kind: "image", src: getAlbumCover(coverImage, size) });
   for (const v of coverVideos.slice(0, 4)) {
-    if (v) slides.push({ kind: "video", src: getCoverVideo(v, size) });
+    if (v)
+      slides.push({
+        kind: "video",
+        src: getCoverVideo(v, size),
+        poster: getCoverVideoPoster(v, size),
+      });
   }
 
   const [index, setIndex] = useState(0);
@@ -153,6 +158,7 @@ export function AlbumCoverCarousel({
                   videoRefs.current[i] = el;
                 }}
                 src={slide.src}
+                poster={slide.poster || undefined}
                 className="h-full w-full object-cover"
                 muted
                 loop

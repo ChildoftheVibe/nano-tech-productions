@@ -14,6 +14,8 @@ type SignResponse = {
   resourceType: ResourceType;
   signature: string;
   type: "upload" | "authenticated";
+  eager?: string;
+  eagerAsync?: boolean;
 };
 
 export type UploadResult = {
@@ -86,6 +88,12 @@ export function CloudinaryUploader({
       fd.append("signature", sign.signature);
       fd.append("folder", sign.folder);
       if (sign.type === "authenticated") fd.append("type", "authenticated");
+      // Signed eager derivations (cover videos) — must be sent exactly as
+      // signed or Cloudinary rejects the upload with a signature mismatch.
+      if (sign.eager) {
+        fd.append("eager", sign.eager);
+        if (sign.eagerAsync) fd.append("eager_async", "true");
+      }
 
       const xhr = new XMLHttpRequest();
       const url = `https://api.cloudinary.com/v1_1/${sign.cloudName}/${sign.resourceType}/upload`;

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { isAdmin, validateCsrf } from "@/lib/auth";
+import { coverVideoTransform, coverVideoPosterTransform } from "@/lib/albumCover";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -103,6 +104,24 @@ export async function POST(req: Request) {
   };
   if (isVault) paramsToSign.type = "authenticated";
 
+  // Cover videos: pre-generate the exact MP4 + poster derivations the public
+  // carousel requests (see getCoverVideo/getCoverVideoPoster). Without this the
+  // first visitor triggers an on-demand transcode that can take 10–30s.
+  // eager_async keeps the upload response fast; Cloudinary derives in the
+  // background. The strings must match the delivery transforms byte-for-byte
+  // or the cache is missed.
+  let eager: string | undefined;
+  if (resourceType === "video" && folder.endsWith("/cover-videos")) {
+    eager = [
+      coverVideoTransform(400), // "lg" — AlbumCoverCarousel default
+      coverVideoTransform(300), // "md"
+      coverVideoPosterTransform(400),
+      coverVideoPosterTransform(300),
+    ].join("|");
+    paramsToSign.eager = eager;
+    paramsToSign.eager_async = "true";
+  }
+
   const signature = cloudinary.utils.api_sign_request(paramsToSign, apiSecret);
 
   return NextResponse.json(
@@ -114,6 +133,7 @@ export async function POST(req: Request) {
       resourceType,
       signature,
       type: isVault ? "authenticated" : "upload",
+      ...(eager ? { eager, eagerAsync: true } : {}),
     },
     { headers: noStore },
   );

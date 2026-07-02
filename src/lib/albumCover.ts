@@ -80,6 +80,21 @@ export function getHeroImage(input: string, width = 1600): string {
 }
 
 /**
+ * Transform segments for cover-video delivery. Exported so the admin upload
+ * signer can request the exact same derivations eagerly at upload time —
+ * Cloudinary caches derived assets by transformation string, so any drift
+ * between these and the eager params means the first visitor pays a cold
+ * transcode (10–30s) instead of hitting the pre-generated asset.
+ */
+export function coverVideoTransform(w: number): string {
+  return `q_auto,w_${w},h_${w},c_fill,f_mp4,vc_h264`;
+}
+
+export function coverVideoPosterTransform(w: number): string {
+  return `so_0,f_jpg,q_auto:good,w_${w},h_${w},c_fill`;
+}
+
+/**
  * Build an optimized Cloudinary delivery URL for a looping cover video. Accepts
  * a bare publicId, an already-baked Cloudinary URL, or a local path (returned
  * as-is). Cloudinary applies q_auto and a square c_fill crop at the requested
@@ -95,8 +110,28 @@ export function getCoverVideo(
 ): string {
   if (!input) return "";
   const w = typeof size === "number" ? size : SIZE_PX[size];
-  const transform = `q_auto,w_${w},h_${w},c_fill,f_mp4,vc_h264`;
+  return buildCoverVideoUrl(input, coverVideoTransform(w));
+}
 
+/**
+ * First-frame JPG poster for a cover video, sized to match the video crop so
+ * the carousel shows imagery instantly while the MP4 buffers. Returns "" when
+ * a poster can't be derived (non-Cloudinary URL or pre-baked transform) — the
+ * <video> then simply has no poster, same as before.
+ */
+export function getCoverVideoPoster(
+  input: string,
+  size: AlbumCoverSize = "lg",
+): string {
+  if (!input) return "";
+  const w = typeof size === "number" ? size : SIZE_PX[size];
+  const url = buildCoverVideoUrl(input, coverVideoPosterTransform(w));
+  // If no transform could be spliced in, the URL is the raw video — useless
+  // (and expensive) as a poster.
+  return url === input || url.startsWith("/") ? "" : url;
+}
+
+function buildCoverVideoUrl(input: string, transform: string): string {
   if (/^https?:\/\//.test(input)) {
     const marker = "/video/upload/";
     const idx = input.indexOf(marker);
