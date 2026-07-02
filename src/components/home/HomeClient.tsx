@@ -116,8 +116,12 @@ export function HomeClient({
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  // Hydration flag without setState-in-effect: false on server, true after hydration
+  const mounted = useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false,
+  );
 
   // ── Hero carousel ──────────────────────────────────────────────────────────
   const slides = heroMedia && heroMedia.length > 0 ? heroMedia : null;
@@ -202,7 +206,7 @@ export function HomeClient({
                     key={media.id}
                     src={media.url}
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000"
+                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000${idx === slideIdx ? " animate-kenburns" : ""}`}
                     style={{ opacity: idx === slideIdx ? 1 : 0 }}
                   />
                 ),
@@ -229,8 +233,12 @@ export function HomeClient({
             )}
             {/* Scrim */}
             <div className="absolute inset-0 bg-[#121212]/30 z-10 pointer-events-none" />
-            {/* Gradient overlay at bottom */}
+            {/* Cinematic letterbox: top + bottom gradients */}
+            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/50 to-transparent z-10 pointer-events-none" />
             <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-gradient-to-t from-[#121212]/90 via-[#121212]/30 to-transparent z-10 pointer-events-none" />
+            {/* Edge vignette + film grain */}
+            <div className="absolute inset-0 z-10 cinematic-vignette" />
+            <div className="absolute inset-0 z-10 film-grain" />
 
             {/* Prev / Next arrows — only when >1 slide */}
             {slides && slides.length > 1 && (

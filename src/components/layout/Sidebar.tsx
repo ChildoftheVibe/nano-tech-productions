@@ -74,7 +74,7 @@ export function Sidebar({ initialAlbums: _ }: Props) {
       className="hidden md:flex flex-col flex-shrink-0"
       style={{
         width: 260,
-        background: "#090f0e",
+        background: "linear-gradient(180deg, #0e1514 0%, #090f0e 40%)",
         borderRight: "1px solid rgba(255,255,255,0.05)",
       }}
     >

@@ -24,10 +24,12 @@ export function AlbumMediaGallery({ items, accent, albumTitle, open, onClose }: 
   const [dir, setDir] = useState(1);
   const touchStartX = useRef<number | null>(null);
 
-  // Reset to first item when opening
-  useEffect(() => {
+  // Reset to first item when opening (render-time derived-state reset)
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) setIndex(0);
-  }, [open]);
+  }
 
   // Close on Escape, arrow-key navigation
   useEffect(() => {

@@ -164,6 +164,37 @@ main {
   100% { transform: scale(1.05); }
 }
 
+/* ── Cinematic layer ─────────────────────────────────────────────── */
+
+/* Slow Ken Burns push-in for hero media */
+.animate-kenburns {
+  animation: ken-burns 24s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes ken-burns {
+  0%   { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.08) translate(-0.6%, 0.6%); }
+}
+
+/* Radial vignette — darkens edges only, no hue shift */
+.cinematic-vignette {
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(0, 0, 0, 0.28) 85%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+}
+
+/* Film grain — inline SVG noise, barely visible, adds texture to large surfaces */
+.film-grain {
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
 html {
   scroll-behavior: smooth;
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { adminFetch } from "@/lib/adminFetch";
 import { TrackForm } from "@/components/admin/TrackForm";
 import type { Album, Track } from "@/lib/db-types";
@@ -32,9 +32,12 @@ export function TracksManager({
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [tracks, setTracks] = useState<Track[]>(initialTracks);
 
-  useEffect(() => {
+  // Reset local list when the album filter changes (render-time derived-state reset)
+  const [prevFilter, setPrevFilter] = useState(albumFilter);
+  if (prevFilter !== albumFilter) {
+    setPrevFilter(albumFilter);
     setTracks(initialTracks);
-  }, [albumFilter]);
+  }
 
   const albumTitle = (id: string | null) =>
     id ? (albums.find((a) => a.id === id)?.title ?? "—") : "—";

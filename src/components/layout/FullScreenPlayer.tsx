@@ -189,6 +189,9 @@ export function FullScreenPlayer() {
             style={{ background: "rgba(0,0,0,0.52)" }}
             aria-hidden
           />
+          {/* Cinematic finish: edge vignette + film grain */}
+          <div className="absolute inset-0 cinematic-vignette" aria-hidden />
+          <div className="absolute inset-0 film-grain" aria-hidden />
 
           {/* ── MOBILE LAYOUT (hidden on md+) ── */}
           <motion.div

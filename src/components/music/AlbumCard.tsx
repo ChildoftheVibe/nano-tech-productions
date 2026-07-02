@@ -70,7 +70,7 @@ export function AlbumCard({
         <img
           src={optimizedSrc}
           alt={`${album.title} album cover`}
-          className={`absolute inset-0 h-full w-full object-cover transition-[filter] duration-200 group-hover:brightness-[0.7]${!href ? ' cursor-pointer md:cursor-zoom-in' : ''}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-[filter,transform] duration-500 ease-out group-hover:brightness-[0.7] group-hover:scale-[1.06]${!href ? ' cursor-pointer md:cursor-zoom-in' : ''}`}
           onClick={!href ? () => { setModalImageUrl(optimizedSrc); setIsModalOpen(true) } : undefined}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={fetchPriority}
@@ -92,6 +92,13 @@ export function AlbumCard({
         <span className="absolute bottom-1.5 left-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#62f3e4]/15 text-[#62f3e4] border border-[#62f3e4]/30 pointer-events-none">
           EP
         </span>
+      )}
+      {/* Cinematic hover treatment: bottom depth scrim + teal edge tint */}
+      {size !== "sm" && (
+        <>
+          <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className={`absolute inset-0 ${rounded} ring-1 ring-inset ring-[#62f3e4]/0 group-hover:ring-[#62f3e4]/40 transition-[box-shadow] duration-300 pointer-events-none`} />
+        </>
       )}
       {showHoverPlay && onPlay ? (
         <>

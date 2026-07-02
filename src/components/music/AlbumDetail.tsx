@@ -7,6 +7,7 @@ import { TrackRow } from "@/components/music/TrackRow";
 import { AlbumCoverCarousel } from "@/components/music/AlbumCoverCarousel";
 import { MaybeArtistLink, MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
 import { AlbumMediaGallery, type GalleryItem } from "@/components/music/AlbumMediaGallery";
+import { getAlbumCover } from "@/lib/albumCover";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { useCheckoutStore, albumCheckoutItem } from "@/store/checkoutStore";
@@ -167,9 +168,29 @@ export function AlbumDetail({
       >
         {/* ── LEFT: Art + Info ── */}
         <div
-          className="flex-shrink-0 md:w-[360px] lg:w-[400px] flex flex-col gap-6"
+          className="flex-shrink-0 md:w-[360px] lg:w-[400px] flex flex-col gap-6 relative overflow-hidden isolate"
           style={{ background: "#161d1c", padding: "32px 28px" }}
         >
+          {/* Ambient stage backdrop: blurred cover art + scrim, sits behind content */}
+          {album.coverImage && (
+            <div className="absolute inset-0 -z-10 pointer-events-none" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={getAlbumCover(album.coverImage, "md")}
+                alt=""
+                className="h-full w-full object-cover opacity-25"
+                style={{ filter: "blur(60px)", transform: "scale(1.3)" }}
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(to bottom, rgba(22,29,28,0.6) 0%, rgba(22,29,28,0.85) 60%, rgba(22,29,28,0.95) 100%)",
+                }}
+              />
+              <div className="absolute inset-0 film-grain" />
+            </div>
+          )}
           {/* Album art — static cover + up to 4 looping cover videos */}
           <motion.div
             initial={{ scale: 0.96, opacity: 0 }}

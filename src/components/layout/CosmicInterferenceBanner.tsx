@@ -17,9 +17,15 @@ export default function CosmicInterferenceBanner() {
 
   const [countdown, setCountdown] = useState(9)
 
-  useEffect(() => {
-    if (connectionStatus !== 'reconnecting') { setCountdown(9); return }
+  // Reset the countdown at render time whenever connection status changes
+  const [prevStatus, setPrevStatus] = useState(connectionStatus)
+  if (prevStatus !== connectionStatus) {
+    setPrevStatus(connectionStatus)
     setCountdown(9)
+  }
+
+  useEffect(() => {
+    if (connectionStatus !== 'reconnecting') return
     const interval = setInterval(() => {
       setCountdown((n) => { if (n <= 1) { clearInterval(interval); return 0 } return n - 1 })
     }, 1000)

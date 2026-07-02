@@ -176,12 +176,14 @@ export function PlayerBar() {
   const [showDlInput, setShowDlInput] = useState(false)
   const [tokenInput, setTokenInput] = useState('')
 
-  useEffect(() => {
-    if (!currentTrack?.id) return
+  // Refresh download-token UI at render time when the track changes
+  const [prevTrackId, setPrevTrackId] = useState<string | null>(null)
+  if (currentTrack?.id && currentTrack.id !== prevTrackId) {
+    setPrevTrackId(currentTrack.id)
     setDlToken(getDownloadToken(currentTrack.id))
     setShowDlInput(false)
     setTokenInput('')
-  }, [currentTrack?.id])
+  }
 
   const handleSaveToken = () => {
     if (!currentTrack?.id || !tokenInput.trim()) return
@@ -231,6 +233,16 @@ export function PlayerBar() {
         aria-valuenow={Math.round(percentPlayed)}
         aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
         className="ntv-range absolute inset-x-0 top-0 z-10 h-1 w-full cursor-pointer accent-[#62f3e4] md:hidden"
+      />
+
+      {/* Desktop: ambient accent wash keyed to the current album, rising from the bar */}
+      <div
+        className="hidden md:block absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(60% 140% at 50% 100%, ${playAccent}14 0%, transparent 70%)`,
+          transition: "background 0.6s ease",
+        }}
+        aria-hidden="true"
       />
 
       {/* Mobile single-row layout */}

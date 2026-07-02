@@ -21,7 +21,10 @@ const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 export default function InstallPromptBanner() {
   const [show, setShow] = useState(false)
-  const [isIOSDevice, setIsIOSDevice] = useState(false)
+  // Lazy initializer: banner markup is hidden until `show` flips, so no hydration risk
+  const [isIOSDevice] = useState(
+    () => typeof window !== 'undefined' && isIOS() && isSafari(),
+  )
   const [showIOSGuide, setShowIOSGuide] = useState(false)
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null)
 
@@ -34,10 +37,7 @@ export default function InstallPromptBanner() {
       if (age < DISMISS_TTL_MS) return
     }
 
-    const iosDevice = isIOS() && isSafari()
-    setIsIOSDevice(iosDevice)
-
-    if (iosDevice) {
+    if (isIOSDevice) {
       const timer = setTimeout(() => setShow(true), 3000)
       return () => clearTimeout(timer)
     }
@@ -49,7 +49,7 @@ export default function InstallPromptBanner() {
     }
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
-  }, [])
+  }, [isIOSDevice])
 
   const dismiss = () => {
     localStorage.setItem(DISMISSED_KEY, String(Date.now()))

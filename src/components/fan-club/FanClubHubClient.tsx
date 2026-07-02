@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, Play, LogOut } from "lucide-react";
@@ -203,7 +203,12 @@ function ArtworkPlaceholderCard({
 
 export function FanClubHubClient({ user, member }: Props) {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  // Hydration flag without setState-in-effect: false on server, true after hydration
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   const supabase = useMemo(
     () =>
@@ -213,8 +218,6 @@ export function FanClubHubClient({ user, member }: Props) {
       ),
     [],
   );
-
-  useEffect(() => setMounted(true), []);
 
   const tier: MembershipTier = member?.membership_tier ?? "standard";
   const displayName =
