@@ -11,6 +11,7 @@ import { usePlayer } from "@/context/PlayerContext";
 import { usePageEngagement } from "@/lib/usePageEngagement";
 import type { Album, AlbumListResult, Artist, Track } from "@/types/music";
 import type { HeroMedia } from "@/lib/queries";
+import { getHeroImage } from "@/lib/albumCover";
 
 const PAGE_SIZE =
   Number(process.env.NEXT_PUBLIC_ALBUMS_PER_PAGE) > 0
@@ -209,10 +210,18 @@ export function HomeClient({
                     className={`absolute inset-0 overflow-hidden transition-opacity duration-1000${idx === slideIdx ? " animate-kenburns" : ""}`}
                     style={{ opacity: idx === slideIdx ? 1 : 0 }}
                   >
-                    {/* Cloudinary hero image — intentionally not using getAlbumCover() */}
+                    {/* Width-only Cloudinary resize via getHeroImage() — the square-crop
+                        getAlbumCover() would butcher the wide hero art, and the raw
+                        original is a multi-MB PNG that stalls cellular connections. */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={media.url}
+                      src={getHeroImage(media.url, 1600)}
+                      srcSet={[800, 1200, 1600, 2400]
+                        .map((w) => `${getHeroImage(media.url, w)} ${w}w`)
+                        .join(", ")}
+                      sizes="100vw"
+                      fetchPriority={idx === 0 ? "high" : undefined}
+                      decoding="async"
                       alt=""
                       className="h-full w-full object-cover"
                     />

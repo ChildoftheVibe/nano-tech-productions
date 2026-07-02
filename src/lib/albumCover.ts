@@ -52,6 +52,34 @@ export function getAlbumCover(
 }
 
 /**
+ * Build an optimized Cloudinary delivery URL for a full-bleed hero image.
+ * Width-only resize (no square crop — heroes are wide) with f_auto/q_auto so
+ * phones get a right-sized WebP/AVIF instead of the multi-MB original PNG.
+ * Accepts a full Cloudinary URL or a bare publicId; other URLs pass through.
+ *
+ * Client-safe — pulls from NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, no secrets.
+ */
+export function getHeroImage(input: string, width = 1600): string {
+  if (!input) return "";
+  const transform = `f_auto,q_auto:good,w_${width}`;
+
+  if (/^https?:\/\//.test(input)) {
+    const marker = "/image/upload/";
+    const idx = input.indexOf(marker);
+    if (idx < 0) return input;
+    const head = input.slice(0, idx + marker.length);
+    const tail = input.slice(idx + marker.length);
+    // Already carries a transform segment — leave it alone, same as getAlbumCover.
+    if (/^(?:[a-z]_[^/]+,)*[a-z]_[^/]+\//.test(tail)) return input;
+    return `${head}${transform}/${tail}`;
+  }
+
+  if (input.startsWith("/")) return input;
+
+  return `https://${CLOUDINARY_HOST}/${cloudName}/image/upload/${transform}/${input}`;
+}
+
+/**
  * Build an optimized Cloudinary delivery URL for a looping cover video. Accepts
  * a bare publicId, an already-baked Cloudinary URL, or a local path (returned
  * as-is). Cloudinary applies q_auto and a square c_fill crop at the requested
