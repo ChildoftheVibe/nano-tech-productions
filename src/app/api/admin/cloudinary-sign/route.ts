@@ -104,12 +104,11 @@ export async function POST(req: Request) {
   };
   if (isVault) paramsToSign.type = "authenticated";
 
-  // Cover videos: pre-generate the exact MP4 + poster derivations the public
-  // carousel requests (see getCoverVideo/getCoverVideoPoster). Without this the
-  // first visitor triggers an on-demand transcode that can take 10–30s.
-  // eager_async keeps the upload response fast; Cloudinary derives in the
-  // background. The strings must match the delivery transforms byte-for-byte
-  // or the cache is missed.
+  // Pre-generate the exact derivations the public site requests (cover-video
+  // MP4s + posters, streaming MP3s) so the first visitor never triggers an
+  // on-demand transcode, which can take 10–30s. eager_async keeps the upload
+  // response fast; Cloudinary derives in the background. The strings must
+  // match the delivery transforms byte-for-byte or the cache is missed.
   let eager: string | undefined;
   if (resourceType === "video" && folder.endsWith("/cover-videos")) {
     eager = [
@@ -118,6 +117,19 @@ export async function POST(req: Request) {
       coverVideoPosterTransform(400),
       coverVideoPosterTransform(300),
     ].join("|");
+  } else if (
+    resourceType === "video" &&
+    folder.startsWith("ntp/audio/instrumentals/public/")
+  ) {
+    // Full stream (getInstrumentalStreamUrl) + 30s preview
+    // (getInstrumentalPreviewUrl — chained transform, hence the "/").
+    eager = "f_mp3,br_320k|fl_splice,du_30/f_mp3,br_128k";
+  } else if (resourceType === "video" && folder.startsWith("ntp/audio/public/")) {
+    // Streaming MP3 (getPublicStreamingUrl). Without this the first listener
+    // of every track waits on a cold full-length transcode.
+    eager = "f_mp3,br_320k";
+  }
+  if (eager) {
     paramsToSign.eager = eager;
     paramsToSign.eager_async = "true";
   }
