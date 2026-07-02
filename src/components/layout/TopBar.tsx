@@ -14,12 +14,15 @@ export function TopBar() {
 
   return (
     <header
-      className="sticky top-0 z-20 flex h-14 flex-shrink-0 items-center justify-between gap-4 px-4"
+      className="sticky top-0 z-20 flex min-h-14 flex-shrink-0 items-center justify-between gap-4 px-4"
       style={{
         background:
           "linear-gradient(to bottom, rgba(9,15,14,0.85), rgba(9,15,14,0.3) 70%, transparent)",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
+        // Keep text ≥4px from the top screen edge; expands for the notch/status
+        // bar on phones and the installed PWA (viewport-fit=cover).
+        paddingTop: "max(env(safe-area-inset-top, 0px), 4px)",
       }}
     >
       {/* Mobile: NTV brand wordmark (hidden on desktop where sidebar shows it) */}

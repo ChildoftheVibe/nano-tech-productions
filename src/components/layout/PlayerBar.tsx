@@ -211,7 +211,8 @@ export function PlayerBar() {
       style={{
         background: "#090f0e",
         borderTop: "1px solid rgba(255,255,255,0.08)",
-        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        // No safe-area padding here: on mobile the MobileTabBar sits below this
+        // bar and owns the bottom inset — padding both would open a dead gap.
       }}
       aria-label="Music player"
       onTouchStart={handleTouchStart}

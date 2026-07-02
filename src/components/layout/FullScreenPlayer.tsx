@@ -197,6 +197,11 @@ export function FullScreenPlayer() {
           {/* ── MOBILE LAYOUT (hidden on md+) ── */}
           <motion.div
             className="relative z-10 flex h-full w-full flex-col px-6 pt-3 pb-8 md:hidden"
+            style={{
+              // Clear the notch/status bar and home indicator (viewport-fit=cover)
+              paddingTop: "max(env(safe-area-inset-top, 0px), 12px)",
+              paddingBottom: "max(env(safe-area-inset-bottom, 0px), 32px)",
+            }}
             drag="y"
             dragDirectionLock
             dragConstraints={{ top: 0, bottom: 0 }}

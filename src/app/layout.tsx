@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { Geist, Geist_Mono, Bungee } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
@@ -64,6 +64,16 @@ export const metadata: Metadata = {
   },
 };
 
+// viewport-fit=cover lets the app paint edge-to-edge on notched phones and the
+// installed PWA; the top/bottom bars then pad themselves back out of the unsafe
+// zones with env(safe-area-inset-*).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#090f0e",
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -90,7 +100,10 @@ export default async function RootLayout({
             <PlayerProvider>
               <PlayerSeeder tracks={playlistTracks} isAdminCurated={isAdminCurated} />
               <RouteChangeFocus />
-              <div style={{ display: "flex", height: "100vh", flexDirection: "column" }}>
+              {/* .app-shell: 100dvh with 100vh fallback — on mobile browsers 100vh
+                  includes the URL-bar zone, pushing the bottom bars partially
+                  off-screen. dvh tracks the actual visible viewport. */}
+              <div className="app-shell" style={{ display: "flex", flexDirection: "column" }}>
                 <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
                   <Sidebar initialAlbums={sidebarAlbums} />
                   <main

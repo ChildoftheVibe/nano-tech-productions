@@ -206,7 +206,7 @@ export function HomeClient({
                   // transform; the image stays a static, always-painted fill layer.
                   <div
                     key={media.id}
-                    className="absolute inset-0 overflow-hidden transition-opacity duration-1000"
+                    className={`absolute inset-0 overflow-hidden transition-opacity duration-1000${idx === slideIdx ? " animate-kenburns" : ""}`}
                     style={{ opacity: idx === slideIdx ? 1 : 0 }}
                   >
                     {/* Cloudinary hero image — intentionally not using getAlbumCover() */}
@@ -214,7 +214,7 @@ export function HomeClient({
                     <img
                       src={media.url}
                       alt=""
-                      className={`h-full w-full object-cover${idx === slideIdx ? " animate-kenburns" : ""}`}
+                      className="h-full w-full object-cover"
                     />
                   </div>
                 ),

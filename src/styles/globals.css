@@ -164,12 +164,27 @@ main {
   100% { transform: scale(1.05); }
 }
 
+/* App shell height: dvh tracks the visible mobile viewport (100vh includes the
+   URL-bar zone and pushes the bottom bars off-screen). vh fallback for old browsers. */
+.app-shell {
+  height: 100vh;
+}
+@supports (height: 100dvh) {
+  .app-shell {
+    height: 100dvh;
+  }
+}
+
 /* ── Cinematic layer ─────────────────────────────────────────────── */
 
-/* Slow Ken Burns push-in for hero media */
-.animate-kenburns {
-  animation: ken-burns 24s ease-in-out infinite alternate;
-  will-change: transform;
+/* Slow Ken Burns push-in for hero media. Desktop-only: animated transforms on
+   the hero layers have caused blank paints on mobile Safari, and the zoom is a
+   desktop nicety anyway — mobile stays fully static. */
+@media (min-width: 768px) {
+  .animate-kenburns {
+    animation: ken-burns 24s ease-in-out infinite alternate;
+    will-change: transform;
+  }
 }
 @keyframes ken-burns {
   0%   { transform: scale(1) translate(0, 0); }

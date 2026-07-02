@@ -43,7 +43,10 @@ export function MobileTabBar() {
       aria-label="Main"
       className="flex flex-shrink-0 items-stretch md:hidden"
       style={{
-        height: 56,
+        // 56px of tab content + ≥4px clearance so labels never touch the bottom
+        // screen edge; grows for the home-indicator inset on notched phones.
+        minHeight: "calc(56px + max(env(safe-area-inset-bottom, 0px), 4px))",
+        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)",
         background: "#090f0e",
         borderTop: "1px solid rgba(255,255,255,0.08)",
       }}
