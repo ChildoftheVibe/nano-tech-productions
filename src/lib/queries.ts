@@ -757,8 +757,19 @@ type ArtistTrackJoinRow = {
     audio_url: string | null;
     features: string[] | null;
     is_published: boolean;
-    albums: { slug: string; title: string } | { slug: string; title: string }[] | null;
+    albums:
+      | ArtistTrackAlbumJoin
+      | ArtistTrackAlbumJoin[]
+      | null;
   } | null;
+};
+
+type ArtistTrackAlbumJoin = {
+  slug: string;
+  title: string;
+  cover_image: string | null;
+  background_color: string | null;
+  accent_color: string | null;
 };
 
 type ArtistAlbumJoinRow = {
@@ -793,7 +804,7 @@ export const getArtist = unstable_cache(
       supabase
         .from("artist_tracks")
         .select(
-          "role, tracks!inner(id, album_id, title, track_number, duration, price, audio_url, features, is_published, albums(slug, title))",
+          "role, tracks!inner(id, album_id, title, track_number, duration, price, audio_url, features, is_published, albums(slug, title, cover_image, background_color, accent_color))",
         )
         .eq("artist_id", artist.id),
       supabase
@@ -823,6 +834,9 @@ export const getArtist = unstable_cache(
           albumId: t.album_id ?? "",
           albumSlug: album?.slug ?? null,
           albumTitle: album?.title ?? null,
+          albumCoverImage: album?.cover_image ?? null,
+          albumBgColor: album?.background_color ?? null,
+          albumAccentColor: album?.accent_color ?? null,
           artistRole: r.role ?? "featured",
         };
       });

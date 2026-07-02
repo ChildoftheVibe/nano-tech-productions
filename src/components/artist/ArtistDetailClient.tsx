@@ -29,6 +29,12 @@ function artistTrackToTrack(t: ArtistTrack): Track {
     credits: {},
     lyrics: null,
     has_lyrics: false,
+    // Carry album art/theme through so the player swaps cover + accent
+    albumSlug: t.albumSlug ?? undefined,
+    albumTitle: t.albumTitle ?? undefined,
+    albumCoverImage: t.albumCoverImage ?? undefined,
+    albumBgColor: t.albumBgColor ?? undefined,
+    albumAccentColor: t.albumAccentColor ?? undefined,
   };
 }
 
@@ -39,9 +45,8 @@ export function ArtistDetailClient({ artist }: { artist: Artist }) {
 
   const handlePlay = (t: ArtistTrack) => {
     if (!t.audioUrl) return;
-    // We don't have full Album objects for the artist's tracks (only minimal
-    // album metadata via the join); pass null so the player still functions
-    // even when album context isn't loaded.
+    // No full Album object here; the track carries embedded album metadata,
+    // so playTrack derives cover + accent from it via albumFromTrack.
     playFromTrack(artistTrackToTrack(t), null);
   };
 

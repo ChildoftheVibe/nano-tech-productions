@@ -81,6 +81,10 @@ export type ArtistTrack = {
   albumId: string;
   albumSlug: string | null;
   albumTitle: string | null;
+  /** Album art/theme so the player can swap cover + accent when played. */
+  albumCoverImage?: string | null;
+  albumBgColor?: string | null;
+  albumAccentColor?: string | null;
   /** Role of this artist on this track (from artist_tracks.role). */
   artistRole: string;
 };

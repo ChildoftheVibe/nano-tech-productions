@@ -26,6 +26,7 @@ import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { useCheckoutStore } from "@/store/checkoutStore";
 import { getAlbumCover } from "@/lib/albumCover";
+import { albumFromTrack } from "@/lib/playlistSeed";
 
 const formatTime = (s: number) => {
   if (!Number.isFinite(s) || s < 0) return "0:00";
@@ -711,14 +712,18 @@ export function FullScreenPlayer() {
                         .map((t) => (
                           <div
                             key={t.id}
-                            onClick={() => playFromTrack(t, currentAlbum ?? null)}
+                            // Play with the track's OWN album (embedded playlist metadata)
+                            // so cover + accent swap correctly; fall back to the current
+                            // album only for same-album queues, where tracks carry no
+                            // embedded metadata and the album genuinely doesn't change.
+                            onClick={() => playFromTrack(t, albumFromTrack(t) ?? currentAlbum ?? null)}
                             className="flex items-center gap-3 rounded-lg px-2 py-2 cursor-pointer group transition-colors hover:bg-white/[0.04]"
                           >
                             <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white/5 flex items-center justify-center">
-                              {currentAlbum?.coverImage ? (
+                              {(t.albumCoverImage ?? currentAlbum?.coverImage) ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
-                                  src={getAlbumCover(currentAlbum.coverImage, 40)}
+                                  src={getAlbumCover((t.albumCoverImage ?? currentAlbum?.coverImage)!, 40)}
                                   alt=""
                                   className="h-full w-full object-cover"
                                   aria-hidden="true"
