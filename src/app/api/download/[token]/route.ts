@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/db/admin";
 import { getPurchaseDownloadUrl } from "@/lib/cloudinary";
+import { buildTaggedMp3Response } from "@/lib/id3";
 import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
 import { checkRateLimitStrict } from "@/lib/rateLimit";
 
@@ -114,7 +115,9 @@ export async function GET(req: Request, { params }: { params: Params }) {
 
   const { data: track } = await supabaseAdmin
     .from("tracks")
-    .select("id, public_audio_id")
+    .select(
+      "id, title, track_number, public_audio_id, albums(title, cover_image), artist_tracks(artists(name))",
+    )
     .eq("id", dlToken.track_id)
     .maybeSingle();
 
@@ -169,6 +172,36 @@ export async function GET(req: Request, { params }: { params: Params }) {
     entityId: track.id,
     metadata: { order_id: order.id, format: dlToken.format },
   });
+
+  // Proxy the MP3 with the album cover + metadata embedded as ID3 tags.
+  // Cloudinary's transcode carries no tags, so a plain redirect would hand
+  // the buyer an untagged file. Falls back to the redirect on any failure —
+  // a paid download must never 500.
+  const album = Array.isArray(track.albums) ? track.albums[0] : track.albums;
+  const artistJoins = Array.isArray(track.artist_tracks)
+    ? track.artist_tracks
+    : track.artist_tracks
+      ? [track.artist_tracks]
+      : [];
+  const artistNames = artistJoins
+    .map((row) => {
+      const artist = Array.isArray(row.artists) ? row.artists[0] : row.artists;
+      return artist?.name ?? "";
+    })
+    .filter(Boolean)
+    .join(", ");
+
+  const tagged = await buildTaggedMp3Response({
+    audioUrl: signedUrl,
+    coverImage: album?.cover_image,
+    meta: {
+      title: track.title ?? undefined,
+      artist: artistNames || undefined,
+      album: album?.title ?? undefined,
+      trackNumber: track.track_number ?? undefined,
+    },
+  });
+  if (tagged) return tagged;
 
   return NextResponse.redirect(signedUrl, { status: 302, headers: noStore() });
 }

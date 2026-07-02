@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/db/admin";
 import { getInstrumentalDownloadUrl } from "@/lib/cloudinary";
+import { buildTaggedMp3Response } from "@/lib/id3";
 import { logAuditEvent, clientIpFromHeaders } from "@/lib/audit";
 import { checkRateLimitStrict } from "@/lib/rateLimit";
 
@@ -120,7 +121,7 @@ export async function GET(req: Request, { params }: { params: Params }) {
 
   const { data: instrumental } = await supabaseAdmin
     .from("instrumentals")
-    .select("id, public_audio_id, title")
+    .select("id, public_audio_id, title, cover_image")
     .eq("id", dlToken.instrumental_id)
     .maybeSingle();
 
@@ -180,6 +181,16 @@ export async function GET(req: Request, { params }: { params: Params }) {
       title: instrumental.title,
     },
   });
+
+  // Proxy the MP3 with the cover + title embedded as ID3 tags; the Cloudinary
+  // transcode carries none. Falls back to the plain redirect on any failure —
+  // a paid download must never 500.
+  const tagged = await buildTaggedMp3Response({
+    audioUrl: signedUrl,
+    coverImage: instrumental.cover_image,
+    meta: { title: instrumental.title ?? undefined },
+  });
+  if (tagged) return tagged;
 
   return NextResponse.redirect(signedUrl, { status: 302, headers: noStore() });
 }

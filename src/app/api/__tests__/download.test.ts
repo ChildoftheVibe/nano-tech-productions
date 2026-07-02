@@ -104,9 +104,30 @@ describe("GET /api/download/[token]", () => {
     jest.clearAllMocks();
     mockRateLimit.mockResolvedValue(true);
     mockGetUrl.mockReturnValue(SIGNED_URL);
+    // The route proxies the MP3 to embed ID3 tags; block network by default
+    // so tests exercise the redirect fallback unless they opt in.
+    global.fetch = jest.fn().mockRejectedValue(new Error("network disabled"));
   });
 
-  it("redirects (302) for a valid token with a completed order", async () => {
+  it("serves the MP3 with an ID3 tag prepended when the proxy fetch succeeds", async () => {
+    setupDb({ trackRow: { ...trackRow, title: "Test Track" } as typeof trackRow });
+    const mp3Bytes = new Uint8Array([0xff, 0xfb, 0x90, 0x00]); // bare MPEG frame sync
+    (global.fetch as jest.Mock).mockResolvedValue(
+      new Response(mp3Bytes, {
+        status: 200,
+        headers: { "content-type": "audio/mpeg" },
+      }),
+    );
+    const res = await call(VALID_TOKEN);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("audio/mpeg");
+    expect(res.headers.get("content-disposition")).toContain("attachment");
+    const body = Buffer.from(await res.arrayBuffer());
+    expect(body.toString("latin1", 0, 3)).toBe("ID3");
+    expect(body.subarray(body.length - 4)).toEqual(Buffer.from(mp3Bytes));
+  });
+
+  it("falls back to a 302 redirect when the proxy fetch fails", async () => {
     setupDb();
     const res = await call(VALID_TOKEN);
     expect(res.status).toBe(302);
