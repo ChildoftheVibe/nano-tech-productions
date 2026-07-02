@@ -200,15 +200,23 @@ export function HomeClient({
                     playsInline
                   />
                 ) : (
-                  // Cloudinary hero image — intentionally not using getAlbumCover()
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  // Ken Burns zoom animates this wrapper, not the <img> itself — animating a
+                  // transform directly on an object-fit: cover element fails to paint on some
+                  // mobile Safari versions (the image goes blank). The wrapper absorbs the
+                  // transform; the image stays a static, always-painted fill layer.
+                  <div
                     key={media.id}
-                    src={media.url}
-                    alt=""
-                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000${idx === slideIdx ? " animate-kenburns" : ""}`}
+                    className="absolute inset-0 overflow-hidden transition-opacity duration-1000"
                     style={{ opacity: idx === slideIdx ? 1 : 0 }}
-                  />
+                  >
+                    {/* Cloudinary hero image — intentionally not using getAlbumCover() */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={media.url}
+                      alt=""
+                      className={`h-full w-full object-cover${idx === slideIdx ? " animate-kenburns" : ""}`}
+                    />
+                  </div>
                 ),
               )
             ) : (
