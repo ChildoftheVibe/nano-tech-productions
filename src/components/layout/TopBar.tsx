@@ -11,6 +11,11 @@ export function TopBar() {
   const router = useRouter();
   const openFullScreen = usePlayerStore((s) => s.openFullScreen);
   const currentTrack = usePlayerStore((s) => s.currentTrack);
+  const currentAlbum = usePlayerStore((s) => s.currentAlbum);
+  const accentColor =
+    currentAlbum?.coverImage && currentAlbum.accentColor
+      ? currentAlbum.accentColor
+      : "#62f3e4";
 
   return (
     <header
@@ -29,7 +34,8 @@ export function TopBar() {
       <Link
         href="/"
         aria-label="NTV Vault home"
-        className="ntv-logo font-[family-name:var(--font-bungee)] text-[20px] tracking-tighter text-[#62f3e4] leading-none md:hidden"
+        className="ntv-logo font-[family-name:var(--font-bungee)] text-[20px] tracking-tighter leading-none md:hidden"
+        style={{ color: accentColor }}
       >
         NTV
       </Link>
@@ -59,7 +65,14 @@ export function TopBar() {
           <motion.button
             onClick={openFullScreen}
             aria-label="Open Now Playing"
-            className="hidden md:flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#62f3e4] hover:bg-[#62f3e4]/10 transition-colors"
+            className="hidden md:flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-colors"
+            style={{ color: accentColor }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = `${accentColor}1a`;
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+            }}
             whileTap={{ scale: 0.95 }}
           >
             Now Playing

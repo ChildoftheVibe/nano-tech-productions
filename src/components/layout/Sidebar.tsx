@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Library, Search, Users, Volume2, Star } from "lucide-react";
 import type { Album } from "@/types/music";
+import { usePlayerStore } from "@/store/playerStore";
 
 const primaryNav = [
   { href: "/", label: "Home", icon: Home },
@@ -23,6 +24,11 @@ type Props = {
 
 export function Sidebar({ initialAlbums: _ }: Props) {
   const pathname = usePathname();
+  const currentAlbum = usePlayerStore((s) => s.currentAlbum);
+  const accentColor =
+    currentAlbum?.coverImage && currentAlbum.accentColor
+      ? currentAlbum.accentColor
+      : "#62f3e4";
 
   const navLink = (href: string, label: string, Icon: React.ElementType) => {
     const active = pathname === href;
@@ -41,9 +47,9 @@ export function Sidebar({ initialAlbums: _ }: Props) {
           fontWeight: active ? 600 : 400,
           textDecoration: "none",
           transition: "background 150ms ease-out, color 150ms ease-out",
-          background: active ? "rgba(98,243,228,0.08)" : "transparent",
-          color: active ? "#62f3e4" : "#8a9e9a",
-          borderLeft: active ? "3px solid #62f3e4" : "3px solid transparent",
+          background: active ? `${accentColor}14` : "transparent",
+          color: active ? accentColor : "#8a9e9a",
+          borderLeft: active ? `3px solid ${accentColor}` : "3px solid transparent",
         }}
         onMouseEnter={(e) => {
           if (!active) {
@@ -61,7 +67,7 @@ export function Sidebar({ initialAlbums: _ }: Props) {
         <Icon
           size={18}
           aria-hidden="true"
-          style={{ color: active ? "#62f3e4" : "currentColor", flexShrink: 0 }}
+          style={{ color: active ? accentColor : "currentColor", flexShrink: 0 }}
         />
         <span>{label}</span>
       </Link>
@@ -84,7 +90,7 @@ export function Sidebar({ initialAlbums: _ }: Props) {
           href="/"
           aria-label="NTV Vault home"
           className="ntv-logo font-[family-name:var(--font-bungee)] leading-none"
-          style={{ fontSize: 22, letterSpacing: "-0.03em", color: "#62f3e4", textDecoration: "none" }}
+          style={{ fontSize: 22, letterSpacing: "-0.03em", color: accentColor, textDecoration: "none" }}
         >
           NTV
         </Link>

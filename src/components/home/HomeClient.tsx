@@ -109,6 +109,10 @@ export function HomeClient({
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const currentAlbum = usePlayerStore((s) => s.currentAlbum);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
+  const accentColor =
+    currentAlbum?.coverImage && currentAlbum.accentColor
+      ? currentAlbum.accentColor
+      : "#62f3e4";
 
   const [collection, setCollection] = useState<Album[]>(
     initialCollection.albums,
@@ -310,7 +314,8 @@ export function HomeClient({
                 <motion.button
                   onClick={() => playFromAlbum(latest)}
                   disabled={!latest.tracks.length}
-                  className="bg-[#62f3e4] text-[#003733] px-8 py-3 rounded-lg font-bold text-sm flex items-center gap-2 disabled:opacity-40 teal-glow"
+                  className="text-[#003733] px-8 py-3 rounded-lg font-bold text-sm flex items-center gap-2 disabled:opacity-40"
+                  style={{ background: accentColor, boxShadow: `0 0 20px ${accentColor}4d` }}
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.96 }}
                 >
@@ -353,7 +358,8 @@ export function HomeClient({
           <SectionLabel eyebrow="Curated" title="Featured" />
           <Link
             href="/library"
-            className="font-[family-name:var(--font-geist-mono)] text-[11px] uppercase tracking-widest text-[#62f3e4] hover:underline transition-colors flex-shrink-0"
+            className="font-[family-name:var(--font-geist-mono)] text-[11px] uppercase tracking-widest hover:underline transition-colors flex-shrink-0"
+            style={{ color: accentColor }}
           >
             View All
           </Link>
@@ -450,7 +456,8 @@ export function HomeClient({
           />
           <Link
             href="/library"
-            className="font-[family-name:var(--font-geist-mono)] text-[11px] uppercase tracking-widest text-[#62f3e4] hover:underline transition-colors flex-shrink-0"
+            className="font-[family-name:var(--font-geist-mono)] text-[11px] uppercase tracking-widest hover:underline transition-colors flex-shrink-0"
+            style={{ color: accentColor }}
           >
             View All
           </Link>

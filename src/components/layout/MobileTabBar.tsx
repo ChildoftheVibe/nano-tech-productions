@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Library, Search, Volume2 } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
+import { usePlayerStore } from "@/store/playerStore";
 
 type Tab = {
   href: string;
@@ -36,6 +37,11 @@ const TABS: Tab[] = [
 
 export function MobileTabBar() {
   const pathname = usePathname() ?? "/";
+  const currentAlbum = usePlayerStore((s) => s.currentAlbum);
+  const accentColor =
+    currentAlbum?.coverImage && currentAlbum.accentColor
+      ? currentAlbum.accentColor
+      : "#62f3e4";
 
   return (
     <nav
@@ -53,7 +59,7 @@ export function MobileTabBar() {
     >
       {TABS.map(({ href, label, Icon, match }) => {
         const active = match(pathname);
-        const color = active ? "#62f3e4" : "#B3B3B3";
+        const color = active ? accentColor : "#B3B3B3";
         return (
           <Link
             key={href}

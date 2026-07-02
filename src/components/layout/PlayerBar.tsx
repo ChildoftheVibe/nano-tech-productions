@@ -248,7 +248,7 @@ export function PlayerBar() {
 
       {/* Mobile single-row layout */}
       <div
-        className="flex h-full items-center gap-3 px-3 pt-1 md:hidden"
+        className="flex h-full items-center gap-3 px-4 pt-1 md:hidden"
         style={{ background: mobilePlayerBg, transition: "background 0.4s ease" }}
       >
         {currentTrack ? (
