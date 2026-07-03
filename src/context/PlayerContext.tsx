@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef } from "react";
-import { usePlayerStore } from "@/store/playerStore";
+import { usePlayerStore, isPreviewOnly, PREVIEW_LIMIT_SECONDS } from "@/store/playerStore";
 import { syncAudioCache, clearAudioCache } from "@/lib/audioCache";
 import {
   trackPlayStart,
@@ -82,6 +82,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const playFiredRef = useRef(false);
   const pauseAtRef = useRef<number>(0);
   const seekFromRef = useRef<number | null>(null);
+  // Guards the preview cap so the ~4x/sec timeupdate can't fire the advance
+  // more than once per track before the next track loads.
+  const previewAdvancedRef = useRef(false);
 
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
@@ -113,6 +116,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     lastReportedProgressRef.current = -1;
     completedRef.current = false;
     playFiredRef.current = false;
+    previewAdvancedRef.current = false;
 
     if (currentTrack?.audioUrl) {
       if (audio.src !== currentTrack.audioUrl) {
@@ -200,6 +204,37 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const t = audio.currentTime;
       const d = audio.duration;
       usePlayerStore.getState().setCurrentTime(t);
+
+      // Preview cap: tracks that aren't in the admin-curated playlist may only
+      // play for PREVIEW_LIMIT_SECONDS, then we auto-advance to the next track.
+      if (
+        currentTrack &&
+        !previewAdvancedRef.current &&
+        t >= PREVIEW_LIMIT_SECONDS &&
+        isPreviewOnly(usePlayerStore.getState(), currentTrack.id)
+      ) {
+        previewAdvancedRef.current = true;
+        const store = usePlayerStore.getState();
+        const previous = store.currentTrack;
+        store.nextTrack();
+        const next = usePlayerStore.getState().currentTrack;
+        if (next && next.id !== previous?.id && next.audioUrl) {
+          if (audio.src !== next.audioUrl) {
+            audio.src = next.audioUrl;
+            audio.load();
+          }
+          audio.play().catch((err) => {
+            console.warn("[PlayerContext] preview auto-advance play() rejected:", err);
+            store.setPlaying(false);
+          });
+        } else {
+          // Nothing playable ahead — stop at the end of the preview.
+          audio.pause();
+          store.setPlaying(false);
+        }
+        return;
+      }
+
       if (!currentTrack || !Number.isFinite(d) || d <= 0) return;
 
       // Fire progress every PROGRESS_TICK_SECONDS only.
@@ -283,6 +318,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       try {
         const { tracks: fresh, isAdminCurated } = await fetchPlaylist();
         if (!fresh.length) return;
+        usePlayerStore.getState().registerPlaylistIds(fresh.map((t) => t.id), isAdminCurated);
         const known = new Set(usePlayerStore.getState().queue.map((t) => t.id));
         // Admin-curated tracks keep their position order; fallback tracks are shuffled.
         const newTracks = isAdminCurated ? fresh : shuffle(fresh);
@@ -632,6 +668,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       seedingRef.current = true;
       try {
         const { tracks: fresh, isAdminCurated } = await fetchPlaylist();
+        store.registerPlaylistIds(fresh.map((t) => t.id), isAdminCurated);
         const { queue, first, album } = buildSeed(fresh, { ordered: isAdminCurated });
         if (!first) return;
         store.setQueue(queue, first, album);

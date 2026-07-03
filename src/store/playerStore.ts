@@ -23,6 +23,13 @@ type PlayerState = {
   connectionStatus: ConnectionStatus;
   retryCount: number;
 
+  // Preview gating: the set of track IDs that belong to the admin-curated
+  // playlist. When `hasCuratedPlaylist` is true, any playing track whose id is
+  // NOT in `curatedTrackIds` is a preview and is capped at PREVIEW_LIMIT_SECONDS
+  // by PlayerContext. When there is no curated playlist, everything plays fully.
+  curatedTrackIds: Set<string>;
+  hasCuratedPlaylist: boolean;
+
   playTrack: (track: Track, album?: Album | null) => void;
   playAlbum: (album: Album) => void;
   togglePlay: () => void;
@@ -47,7 +54,20 @@ type PlayerState = {
   setConnectionStatus: (status: ConnectionStatus) => void;
   incrementRetryCount: () => void;
   resetConnectionState: () => void;
+  /** Register the admin-curated playlist track IDs. When `curated` is true the
+   *  ids are unioned into `curatedTrackIds` (multiple fetches may each return a
+   *  page of the playlist) and `hasCuratedPlaylist` is set. When `curated` is
+   *  false there is no admin playlist, so preview gating stays disabled. */
+  registerPlaylistIds: (ids: string[], curated: boolean) => void;
 };
+
+/** True when preview gating is active AND this track is not part of the
+ *  admin-curated playlist — i.e. it should only play a 30-second preview. */
+export const isPreviewOnly = (state: PlayerState, trackId: string): boolean =>
+  state.hasCuratedPlaylist && !state.curatedTrackIds.has(trackId);
+
+/** Seconds a non-playlist track is allowed to play before auto-advancing. */
+export const PREVIEW_LIMIT_SECONDS = 30;
 
 const shuffleArray = <T,>(arr: T[]): T[] => {
   const a = [...arr];
@@ -94,6 +114,8 @@ export const usePlayerStore = create<PlayerState>()(
       isMuted: false,
       connectionStatus: 'ok' as ConnectionStatus,
       retryCount: 0,
+      curatedTrackIds: new Set<string>(),
+      hasCuratedPlaylist: false,
 
       playTrack: (track, album = null) => {
         // Refuse to switch to a track that has no audioUrl. Setting it as
@@ -241,6 +263,20 @@ export const usePlayerStore = create<PlayerState>()(
       setConnectionStatus: (status: ConnectionStatus) => set({ connectionStatus: status }),
       incrementRetryCount: () => set((state) => ({ retryCount: state.retryCount + 1 })),
       resetConnectionState: () => set({ connectionStatus: 'ok', retryCount: 0 }),
+
+      registerPlaylistIds: (ids, curated) => {
+        if (!curated) {
+          // No admin-curated playlist → every track plays fully. Only reset if
+          // we had previously registered a curated playlist this session.
+          if (get().hasCuratedPlaylist) {
+            set({ curatedTrackIds: new Set<string>(), hasCuratedPlaylist: false });
+          }
+          return;
+        }
+        const next = new Set(get().curatedTrackIds);
+        for (const id of ids) next.add(id);
+        set({ curatedTrackIds: next, hasCuratedPlaylist: true });
+      },
     }),
     {
       name: "ntv-player",

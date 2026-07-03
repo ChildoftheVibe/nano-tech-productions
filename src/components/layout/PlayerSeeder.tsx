@@ -36,6 +36,12 @@ export function PlayerSeeder({
     seeded.current = true;
 
     const store = usePlayerStore.getState();
+
+    // Record which tracks belong to the admin-curated playlist so PlayerContext
+    // can cap everything else at a 30-second preview. Do this even if the queue
+    // is already seeded below.
+    store.registerPlaylistIds(tracks.map((t) => t.id), isAdminCurated);
+
     if (store.queue.length > 0 || store.currentTrack) return;
 
     const { queue, first, album } = buildSeed(tracks, { ordered: isAdminCurated });
