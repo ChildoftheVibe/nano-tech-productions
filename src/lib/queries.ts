@@ -1054,3 +1054,75 @@ export const getActiveHeroMedia = unstable_cache(
   ["hero-media-active"],
   { revalidate: 300, tags: ["hero-media"] },
 );
+
+export type IntroVideo = {
+  id: string;
+  portraitUrl: string | null;
+  landscapeUrl: string | null;
+  replayMode: "session" | "always";
+  album: {
+    slug: string;
+    title: string;
+    coverImage: string;
+    bgColor: string;
+    accentColor: string;
+  } | null;
+};
+
+export const getActiveIntroVideo = unstable_cache(
+  async (): Promise<IntroVideo | null> => {
+    const { data, error } = await supabase
+      .from("intro_videos")
+      .select(
+        "id, portrait_url, landscape_url, replay_mode, albums(slug, title, cover_image, background_color, accent_color)",
+      )
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      logError(error, { caller: "queries.getActiveIntroVideo" });
+      return null;
+    }
+    if (!data) return null;
+
+    type AlbumJoin = {
+      slug: string;
+      title: string;
+      cover_image: string | null;
+      background_color: string | null;
+      accent_color: string | null;
+    };
+    const row = data as unknown as {
+      id: string;
+      portrait_url: string | null;
+      landscape_url: string | null;
+      replay_mode: string;
+      // Supabase types a many-to-one embed as an array; normalize below.
+      albums: AlbumJoin | AlbumJoin[] | null;
+    };
+
+    // No usable video source → treat as inactive so the overlay never renders empty.
+    if (!row.portrait_url && !row.landscape_url) return null;
+
+    const a = Array.isArray(row.albums) ? row.albums[0] ?? null : row.albums;
+    return {
+      id: row.id,
+      portraitUrl: row.portrait_url,
+      landscapeUrl: row.landscape_url,
+      replayMode: row.replay_mode === "always" ? "always" : "session",
+      album: a
+        ? {
+            slug: a.slug,
+            title: a.title,
+            coverImage: a.cover_image ?? "",
+            bgColor: a.background_color ?? "#393838",
+            accentColor: a.accent_color ?? "#3DD6C8",
+          }
+        : null,
+    };
+  },
+  ["intro-video-active"],
+  { revalidate: 300, tags: ["intro-video"] },
+);

@@ -57,6 +57,8 @@ function isAllowedFolder(folder: string): boolean {
   }
   // Hero media (images and videos for the home page hero section).
   if (folder === "ntp/hero") return true;
+  // Intro / landing pop-up videos (portrait 9:16 + landscape 16:9).
+  if (folder === "ntp/intro") return true;
   return false;
 }
 
