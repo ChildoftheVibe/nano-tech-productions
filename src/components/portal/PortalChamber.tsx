@@ -12,6 +12,40 @@ const VORTEX_CENTER = { x: 1346, y: 539 };
 
 const pct = (v: number, total: number) => `${(v / total) * 100}%`;
 
+/** A tiny ship silhouette that drifts across the distant starfield on a slow
+ *  loop — enough motion to make the chamber feel alive, never busy. The
+ *  flight path stays in the upper sky so it reads as far behind the gate. */
+function SpaceshipFlyby() {
+  return (
+    <motion.div
+      aria-hidden="true"
+      className="pointer-events-none absolute"
+      style={{ top: "11%", width: "3%", opacity: 0.55 }}
+      initial={{ left: "-5%" }}
+      animate={{ left: ["-5%", "105%"], y: [0, -10, 4, 0], rotate: -3 }}
+      transition={{
+        duration: 28,
+        ease: "linear",
+        repeat: Infinity,
+        repeatDelay: 14,
+      }}
+    >
+      <svg viewBox="-16 0 80 20" className="h-auto w-full">
+        <defs>
+          <linearGradient id="ship-trail" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#62f3e4" stopOpacity="0" />
+            <stop offset="1" stopColor="#62f3e4" stopOpacity="0.8" />
+          </linearGradient>
+        </defs>
+        <rect x="-16" y="10.4" width="18" height="1.4" rx="0.7" fill="url(#ship-trail)" />
+        <path d="M2 12 L40 8 L60 11 L40 15 Z" fill="#aebfc9" opacity="0.9" />
+        <path d="M38 9 L46 3.5 L50 9.5 Z" fill="#8fa3ad" opacity="0.85" />
+        <circle cx="53" cy="11" r="1.5" fill="#d7fbf6" />
+      </svg>
+    </motion.div>
+  );
+}
+
 type Props = {
   album: PortalAlbum;
   flying: boolean;
@@ -61,6 +95,9 @@ export function PortalChamber({ album, flying, reducedMotion }: Props) {
           />
         </AnimatePresence>
 
+        {/* Ambient life: a distant ship crossing the upper starfield. */}
+        {!reducedMotion && <SpaceshipFlyby />}
+
         {/* Vortex energy — crossfades with the chamber between portals. */}
         <AnimatePresence>
           <motion.img
@@ -78,10 +115,9 @@ export function PortalChamber({ album, flying, reducedMotion }: Props) {
               top: pct(VORTEX_CROP.y, PLATE.h),
               width: pct(VORTEX_CROP.size, PLATE.w),
               height: pct(VORTEX_CROP.size, PLATE.h),
-              // Fade out at the disc edge (r≈89% of the crop) so the crop's
-              // baked-in blue rim never covers the chamber's recolored rim.
-              maskImage: "radial-gradient(circle, #000 74%, transparent 88%)",
-              WebkitMaskImage: "radial-gradient(circle, #000 74%, transparent 88%)",
+              // The disc-edge feather is baked into the webp's alpha channel
+              // (elliptical, exactly at the disc edge) — CSS masks proved
+              // unreliable here (radial-gradient sizes to farthest-corner).
             }}
           />
         </AnimatePresence>
