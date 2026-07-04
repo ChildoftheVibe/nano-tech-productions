@@ -1,72 +1,16 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import {
-  Component,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useDrag } from "@use-gesture/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { PortalAlbum } from "@/lib/portalData";
-import { PortalFallback2D } from "./PortalFallback2D";
+import { PortalChamber } from "./PortalChamber";
 
 const STORAGE_KEY = "ntv-portal-index";
 const FLY_MS = 850;
 const FLY_MS_REDUCED = 250;
-
-function PortalLoading() {
-  return (
-    <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#090f0e]">
-      <span className="animate-pulse font-[family-name:var(--font-bungee)] text-2xl tracking-tight text-[#62f3e4]">
-        NTV VAULT
-      </span>
-    </div>
-  );
-}
-
-/** Fail closed: any runtime error inside the 3D scene silently drops the
- *  experience to the 2D fallback — never a white screen on a store. */
-class SceneErrorBoundary extends Component<
-  { onError: () => void; children: ReactNode },
-  { failed: boolean }
-> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  componentDidCatch() {
-    this.props.onError();
-  }
-  render() {
-    return this.state.failed ? null : this.props.children;
-  }
-}
-
-// 3D scene loads only on this route, client-only, code-split from the rest of
-// the app.
-const PortalScene = dynamic(() => import("./PortalScene"), {
-  ssr: false,
-  loading: () => <PortalLoading />,
-});
-
-function detectWebGL(): boolean {
-  try {
-    const canvas = document.createElement("canvas");
-    return Boolean(
-      canvas.getContext("webgl2") ??
-        canvas.getContext("webgl") ??
-        canvas.getContext("experimental-webgl"),
-    );
-  } catch {
-    return false;
-  }
-}
 
 type Props = { albums: PortalAlbum[] };
 
@@ -75,8 +19,6 @@ export function PortalRoomClient({ albums }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
   const [index, setIndex] = useState(0);
   const [flying, setFlying] = useState(false);
-  const [webglOk, setWebglOk] = useState<boolean | null>(null);
-  const [sceneFailed, setSceneFailed] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [height, setHeight] = useState<number | null>(null);
   const wheelAccum = useRef(0);
@@ -86,8 +28,8 @@ export function PortalRoomClient({ albums }: Props) {
   const count = albums.length;
   const album = albums[Math.min(index, count - 1)];
 
-  // Environment detection + restore the previously focused portal so the back
-  // button returns the visitor to the same doorway.
+  // Reduced-motion preference + restore the previously focused portal so the
+  // back button returns the visitor to the same doorway.
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
@@ -95,7 +37,6 @@ export function PortalRoomClient({ albums }: Props) {
     // Deferred to the next frame so detection/restore don't force a render
     // cascade during the effect pass.
     const raf = requestAnimationFrame(() => {
-      setWebglOk(detectWebGL());
       setReducedMotion(mq.matches);
       const fromUrl = Number(new URLSearchParams(window.location.search).get("portal"));
       const fromSession = Number(sessionStorage.getItem(STORAGE_KEY));
@@ -202,7 +143,7 @@ export function PortalRoomClient({ albums }: Props) {
 
   if (count === 0) return null;
 
-  const use3D = webglOk === true && !sceneFailed;
+  const neighbors = [albums[index - 1], albums[index + 1]].filter(Boolean) as PortalAlbum[];
   const arrowClass =
     "pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(26,33,32,0.7)] text-[#dde4e2] backdrop-blur-md transition-colors hover:border-[#62f3e4] hover:text-[#62f3e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] disabled:opacity-30 disabled:hover:border-[rgba(255,255,255,0.08)] disabled:hover:text-[#dde4e2]";
 
@@ -216,22 +157,19 @@ export function PortalRoomClient({ albums }: Props) {
       className="relative w-full touch-pan-y overflow-hidden bg-[#090f0e] select-none"
       style={{ height: height ? `${height}px` : "70dvh" }}
     >
-      {webglOk === null && <PortalLoading />}
+      <PortalChamber album={album} flying={flying} reducedMotion={reducedMotion} />
 
-      {use3D ? (
-        <SceneErrorBoundary onError={() => setSceneFailed(true)}>
-          <div className="absolute inset-0" aria-hidden="true">
-            <PortalScene
-              albums={albums}
-              index={index}
-              flying={flying}
-              reducedMotion={reducedMotion}
-            />
-          </div>
-        </SceneErrorBoundary>
-      ) : webglOk === false || sceneFailed ? (
-        <PortalFallback2D album={album} reducedMotion={reducedMotion} />
-      ) : null}
+      {/* Warm the neighbor portals' vortex + cover so swipes are instant. */}
+      <div className="hidden" aria-hidden="true">
+        {neighbors.map((n) => (
+          <span key={n.id}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- preload-only, static local asset */}
+            <img src={`/portals/vortex-${n.vortex}.webp`} alt="" />
+            {/* eslint-disable-next-line @next/next/no-img-element -- preload-only, Cloudinary-optimized */}
+            <img src={n.coverUrl} alt="" />
+          </span>
+        ))}
+      </div>
 
       {/* Tap/click the portal itself to fly through. */}
       <button
@@ -300,15 +238,15 @@ export function PortalRoomClient({ albums }: Props) {
         {`${album.title}, portal ${index + 1} of ${count}`}
       </div>
 
-      {/* Fly-through: energy fill in the album's color, then route. Reduced
-          motion gets a simple crossfade instead. */}
+      {/* Fly-through: energy fill in the album's color layered over the camera
+          push into the vortex. Reduced motion gets a simple crossfade. */}
       <AnimatePresence>
         {flying && (
           <motion.div
             key="fly"
             className="pointer-events-none absolute inset-0 z-30"
-            initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.3 }}
-            animate={{ opacity: 1, scale: reducedMotion ? 1 : 3 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{
               duration: (reducedMotion ? FLY_MS_REDUCED : FLY_MS) / 1000,
               ease: "easeIn",

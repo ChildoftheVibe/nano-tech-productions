@@ -62,10 +62,10 @@ async function HomeData() {
 
   return (
     <>
-      {/* Race the first two portal covers against the JS bundle. */}
-      {portals.slice(0, 2).map((p) => (
-        <link key={p.coverUrl} rel="preload" as="image" href={p.coverUrl} />
-      ))}
+      {/* Race the chamber plate + first portal's assets against the JS bundle. */}
+      <link rel="preload" as="image" href="/portals/chamber.webp" />
+      <link rel="preload" as="image" href={`/portals/vortex-${portals[0].vortex}.webp`} />
+      <link rel="preload" as="image" href={portals[0].coverUrl} />
       <PortalRoomClient albums={portals} />
     </>
   );
