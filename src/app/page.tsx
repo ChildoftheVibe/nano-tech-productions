@@ -10,6 +10,8 @@ import {
 import { HomeClient } from "@/components/home/HomeClient";
 import { HomeSkeleton } from "@/components/ui/skeletons/HomeSkeleton";
 import { getAlbumCover } from "@/lib/albumCover";
+import { toPortalAlbums } from "@/lib/portalData";
+import { PortalRoomClient } from "@/components/portal/PortalRoomClient";
 
 const PAGE_SIZE =
   Number(process.env.NEXT_PUBLIC_ALBUMS_PER_PAGE) > 0
@@ -18,7 +20,9 @@ const PAGE_SIZE =
 
 export const revalidate = 300;
 
-async function HomeData() {
+/** Classic storefront home — kept as the fail-closed fallback when no
+ *  published album qualifies for a portal. */
+async function ClassicHome() {
   const [featured, latest, initialCollection, featuredArtists, tracksResult, heroMedia] =
     await Promise.all([
       getFeaturedAlbums(),
@@ -29,8 +33,6 @@ async function HomeData() {
       getActiveHeroMedia(),
     ]);
 
-  // Preload the first six above-the-fold cover URLs so the browser can race
-  // them against the JS bundle. React hoists these <link> tags into <head>.
   const preloadCovers = featured
     .slice(0, 6)
     .map((a) => getAlbumCover(a.coverImage, "md"))
@@ -49,6 +51,22 @@ async function HomeData() {
         weeklyTracks={tracksResult.tracks}
         heroMedia={heroMedia}
       />
+    </>
+  );
+}
+
+async function HomeData() {
+  const { albums } = await getAlbums({ page: 1, limit: 12, published: true });
+  const portals = toPortalAlbums(albums);
+  if (portals.length === 0) return <ClassicHome />;
+
+  return (
+    <>
+      {/* Race the first two portal covers against the JS bundle. */}
+      {portals.slice(0, 2).map((p) => (
+        <link key={p.coverUrl} rel="preload" as="image" href={p.coverUrl} />
+      ))}
+      <PortalRoomClient albums={portals} />
     </>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Library, Search, Users, Volume2, Star } from "lucide-react";
+import { Home, Library, Search, Users, Volume2, Star, type LucideIcon } from "lucide-react";
 import type { Album } from "@/types/music";
 import { usePlayerStore } from "@/store/playerStore";
 
@@ -30,7 +30,7 @@ export function Sidebar({ initialAlbums: _ }: Props) {
       ? currentAlbum.accentColor
       : "#62f3e4";
 
-  const navLink = (href: string, label: string, Icon: React.ElementType) => {
+  const navLink = (href: string, label: string, Icon: LucideIcon) => {
     const active = pathname === href;
     return (
       <Link
