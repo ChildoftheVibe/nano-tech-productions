@@ -204,18 +204,24 @@ export function PortalRoomClient({ albums }: Props) {
       {/* Title + enter CTA + position dots. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-6 z-20 flex flex-col items-center gap-3 px-4 text-center">
         <h1
-          className="font-[family-name:var(--font-bungee)] text-2xl tracking-tight text-[#dde4e2] md:text-4xl"
-          style={{ textShadow: `0 0 24px ${album.accentColor}88` }}
+          className="font-[family-name:var(--font-bungee)] text-2xl tracking-tight md:text-4xl"
+          style={{
+            color: album.accentColor,
+            textShadow: `0 0 24px ${album.accentColor}88`,
+            transform: "translateY(-5px)",
+          }}
         >
           {album.title}
         </h1>
-        <p className="font-mono text-xs tracking-widest text-[#bbcac6] uppercase">
-          Portal {index + 1} of {count}
-        </p>
         <button
           type="button"
           onClick={enterPortal}
-          className="pointer-events-auto min-h-11 rounded-full bg-[#62f3e4] px-8 py-2.5 font-semibold text-[#003733] teal-glow-hover transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="pointer-events-auto min-h-11 rounded-lg px-8 py-3 text-xs font-bold tracking-wider uppercase transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          style={{
+            background: album.accentColor,
+            color: "#003733",
+            boxShadow: `0 0 20px ${album.accentColor}4d`,
+          }}
         >
           Enter Portal
         </button>
