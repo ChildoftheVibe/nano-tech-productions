@@ -26,6 +26,15 @@ export type VortexName =
   | "red"
   | "white";
 
+/** Vortex energy overlay asset for a portal color. */
+export const vortexAsset = (v: VortexName) => `/portals/vortex-${v}.webp`;
+
+/** Chamber plate whose platform hue + light reflections match the portal
+ *  color (recolored via Adobe Photoshop API). The three monochrome vortices
+ *  share one desaturated chamber. */
+export const chamberAsset = (v: VortexName) =>
+  `/portals/chamber-${v === "gray" || v === "noir" || v === "white" ? "mono" : v}.webp`;
+
 /** Hue anchors for the saturated vortex plates (sampled from the artwork). */
 const VORTEX_HUES: Array<{ name: VortexName; hue: number }> = [
   { name: "red", hue: 0 },

@@ -10,7 +10,7 @@ import {
 import { HomeClient } from "@/components/home/HomeClient";
 import { HomeSkeleton } from "@/components/ui/skeletons/HomeSkeleton";
 import { getAlbumCover } from "@/lib/albumCover";
-import { toPortalAlbums } from "@/lib/portalData";
+import { chamberAsset, toPortalAlbums, vortexAsset } from "@/lib/portalData";
 import { PortalRoomClient } from "@/components/portal/PortalRoomClient";
 
 const PAGE_SIZE =
@@ -63,8 +63,8 @@ async function HomeData() {
   return (
     <>
       {/* Race the chamber plate + first portal's assets against the JS bundle. */}
-      <link rel="preload" as="image" href="/portals/chamber.webp" />
-      <link rel="preload" as="image" href={`/portals/vortex-${portals[0].vortex}.webp`} />
+      <link rel="preload" as="image" href={chamberAsset(portals[0].vortex)} />
+      <link rel="preload" as="image" href={vortexAsset(portals[0].vortex)} />
       <link rel="preload" as="image" href={portals[0].coverUrl} />
       <PortalRoomClient albums={portals} />
     </>

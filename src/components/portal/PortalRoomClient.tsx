@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useDrag } from "@use-gesture/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { PortalAlbum } from "@/lib/portalData";
+import { chamberAsset, vortexAsset, type PortalAlbum } from "@/lib/portalData";
 import { PortalChamber } from "./PortalChamber";
 
 const STORAGE_KEY = "ntv-portal-index";
@@ -159,12 +159,14 @@ export function PortalRoomClient({ albums }: Props) {
     >
       <PortalChamber album={album} flying={flying} reducedMotion={reducedMotion} />
 
-      {/* Warm the neighbor portals' vortex + cover so swipes are instant. */}
+      {/* Warm the neighbor portals' chamber + vortex + cover so swipes are instant. */}
       <div className="hidden" aria-hidden="true">
         {neighbors.map((n) => (
           <span key={n.id}>
             {/* eslint-disable-next-line @next/next/no-img-element -- preload-only, static local asset */}
-            <img src={`/portals/vortex-${n.vortex}.webp`} alt="" />
+            <img src={chamberAsset(n.vortex)} alt="" />
+            {/* eslint-disable-next-line @next/next/no-img-element -- preload-only, static local asset */}
+            <img src={vortexAsset(n.vortex)} alt="" />
             {/* eslint-disable-next-line @next/next/no-img-element -- preload-only, Cloudinary-optimized */}
             <img src={n.coverUrl} alt="" />
           </span>

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import type { PortalAlbum } from "@/lib/portalData";
+import { chamberAsset, vortexAsset, type PortalAlbum } from "@/lib/portalData";
 
 /** Geometry of the widescreen chamber plate (public/portals/chamber.webp).
  *  The vortex crops (vortex-<name>.webp) were cut from the identical-background
@@ -22,7 +22,8 @@ type Props = {
  *  starfield) never changes; only the vortex energy and the album cover
  *  crossfade between portals — that is what makes transitions seamless. */
 export function PortalChamber({ album, flying, reducedMotion }: Props) {
-  const vortexUrl = `/portals/vortex-${album.vortex}.webp`;
+  const vortexUrl = vortexAsset(album.vortex);
+  const chamberUrl = chamberAsset(album.vortex);
   const flyDuration = reducedMotion ? 0.25 : 0.85;
 
   return (
@@ -42,15 +43,25 @@ export function PortalChamber({ album, flying, reducedMotion }: Props) {
         animate={{ scale: flying && !reducedMotion ? 5.5 : 1 }}
         transition={{ duration: flyDuration, ease: "easeIn" }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- static local asset, pre-optimized webp */}
-        <img
-          src="/portals/chamber.webp"
-          alt=""
-          draggable={false}
-          className="absolute inset-0 h-full w-full object-fill"
-        />
+        {/* Chamber plate — platform hue + light reflections are baked to match
+            the portal color (Adobe-recolored variants). The sky/ring pixels
+            are identical across variants, so crossfading only ever appears to
+            change the machinery's lighting. */}
+        <AnimatePresence>
+          <motion.img
+            key={chamberUrl}
+            src={chamberUrl}
+            alt=""
+            draggable={false}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reducedMotion ? 0.2 : 0.6, ease: "easeInOut" }}
+            className="absolute inset-0 h-full w-full object-fill"
+          />
+        </AnimatePresence>
 
-        {/* Vortex energy — the only layer that changes between portals. */}
+        {/* Vortex energy — crossfades with the chamber between portals. */}
         <AnimatePresence>
           <motion.img
             key={album.vortex}
