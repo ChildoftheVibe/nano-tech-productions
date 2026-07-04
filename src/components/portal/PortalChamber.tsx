@@ -78,8 +78,10 @@ export function PortalChamber({ album, flying, reducedMotion }: Props) {
               top: pct(VORTEX_CROP.y, PLATE.h),
               width: pct(VORTEX_CROP.size, PLATE.w),
               height: pct(VORTEX_CROP.size, PLATE.h),
-              maskImage: "radial-gradient(circle, #000 76%, transparent 96%)",
-              WebkitMaskImage: "radial-gradient(circle, #000 76%, transparent 96%)",
+              // Fade out at the disc edge (r≈89% of the crop) so the crop's
+              // baked-in blue rim never covers the chamber's recolored rim.
+              maskImage: "radial-gradient(circle, #000 74%, transparent 88%)",
+              WebkitMaskImage: "radial-gradient(circle, #000 74%, transparent 88%)",
             }}
           />
         </AnimatePresence>
