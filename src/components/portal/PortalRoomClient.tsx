@@ -265,8 +265,10 @@ export function PortalRoomClient({ albums }: Props) {
         className="absolute top-1/2 left-1/2 z-20 h-[min(60vw,50vh)] w-[min(60vw,50vh)] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
       />
 
-      {/* Navigation arrows (desktop + mobile). */}
-      <div className="pointer-events-none absolute inset-x-0 top-1/2 z-20 flex -translate-y-1/2 items-center justify-between px-5 md:px-10">
+      {/* Navigation arrows (desktop + mobile). Desktop inset is wider than
+          mobile so the arrows read as part of the chamber, away from the
+          screen edge. */}
+      <div className="pointer-events-none absolute inset-x-0 top-1/2 z-20 flex -translate-y-1/2 items-center justify-between px-5 md:px-20">
         <button
           type="button"
           className={arrowClass}
