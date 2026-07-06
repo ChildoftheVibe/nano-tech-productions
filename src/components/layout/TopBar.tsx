@@ -40,8 +40,10 @@ export function TopBar() {
         NTV
       </Link>
 
-      {/* Desktop: back/forward nav */}
-      <div className="hidden md:flex items-center gap-2">
+      {/* Desktop: back/forward nav. Shifted right (md:ml-10) so it clears the
+          sidebar's collapse toggle button, which sits fixed near the left
+          edge whether the sidebar is expanded or collapsed. */}
+      <div className="hidden md:flex items-center gap-2 md:ml-10">
         <motion.button
           onClick={() => router.back()}
           aria-label="Go back"
