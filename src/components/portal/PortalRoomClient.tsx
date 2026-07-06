@@ -289,9 +289,9 @@ export function PortalRoomClient({ albums }: Props) {
         </button>
       </div>
 
-      {/* Album title, positioned in the sky/arch band above the vortex disc so it
-          reads before the portal is even entered. */}
-      <div className="pointer-events-none absolute inset-x-0 top-[11%] z-20 flex justify-center px-8 text-center md:top-[14%] md:px-16">
+      {/* Album title, anchored above the CTA row with room for the platform's
+          shiny orb detail beneath it, well below the vortex disc. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[20%] z-20 flex justify-center px-8 text-center md:bottom-[24%] md:px-16">
         <h1
           className="max-w-[85%] font-[family-name:var(--font-bungee)] text-2xl leading-tight tracking-tight md:max-w-none md:text-4xl"
           style={{
