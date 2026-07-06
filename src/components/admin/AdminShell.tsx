@@ -16,6 +16,7 @@ import {
   Star,
   ImagePlay,
   Clapperboard,
+  Mail,
 } from "lucide-react";
 
 const NAV = [
@@ -31,6 +32,7 @@ const NAV = [
   { href: "/admin/featured", label: "Featured", icon: Star },
   { href: "/admin/hero", label: "Hero Media", icon: ImagePlay },
   { href: "/admin/intro", label: "Intro Video", icon: Clapperboard },
+  { href: "/admin/marketing", label: "Marketing", icon: Mail },
   { href: "/admin/vault", label: "Vault", icon: ShieldCheck, accent: "#EB41DF" },
 ];
 

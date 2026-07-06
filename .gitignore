@@ -47,3 +47,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# local scratch / reference dirs (not part of the app)
+/Desktop UI Update/
+/Mobile UI Update/
+/Portals/
+/graphify-out/
+/nano-marketing-agent-repo/

@@ -13,6 +13,8 @@ export type PortalAlbum = {
   bgColor: string;
   /** Which /public/portals/vortex-<name>.webp plate this album's portal uses. */
   vortex: VortexName;
+  /** Optional vertical intro video played as a pop-up on Enter Portal. */
+  portalVideoUrl?: string;
 };
 
 export type VortexName =
@@ -108,6 +110,10 @@ export function toPortalAlbums(albums: Album[]): PortalAlbum[] {
         accentColor,
         bgColor: safeColor(a.bgColor, FALLBACK_BG),
         vortex: nearestVortex(accentColor),
+        portalVideoUrl:
+          typeof a.portalVideoUrl === "string" && a.portalVideoUrl.startsWith("https://")
+            ? a.portalVideoUrl
+            : undefined,
       };
     })
     .filter((a) => a.coverUrl.length > 0);

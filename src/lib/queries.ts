@@ -22,7 +22,7 @@ import type {
 } from "@/types/music";
 
 const ALBUM_COLUMNS =
-  "id, slug, title, description, release_date, cover_image, cover_videos, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, price, light_mode, is_published";
+  "id, slug, title, description, release_date, cover_image, cover_videos, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, price, light_mode, portal_video_url, is_published";
 const TRACK_COLUMNS =
   "id, album_id, title, track_number, duration, price, audio_url, public_audio_id, features, is_published, credits, lyrics, has_lyrics";
 
@@ -43,6 +43,7 @@ type AlbumRow = {
   copyright: string | null;
   price: number | null;
   light_mode: boolean | null;
+  portal_video_url?: string | null;
   is_published: boolean;
   album_type?: string | null;
   tracks?: TrackRow[];
@@ -136,6 +137,7 @@ const mapAlbum = (row: AlbumRow, tracks: Track[] = []): Album => ({
   copyright: row.copyright ?? undefined,
   price: row.price ?? 9.99,
   lightMode: row.light_mode ?? false,
+  portalVideoUrl: row.portal_video_url ?? undefined,
   tracks,
   album_type: (row.album_type as Album['album_type']) ?? 'album',
 });

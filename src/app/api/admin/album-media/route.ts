@@ -15,18 +15,28 @@ export async function GET(request: Request) {
   const albumId = searchParams.get("album_id");
   if (!albumId) return Response.json({ error: "album_id required" }, { status: 400 });
 
-  const { data, error } = await supabaseAdmin
-    .from("album_media")
-    .select("id, url, public_id, media_type, position, caption, created_at")
-    .eq("album_id", albumId)
-    .order("position", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: true });
+  const [{ data, error }, { data: albumRow, error: albumError }] = await Promise.all([
+    supabaseAdmin
+      .from("album_media")
+      .select("id, url, public_id, media_type, position, caption, created_at")
+      .eq("album_id", albumId)
+      .order("position", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true }),
+    supabaseAdmin
+      .from("albums")
+      .select("portal_video_media_id")
+      .eq("id", albumId)
+      .maybeSingle(),
+  ]);
 
-  if (error) {
-    logError(error, { caller: "admin/album-media GET" });
+  if (error || albumError) {
+    logError(error ?? albumError, { caller: "admin/album-media GET" });
     return Response.json({ error: "internal_error" }, { status: 500 });
   }
-  return Response.json({ entries: data ?? [] });
+  return Response.json({
+    entries: data ?? [],
+    portal_video_media_id: albumRow?.portal_video_media_id ?? null,
+  });
 }
 
 export async function POST(request: Request) {
@@ -63,6 +73,54 @@ export async function POST(request: Request) {
       }
     }
     revalidateTag("album-media", { expire: 0 });
+    return Response.json({ ok: true });
+  }
+
+  // ── set portal intro video ────────────────────────────────────────────────
+  if (b.action === "set_portal_video") {
+    const albumId = typeof b.album_id === "string" ? b.album_id : null;
+    const mediaId =
+      typeof b.media_id === "string" ? b.media_id : b.media_id === null ? null : undefined;
+    if (!albumId || mediaId === undefined)
+      return Response.json({ error: "invalid portal video payload" }, { status: 400 });
+
+    let videoUrl: string | null = null;
+    if (mediaId) {
+      const { data: media, error: mediaError } = await supabaseAdmin
+        .from("album_media")
+        .select("id, url, media_type, album_id")
+        .eq("id", mediaId)
+        .eq("album_id", albumId)
+        .maybeSingle();
+      if (mediaError) {
+        logError(mediaError, { caller: "admin/album-media set_portal_video" });
+        return Response.json({ error: "internal_error" }, { status: 500 });
+      }
+      if (!media || media.media_type !== "video")
+        return Response.json(
+          { error: "media must be a video in this album's gallery" },
+          { status: 400 },
+        );
+      videoUrl = media.url;
+    }
+
+    const { error } = await supabaseAdmin
+      .from("albums")
+      .update({ portal_video_media_id: mediaId, portal_video_url: videoUrl })
+      .eq("id", albumId);
+    if (error) {
+      logError(error, { caller: "admin/album-media set_portal_video update" });
+      return Response.json({ error: "internal_error" }, { status: 500 });
+    }
+
+    await logAuditEvent({
+      eventType: "album_portal_video_set",
+      entityType: "album",
+      entityId: albumId,
+      performedBy: "admin",
+      metadata: { media_id: mediaId },
+    });
+    revalidateTag("albums", { expire: 0 });
     return Response.json({ ok: true });
   }
 

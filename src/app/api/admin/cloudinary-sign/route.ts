@@ -55,6 +55,11 @@ function isAllowedFolder(folder: string): boolean {
     );
     return SLUG_RE.test(slug);
   }
+  // Album media gallery: ntp/albums/<album-uuid>/media (AlbumMediaManager).
+  if (folder.startsWith("ntp/albums/") && folder.endsWith("/media")) {
+    const id = folder.slice("ntp/albums/".length, -"/media".length);
+    return SLUG_RE.test(id);
+  }
   // Hero media (images and videos for the home page hero section).
   if (folder === "ntp/hero") return true;
   // Intro / landing pop-up videos (portrait 9:16 + landscape 16:9).

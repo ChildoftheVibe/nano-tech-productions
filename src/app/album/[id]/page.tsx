@@ -10,6 +10,7 @@ import {
 import { getAlbumCover } from "@/lib/albumCover";
 import { AlbumDetail } from "@/components/music/AlbumDetail";
 import { AlbumDetailSkeleton } from "@/components/ui/skeletons/AlbumDetailSkeleton";
+import { ScrollToTopOnMount } from "@/components/ui/ScrollToTopOnMount";
 import type { Album } from "@/types/music";
 
 type Params = Promise<{ id: string }>;
@@ -106,6 +107,7 @@ async function AlbumData({ id }: { id: string }) {
   if (!album) notFound();
   return (
     <>
+      <ScrollToTopOnMount />
       <AlbumJsonLd album={album} />
       <AlbumDetail album={album} artistSlugsByName={artistSlugsByName} />
     </>

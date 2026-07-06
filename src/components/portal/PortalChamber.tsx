@@ -10,6 +10,19 @@ const PLATE = { w: 2688, h: 1152 };
 const VORTEX_CROP = { x: 1090, y: 283, size: 512 };
 const VORTEX_CENTER = { x: 1346, y: 539 };
 
+/** On mobile, the chamber renders at height:100% of the section by default
+ *  (the aspect-ratio + min-width/min-height "cover" trick below), which
+ *  places the vortex at VORTEX_CENTER.y/PLATE.h (~47%) down the screen —
+ *  roughly mid-height, cramping the platform/title/CTA into the bottom half.
+ *  MOBILE_ZOOM/MOBILE_LIFT nudge the ring+vortex upward on narrow viewports,
+ *  opening up breathing room below, while staying within the two hard
+ *  constraints of this art: don't crop the stone arch's top edge (~8.7% down
+ *  the plate) and don't let the platform run out before the section bottom
+ *  (which would expose flat background instead of machinery). */
+const MOBILE_ZOOM = 1.12;
+const MOBILE_LIFT = 0.075;
+const MOBILE_TRANSLATE_Y = `${-((MOBILE_LIFT / MOBILE_ZOOM) * 100)}%`;
+
 const pct = (v: number, total: number) => `${(v / total) * 100}%`;
 
 /** A tiny ship silhouette that drifts across the distant starfield on a slow
@@ -46,16 +59,79 @@ function SpaceshipFlyby() {
   );
 }
 
+/** Jagged bolt paths hugging the vortex disc edge (viewBox matches the 512px
+ *  vortex crop; the disc center sits at 256,256). Hand-tuned once so the same
+ *  arcs render identically on every portal — only the accent color changes. */
+const BOLTS = [
+  "M96 148 L128 162 L118 190 L152 204 L140 232",
+  "M382 120 L360 152 L388 168 L368 200",
+  "M118 352 L150 340 L146 372 L182 366 L176 396",
+  "M400 330 L372 346 L392 372 L358 388 L368 416",
+  "M240 62 L262 84 L246 104 L272 122",
+  "M258 442 L240 418 L262 402 L244 380",
+] as const;
+
+/** Subtle electrical energy crawling around the vortex disc — identical arcs
+ *  and timing on every portal, tinted by the album accent. A soft flicker
+ *  (never strobing: eased 3.2s+ loops, well under seizure thresholds) plus a
+ *  slow rotation keeps the gate feeling charged. Static faint arcs under
+ *  reduced motion. */
+function ElectricArcs({ accent, reducedMotion }: { accent: string; reducedMotion: boolean }) {
+  return (
+    <motion.svg
+      viewBox="0 0 512 512"
+      aria-hidden="true"
+      className="pointer-events-none absolute h-full w-full"
+      style={{ filter: `drop-shadow(0 0 6px ${accent})`, opacity: 0.7 }}
+      animate={reducedMotion ? undefined : { rotate: 360 }}
+      transition={
+        reducedMotion
+          ? undefined
+          : { duration: 90, ease: "linear", repeat: Infinity }
+      }
+    >
+      {BOLTS.map((d, i) => (
+        <motion.path
+          key={d}
+          d={d}
+          fill="none"
+          stroke={accent}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={{ opacity: reducedMotion ? 0.25 : 0 }}
+          animate={
+            reducedMotion
+              ? { opacity: 0.25 }
+              : { opacity: [0, 0.9, 0.15, 0.7, 0] }
+          }
+          transition={
+            reducedMotion
+              ? undefined
+              : {
+                  duration: 3.2 + (i % 3) * 0.9,
+                  delay: i * 0.55,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }
+          }
+        />
+      ))}
+    </motion.svg>
+  );
+}
+
 type Props = {
   album: PortalAlbum;
   flying: boolean;
   reducedMotion: boolean;
+  isMobile: boolean;
 };
 
 /** One static stargate chamber. The environment (stone ring, platform,
  *  starfield) never changes; only the vortex energy and the album cover
  *  crossfade between portals — that is what makes transitions seamless. */
-export function PortalChamber({ album, flying, reducedMotion }: Props) {
+export function PortalChamber({ album, flying, reducedMotion, isMobile }: Props) {
   const vortexUrl = vortexAsset(album.vortex);
   const chamberUrl = chamberAsset(album.vortex);
   const flyDuration = reducedMotion ? 0.25 : 0.85;
@@ -65,13 +141,14 @@ export function PortalChamber({ album, flying, reducedMotion }: Props) {
       {/* Cover-fit stage: keeps the plate's aspect so the vortex overlay
           coordinates stay pixel-aligned at any viewport size. */}
       <motion.div
-        className="absolute top-1/2 left-1/2"
+        className="absolute left-1/2"
         style={{
           aspectRatio: `${PLATE.w} / ${PLATE.h}`,
           minWidth: "100%",
-          minHeight: "100%",
+          minHeight: isMobile ? `${MOBILE_ZOOM * 100}%` : "100%",
+          top: isMobile ? "0%" : "50%",
           x: "-50%",
-          y: "-50%",
+          y: isMobile ? MOBILE_TRANSLATE_Y : "-50%",
           transformOrigin: `${pct(VORTEX_CENTER.x, PLATE.w)} ${pct(VORTEX_CENTER.y, PLATE.h)}`,
         }}
         animate={{ scale: flying && !reducedMotion ? 5.5 : 1 }}
@@ -122,6 +199,19 @@ export function PortalChamber({ album, flying, reducedMotion }: Props) {
           />
         </AnimatePresence>
 
+        {/* Electrical energy crawling the disc edge, tinted per album. */}
+        <div
+          className="absolute"
+          style={{
+            left: pct(VORTEX_CROP.x, PLATE.w),
+            top: pct(VORTEX_CROP.y, PLATE.h),
+            width: pct(VORTEX_CROP.size, PLATE.w),
+            height: pct(VORTEX_CROP.size, PLATE.h),
+          }}
+        >
+          <ElectricArcs accent={album.accentColor} reducedMotion={reducedMotion} />
+        </div>
+
         {/* Album cover floating inside the vortex. */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -134,7 +224,7 @@ export function PortalChamber({ album, flying, reducedMotion }: Props) {
             style={{
               left: pct(VORTEX_CENTER.x, PLATE.w),
               top: pct(VORTEX_CENTER.y, PLATE.h),
-              height: "26%",
+              height: isMobile ? "29%" : "26%",
               aspectRatio: "1 / 1",
               translate: "-50% -50%",
             }}

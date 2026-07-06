@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Library, Search, Users, Volume2, Star, type LucideIcon } from "lucide-react";
+import { Home, Library, Search, Users, Volume2, Star, Download, X, type LucideIcon } from "lucide-react";
 import type { Album } from "@/types/music";
 import { usePlayerStore } from "@/store/playerStore";
+import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 
 const primaryNav = [
   { href: "/", label: "Home", icon: Home },
@@ -29,6 +30,7 @@ export function Sidebar({ initialAlbums: _ }: Props) {
     currentAlbum?.coverImage && currentAlbum.accentColor
       ? currentAlbum.accentColor
       : "#62f3e4";
+  const { show: showInstall, isIOSDevice, dismiss, handleInstall } = useInstallPrompt();
 
   const navLink = (href: string, label: string, Icon: LucideIcon) => {
     const active = pathname === href;
@@ -130,6 +132,67 @@ export function Sidebar({ initialAlbums: _ }: Props) {
 
       {/* Spacer */}
       <div style={{ flex: 1 }} />
+
+      {/* Install prompt */}
+      {showInstall && !isIOSDevice && (
+        <div
+          style={{
+            margin: "0 10px 12px",
+            borderRadius: 8,
+            padding: 12,
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#dde4e2", margin: 0 }}>
+              Install NTV
+            </p>
+            <p style={{ fontSize: 11, color: "#8a9e9a", margin: 0 }}>Faster access, offline play</p>
+          </div>
+          <button
+            onClick={handleInstall}
+            aria-label="Install NTV"
+            style={{
+              flexShrink: 0,
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              background: accentColor,
+              color: "#003733",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            <Download size={16} />
+          </button>
+          <button
+            onClick={dismiss}
+            aria-label="Dismiss install prompt"
+            style={{
+              flexShrink: 0,
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              background: "transparent",
+              color: "#8a9e9a",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Bottom brand panel */}
       <div

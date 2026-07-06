@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, Image, Video, GripVertical, ArrowLeft } from "lucide-react";
+import { Trash2, Image, Video, GripVertical, ArrowLeft, Sparkles } from "lucide-react";
 import { CloudinaryUploader, type UploadResult } from "@/components/admin/CloudinaryUploader";
 import { adminFetch } from "@/lib/adminFetch";
 
@@ -19,11 +19,20 @@ type Props = {
   albumId: string;
   albumTitle: string;
   initialEntries: AlbumMediaEntry[];
+  /** album_media id currently chosen as the portal intro video, if any. */
+  initialPortalVideoId?: string | null;
   onBack: () => void;
 };
 
-export function AlbumMediaManager({ albumId, albumTitle, initialEntries, onBack }: Props) {
+export function AlbumMediaManager({
+  albumId,
+  albumTitle,
+  initialEntries,
+  initialPortalVideoId = null,
+  onBack,
+}: Props) {
   const [entries, setEntries] = useState<AlbumMediaEntry[]>(initialEntries);
+  const [portalVideoId, setPortalVideoId] = useState<string | null>(initialPortalVideoId);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadType, setUploadType] = useState<"image" | "video">("image");
@@ -75,6 +84,18 @@ export function AlbumMediaManager({ albumId, albumTitle, initialEntries, onBack 
     const res = await apiFetch(`/api/admin/album-media/${entry.id}`, "DELETE");
     if (!res) return;
     setEntries((prev) => prev.filter((e) => e.id !== entry.id));
+    if (portalVideoId === entry.id) setPortalVideoId(null);
+  }
+
+  async function setPortalVideo(entry: AlbumMediaEntry | null) {
+    const mediaId = entry?.id ?? null;
+    const res = await apiFetch("/api/admin/album-media", "POST", {
+      action: "set_portal_video",
+      album_id: albumId,
+      media_id: mediaId,
+    });
+    if (!res) return;
+    setPortalVideoId(mediaId);
   }
 
   // ── Drag-to-reorder ───────────────────────────────────────────────────────
@@ -180,8 +201,35 @@ export function AlbumMediaManager({ albumId, albumTitle, initialEntries, onBack 
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-mono text-xs text-white/50">{entry.publicId || entry.url}</div>
-                    <div className="text-[10px] uppercase text-white/30">{entry.mediaType}</div>
+                    <div className="text-[10px] uppercase text-white/30">
+                      {entry.mediaType}
+                      {portalVideoId === entry.id ? (
+                        <span className="ml-2 rounded-full bg-[#62f3e4]/15 px-2 py-0.5 font-bold tracking-wider text-[#62f3e4]">
+                          Portal Intro
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
+                  {entry.mediaType === "video" ? (
+                    <button
+                      onClick={() =>
+                        void setPortalVideo(portalVideoId === entry.id ? null : entry)
+                      }
+                      disabled={busy}
+                      className={`flex-shrink-0 rounded-full p-1.5 disabled:opacity-50 ${
+                        portalVideoId === entry.id
+                          ? "bg-[#62f3e4]/15 text-[#62f3e4]"
+                          : "text-white/40 hover:bg-[#62f3e4]/10 hover:text-[#62f3e4]"
+                      }`}
+                      title={
+                        portalVideoId === entry.id
+                          ? "Remove as portal intro video"
+                          : "Use as portal intro video (vertical 9:16 recommended)"
+                      }
+                    >
+                      <Sparkles size={14} />
+                    </button>
+                  ) : null}
                   <button
                     onClick={() => void deleteEntry(entry)}
                     disabled={busy}
@@ -203,7 +251,9 @@ export function AlbumMediaManager({ albumId, albumTitle, initialEntries, onBack 
           Upload Media
         </h3>
         <p className="mb-4 text-xs text-white/40">
-          Images and videos appear in the album gallery modal for visitors.
+          Images and videos appear in the album gallery modal for visitors. Tap
+          the sparkle icon on a video to play it as the portal intro pop-up
+          when a visitor enters this album&apos;s portal (vertical 9:16 works best).
         </p>
 
         <div className="mb-4 flex gap-2">

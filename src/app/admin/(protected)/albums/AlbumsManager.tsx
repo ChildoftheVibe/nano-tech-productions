@@ -35,7 +35,12 @@ export function AlbumsManager({
     | { kind: "list" }
     | { kind: "create" }
     | { kind: "edit"; album: Album }
-    | { kind: "media"; album: AlbumWithTrackCount; initialEntries: AlbumMediaEntry[] }
+    | {
+        kind: "media";
+        album: AlbumWithTrackCount;
+        initialEntries: AlbumMediaEntry[];
+        portalVideoId: string | null;
+      }
   >({ kind: "list" });
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [albums, setAlbums] = useState<AlbumWithTrackCount[]>(initialAlbums);
@@ -79,7 +84,9 @@ export function AlbumsManager({
         caption: typeof e.caption === "string" ? e.caption : null,
         createdAt: String(e.created_at ?? ""),
       }));
-      setMode({ kind: "media", album, initialEntries: entries });
+      const portalVideoId =
+        typeof json.portal_video_media_id === "string" ? json.portal_video_media_id : null;
+      setMode({ kind: "media", album, initialEntries: entries, portalVideoId });
     } finally {
       setPendingId(null);
     }
@@ -146,6 +153,7 @@ export function AlbumsManager({
           albumId={mode.album.id}
           albumTitle={mode.album.title}
           initialEntries={mode.initialEntries}
+          initialPortalVideoId={mode.portalVideoId}
           onBack={() => setMode({ kind: "list" })}
         />
       </div>

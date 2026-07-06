@@ -19,6 +19,9 @@ export type Album = {
   price?: number;
   /** When true, the album detail page renders with a light theme. */
   lightMode?: boolean;
+  /** Vertical intro video (from the album media gallery) played as a pop-up
+   *  when the visitor enters this album's portal on the home page. */
+  portalVideoUrl?: string;
   tracks: Track[];
 };
 
