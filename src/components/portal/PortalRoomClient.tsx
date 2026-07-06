@@ -294,15 +294,39 @@ export function PortalRoomClient({ albums }: Props) {
       {/* Album title, anchored above the CTA row with room for the platform's
           shiny orb detail beneath it, well below the vortex disc. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-[20%] z-20 flex justify-center px-8 text-center md:bottom-[24%] md:px-16">
-        <h1
-          className="max-w-[85%] font-[family-name:var(--font-bungee)] text-2xl leading-tight tracking-tight md:max-w-none md:text-4xl"
+        <motion.div
+          className="max-w-[85%] rounded-2xl border px-6 py-3 backdrop-blur-md md:max-w-none md:px-10 md:py-4"
           style={{
-            color: accent,
-            textShadow: `0 0 10px ${accent}aa, 0 0 24px ${accent}88, 0 0 44px ${accent}44, 0 2px 8px rgba(0,0,0,0.7)`,
+            borderColor: `${accent}99`,
+            background: "rgba(9,15,14,0.6)",
           }}
+          animate={
+            reducedMotion
+              ? { boxShadow: `0 0 12px ${accent}55` }
+              : {
+                  boxShadow: [
+                    `0 0 8px ${accent}40`,
+                    `0 0 22px ${accent}90`,
+                    `0 0 8px ${accent}40`,
+                  ],
+                }
+          }
+          transition={
+            reducedMotion
+              ? undefined
+              : { duration: 2.4, repeat: Infinity, ease: "easeInOut" }
+          }
         >
-          {album.title}
-        </h1>
+          <h1
+            className="font-[family-name:var(--font-bungee)] text-2xl leading-tight tracking-tight md:text-4xl"
+            style={{
+              color: accent,
+              textShadow: `0 0 10px ${accent}aa, 0 0 24px ${accent}88, 0 0 44px ${accent}44, 0 2px 8px rgba(0,0,0,0.7)`,
+            }}
+          >
+            {album.title}
+          </h1>
+        </motion.div>
       </div>
 
       {/* Enter/share CTAs + position dots + copyright, lifted off the very
