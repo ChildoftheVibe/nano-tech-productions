@@ -289,11 +289,11 @@ export function PortalRoomClient({ albums }: Props) {
         </button>
       </div>
 
-      {/* Title + enter/share CTAs + position dots + copyright. The title sits
-          low so it lands in the shadowed platform area beneath the dome. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-3 z-20 flex flex-col items-center gap-2.5 px-8 text-center md:bottom-4 md:px-16">
+      {/* Album title, positioned in the sky/arch band above the vortex disc so it
+          reads before the portal is even entered. */}
+      <div className="pointer-events-none absolute inset-x-0 top-[11%] z-20 flex justify-center px-8 text-center md:top-[14%] md:px-16">
         <h1
-          className="font-[family-name:var(--font-bungee)] text-2xl leading-tight tracking-tight md:text-4xl"
+          className="max-w-[85%] font-[family-name:var(--font-bungee)] text-2xl leading-tight tracking-tight md:max-w-none md:text-4xl"
           style={{
             color: accent,
             textShadow: `0 0 24px ${accent}88, 0 2px 8px rgba(0,0,0,0.7)`,
@@ -301,6 +301,11 @@ export function PortalRoomClient({ albums }: Props) {
         >
           {album.title}
         </h1>
+      </div>
+
+      {/* Enter/share CTAs + position dots + copyright, anchored to the bottom
+          platform area beneath the dome. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-3 z-20 flex flex-col items-center gap-2.5 px-8 text-center md:bottom-4 md:px-16">
         <div className="flex items-center justify-center gap-3">
           <button
             type="button"
