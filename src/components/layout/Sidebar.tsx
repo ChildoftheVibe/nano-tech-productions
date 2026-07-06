@@ -273,9 +273,10 @@ export function Sidebar({ initialAlbums: _ }: Props) {
         type="button"
         onClick={toggleSidebar}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        className="hidden md:flex fixed top-4 z-30 items-center justify-center rounded-full transition-[left] duration-200"
+        className="hidden md:flex fixed top-1/2 z-30 items-center justify-center rounded-full transition-[left] duration-200"
         style={{
           left: collapsed ? 12 : SIDEBAR_WIDTH - 14,
+          transform: "translateY(-50%)",
           width: 28,
           height: 28,
           background: "#1a2120",
