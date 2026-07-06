@@ -295,7 +295,7 @@ export function PortalRoomClient({ albums }: Props) {
           shiny orb detail beneath it, well below the vortex disc. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-[20%] z-20 flex justify-center px-8 text-center md:bottom-[24%] md:px-16">
         <motion.div
-          className="max-w-[85%] rounded-2xl border px-6 py-3 backdrop-blur-md md:max-w-none md:px-10 md:py-4"
+          className="max-w-[85%] rounded-2xl border px-10 py-3 backdrop-blur-md md:max-w-none md:px-16 md:py-4"
           style={{
             borderColor: `${accent}99`,
             background: "rgba(9,15,14,0.6)",
