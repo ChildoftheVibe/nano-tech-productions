@@ -303,9 +303,10 @@ export function PortalRoomClient({ albums }: Props) {
         </h1>
       </div>
 
-      {/* Enter/share CTAs + position dots + copyright, anchored to the bottom
-          platform area beneath the dome. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-3 z-20 flex flex-col items-center gap-2.5 px-8 text-center md:bottom-4 md:px-16">
+      {/* Enter/share CTAs + position dots + copyright, lifted off the very
+          bottom edge (percentage-based, like the title) so the whole cluster
+          stays inside the viewport without scrolling on short screens. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[6%] z-20 flex flex-col items-center gap-2.5 px-8 text-center md:bottom-[8%] md:px-16">
         <div className="flex items-center justify-center gap-3">
           <button
             type="button"
