@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Library, Search, Users, Volume2, Star, Download, X, type LucideIcon } from "lucide-react";
+import { Home, Library, Search, Users, Volume2, Star, Download, X, ChevronLeft, type LucideIcon } from "lucide-react";
 import type { Album } from "@/types/music";
 import { usePlayerStore } from "@/store/playerStore";
+import { useUiStore } from "@/store/uiStore";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
+
+const SIDEBAR_WIDTH = 260;
 
 const primaryNav = [
   { href: "/", label: "Home", icon: Home },
@@ -31,6 +34,8 @@ export function Sidebar({ initialAlbums: _ }: Props) {
       ? currentAlbum.accentColor
       : "#62f3e4";
   const { show: showInstall, isIOSDevice, dismiss, handleInstall } = useInstallPrompt();
+  const collapsed = useUiStore((s) => s.sidebarCollapsed);
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
 
   const navLink = (href: string, label: string, Icon: LucideIcon) => {
     const active = pathname === href;
@@ -77,15 +82,19 @@ export function Sidebar({ initialAlbums: _ }: Props) {
   };
 
   return (
-    <aside
-      aria-label="Sidebar"
-      className="hidden md:flex flex-col flex-shrink-0"
-      style={{
-        width: 260,
-        background: "linear-gradient(180deg, #0e1514 0%, #090f0e 40%)",
-        borderRight: "1px solid rgba(255,255,255,0.05)",
-      }}
-    >
+    <>
+      <aside
+        aria-label="Sidebar"
+        className="hidden md:flex flex-col flex-shrink-0 overflow-hidden"
+        style={{
+          width: collapsed ? 0 : SIDEBAR_WIDTH,
+          transition: "width 180ms ease",
+          background: "linear-gradient(180deg, #0e1514 0%, #090f0e 40%)",
+          borderRight: collapsed ? "none" : "1px solid rgba(255,255,255,0.05)",
+        }}
+      >
+        {!collapsed && (
+          <>
       {/* Brand */}
       <div style={{ padding: "32px 20px 28px" }}>
         <Link
@@ -252,6 +261,30 @@ export function Sidebar({ initialAlbums: _ }: Props) {
         </div>
         <p style={{ marginTop: 4, fontSize: 10, color: "rgba(187,202,198,0.5)" }}>© 2026 Nano Tech Productions</p>
       </div>
-    </aside>
+          </>
+        )}
+      </aside>
+
+      {/* Collapse/expand toggle. Fixed to the viewport (not the flex row) so
+          it stays reachable at the sidebar's edge even when width collapses
+          to 0 — collapsing lets main content (and the portal room) span the
+          full width, aligning it with the full-width PlayerBar below. */}
+      <button
+        type="button"
+        onClick={toggleSidebar}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        className="hidden md:flex fixed top-4 z-30 items-center justify-center rounded-full transition-[left] duration-200"
+        style={{
+          left: collapsed ? 12 : SIDEBAR_WIDTH - 14,
+          width: 28,
+          height: 28,
+          background: "#1a2120",
+          border: "1px solid rgba(255,255,255,0.08)",
+          color: "#bbcac6",
+        }}
+      >
+        <ChevronLeft size={14} style={{ transform: collapsed ? "rotate(180deg)" : undefined }} />
+      </button>
+    </>
   );
 }

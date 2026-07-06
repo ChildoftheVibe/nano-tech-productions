@@ -296,7 +296,7 @@ export function PortalRoomClient({ albums }: Props) {
           className="max-w-[85%] font-[family-name:var(--font-bungee)] text-2xl leading-tight tracking-tight md:max-w-none md:text-4xl"
           style={{
             color: accent,
-            textShadow: `0 0 24px ${accent}88, 0 2px 8px rgba(0,0,0,0.7)`,
+            textShadow: `0 0 10px ${accent}aa, 0 0 24px ${accent}88, 0 0 44px ${accent}44, 0 2px 8px rgba(0,0,0,0.7)`,
           }}
         >
           {album.title}
