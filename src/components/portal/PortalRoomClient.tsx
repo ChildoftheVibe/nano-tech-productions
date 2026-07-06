@@ -295,7 +295,7 @@ export function PortalRoomClient({ albums }: Props) {
           shiny orb detail beneath it, well below the vortex disc. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-[20%] z-20 flex justify-center px-8 text-center md:bottom-[24%] md:px-16">
         <motion.div
-          className="max-w-[85%] rounded-2xl border px-10 py-3 backdrop-blur-md md:max-w-none md:px-16 md:py-4"
+          className="max-w-[85%] rounded-2xl border px-14 py-3 backdrop-blur-md md:max-w-none md:px-24 md:py-4"
           style={{
             borderColor: `${accent}99`,
             background: "rgba(9,15,14,0.6)",
@@ -337,7 +337,7 @@ export function PortalRoomClient({ albums }: Props) {
           <button
             type="button"
             onClick={enterPortal}
-            className="group pointer-events-auto relative min-h-11 overflow-hidden rounded-lg px-6 py-2 text-[11px] font-bold tracking-[0.25em] uppercase transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
+            className="group pointer-events-auto relative min-h-11 overflow-hidden rounded-lg px-9 py-2 text-[11px] font-bold tracking-[0.25em] uppercase transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
             style={{
               background: `linear-gradient(160deg, ${accent} 0%, ${accent}d9 60%, ${accent}b3 100%)`,
               color: "#003733",
@@ -355,7 +355,7 @@ export function PortalRoomClient({ albums }: Props) {
             type="button"
             onClick={sharePortal}
             aria-label={`Share the ${album.title} portal`}
-            className="pointer-events-auto relative flex min-h-11 items-center gap-2 rounded-lg border px-4 py-2 text-[11px] font-bold tracking-[0.25em] uppercase backdrop-blur-md transition-transform duration-300 hover:scale-[1.06] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
+            className="pointer-events-auto relative flex min-h-11 items-center gap-2 rounded-lg border px-7 py-2 text-[11px] font-bold tracking-[0.25em] uppercase backdrop-blur-md transition-transform duration-300 hover:scale-[1.06] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
             style={{
               borderColor: `${accent}99`,
               color: accent,
