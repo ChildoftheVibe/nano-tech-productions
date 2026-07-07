@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { chamberAsset, vortexAsset, type PortalAlbum } from "@/lib/portalData";
 
@@ -121,6 +122,104 @@ function ElectricArcs({ accent, reducedMotion }: { accent: string; reducedMotion
   );
 }
 
+/** Geometry for the bolt layer that spills out from behind the album cover.
+ *  The layer is a square SVG centered on the cover; bolts start inside the
+ *  cover's footprint (so their roots stay hidden behind the artwork) and
+ *  crawl outward at a random angle. */
+const SPILL_BOX = 400;
+const SPILL_CENTER = SPILL_BOX / 2;
+const SPILL_START_R = 78; // just inside the cover edge at both breakpoints
+const SPILL_COUNT = 7;
+const SPILL_REROLL_MS = 3400;
+
+type SpillBolt = {
+  id: number;
+  d: string;
+  width: number;
+  duration: number;
+  delay: number;
+  peak: number;
+};
+
+let spillBoltId = 0;
+
+function makeSpillBolt(): SpillBolt {
+  const angle = Math.random() * Math.PI * 2;
+  const length = 34 + Math.random() * 86; // random size per bolt
+  const segments = 3 + Math.floor(Math.random() * 3);
+  let d = "";
+  for (let i = 0; i <= segments; i++) {
+    const r = SPILL_START_R + (length * i) / segments;
+    // Perpendicular jitter gives each segment its jagged lightning kink.
+    const offset = i === 0 ? 0 : (Math.random() - 0.5) * 26;
+    const x = SPILL_CENTER + Math.cos(angle) * r + Math.cos(angle + Math.PI / 2) * offset;
+    const y = SPILL_CENTER + Math.sin(angle) * r + Math.sin(angle + Math.PI / 2) * offset;
+    d += `${i === 0 ? "M" : " L"}${x.toFixed(1)} ${y.toFixed(1)}`;
+  }
+  return {
+    id: spillBoltId++,
+    d,
+    width: 1.4 + Math.random() * 2.2,
+    duration: 1.7 + Math.random() * 1.6, // slow eased flicker — never strobes
+    delay: Math.random() * 1.4,
+    peak: 0.45 + Math.random() * 0.5,
+  };
+}
+
+/** Electrical bolts spilling out from behind the floating album cover. Every
+ *  bolt gets a random angle, length, width, and flicker timing, and the whole
+ *  set re-rolls every few seconds so size and location keep changing. Bolts
+ *  are generated client-side only (Math.random would break hydration) and
+ *  skipped entirely under reduced motion. */
+function CoverEnergySpill({
+  accent,
+  reducedMotion,
+}: {
+  accent: string;
+  reducedMotion: boolean;
+}) {
+  const [bolts, setBolts] = useState<SpillBolt[]>([]);
+
+  useEffect(() => {
+    if (reducedMotion) return;
+    const roll = () => setBolts(Array.from({ length: SPILL_COUNT }, makeSpillBolt));
+    roll();
+    const id = window.setInterval(roll, SPILL_REROLL_MS);
+    return () => window.clearInterval(id);
+  }, [reducedMotion]);
+
+  if (reducedMotion) return null;
+
+  return (
+    <svg
+      viewBox={`0 0 ${SPILL_BOX} ${SPILL_BOX}`}
+      aria-hidden="true"
+      className="pointer-events-none absolute h-full w-full"
+      style={{ filter: `drop-shadow(0 0 5px ${accent})`, opacity: 0.8 }}
+    >
+      {bolts.map((bolt) => (
+        <motion.path
+          key={bolt.id}
+          d={bolt.d}
+          fill="none"
+          stroke={accent}
+          strokeWidth={bolt.width}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, bolt.peak, 0.12, bolt.peak * 0.8, 0] }}
+          transition={{
+            duration: bolt.duration,
+            delay: bolt.delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </svg>
+  );
+}
+
 type Props = {
   album: PortalAlbum;
   flying: boolean;
@@ -210,6 +309,23 @@ export function PortalChamber({ album, flying, reducedMotion, isMobile }: Props)
           }}
         >
           <ElectricArcs accent={album.accentColor} reducedMotion={reducedMotion} />
+        </div>
+
+        {/* Random energy bolts spilling out from behind the album cover —
+            rendered before the cover so their roots stay hidden behind it.
+            Sized so a bolt starting at SPILL_START_R sits inside the cover's
+            footprint at both the desktop (26%) and mobile (29%) cover sizes. */}
+        <div
+          className="absolute"
+          style={{
+            left: pct(VORTEX_CENTER.x, PLATE.w),
+            top: pct(VORTEX_CENTER.y, PLATE.h),
+            height: isMobile ? "64%" : "58%",
+            aspectRatio: "1 / 1",
+            translate: "-50% -50%",
+          }}
+        >
+          <CoverEnergySpill accent={album.accentColor} reducedMotion={reducedMotion} />
         </div>
 
         {/* Album cover floating inside the vortex. */}

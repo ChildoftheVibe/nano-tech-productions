@@ -153,17 +153,51 @@ export function PortalRoomClient({ albums }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [showVideo, finishVideo]);
 
-  // Native share sheet where available, clipboard fallback with visible feedback.
+  // Pre-fetch the focused album's cover as a File so the share sheet can
+  // attach the artwork without an async gap — Safari revokes the tap's
+  // user-activation if we fetch inside the share handler itself.
+  const coverFileRef = useRef<File | null>(null);
+  useEffect(() => {
+    coverFileRef.current = null;
+    if (!album) return;
+    let cancelled = false;
+    fetch(album.coverUrl)
+      .then((res) => (res.ok ? res.blob() : Promise.reject(new Error("cover fetch failed"))))
+      .then((blob) => {
+        if (cancelled || !blob.type.startsWith("image/")) return;
+        const ext = blob.type.split("/")[1] ?? "jpg";
+        coverFileRef.current = new File([blob], `${album.slug}-cover.${ext}`, {
+          type: blob.type,
+        });
+      })
+      .catch(() => {
+        // Cover unavailable for attaching — share falls back to link-only.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [album]);
+
+  // Native share sheet where available, clipboard fallback with visible
+  // feedback. Shares the album page URL (its OG metadata serves the cover as
+  // the link-preview image) and attaches the cover file so the artwork shows
+  // inside the recipient's message composer where the platform supports it.
   const sharePortal = useCallback(async () => {
     if (!album) return;
-    const url = `${window.location.origin}/?portal=${index}`;
+    const url = `${window.location.origin}/album/${album.slug}`;
+    const shareData: ShareData = {
+      title: `${album.title} — NTV Vault`,
+      text: `Step through the ${album.title} portal on NTV Vault`,
+      url,
+    };
     try {
       if (navigator.share) {
-        await navigator.share({
-          title: `${album.title} — NTV Vault`,
-          text: `Step through the ${album.title} portal on NTV Vault`,
-          url,
-        });
+        const cover = coverFileRef.current;
+        if (cover && navigator.canShare?.({ ...shareData, files: [cover] })) {
+          await navigator.share({ ...shareData, files: [cover] });
+        } else {
+          await navigator.share(shareData);
+        }
       } else {
         await navigator.clipboard.writeText(url);
         setShared(true);
@@ -172,7 +206,7 @@ export function PortalRoomClient({ albums }: Props) {
     } catch {
       // User dismissed the share sheet — nothing to do.
     }
-  }, [album, index]);
+  }, [album]);
 
   // Desktop: ArrowLeft / ArrowRight.
   useEffect(() => {
@@ -333,65 +367,37 @@ export function PortalRoomClient({ albums }: Props) {
           bottom edge (percentage-based, like the title) so the whole cluster
           stays inside the viewport without scrolling on short screens. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-[6%] z-20 flex flex-col items-center gap-2.5 px-8 text-center md:bottom-[8%] md:px-16">
+        {/* CTA pills mirror the album-page action buttons (flat accent fill +
+            outline pill, 0.06em tracking) at a smaller footprint; min-h-11
+            keeps the 44px touch target. */}
         <div className="flex items-center justify-center gap-3">
           <button
             type="button"
             onClick={enterPortal}
-            className="group pointer-events-auto relative min-h-11 overflow-hidden rounded-lg px-10 py-3 text-[11px] font-bold tracking-[0.25em] uppercase transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
+            className="pointer-events-auto flex min-h-11 items-center gap-2 rounded-lg px-5 py-2.5 text-[11px] font-bold tracking-[0.06em] uppercase transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
             style={{
-              background: `linear-gradient(160deg, ${accent} 0%, ${accent}d9 60%, ${accent}b3 100%)`,
+              background: accent,
               color: "#003733",
-              boxShadow: `0 0 18px ${accent}4d, inset 0 1px 0 rgba(255,255,255,0.35)`,
+              boxShadow: `0 0 20px ${accent}4d`,
             }}
           >
-            {/* Cinematic shine sweep across the button face on hover. */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
-            />
             Enter Portal
           </button>
-          <motion.button
+          <button
             type="button"
             onClick={sharePortal}
             aria-label={`Share the ${album.title} portal`}
-            className="pointer-events-auto relative flex min-h-11 items-center gap-2 rounded-lg border px-8 py-3 text-[11px] font-bold tracking-[0.25em] uppercase backdrop-blur-md transition-transform duration-300 hover:scale-[1.06] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
+            className="pointer-events-auto flex min-h-11 items-center gap-2 rounded-lg border px-4 py-2.5 text-[11px] font-semibold tracking-[0.06em] uppercase backdrop-blur-md transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
             style={{
               borderColor: `${accent}99`,
               color: accent,
               background: "rgba(9,15,14,0.6)",
+              boxShadow: `0 0 12px ${accent}33`,
             }}
-            animate={
-              reducedMotion
-                ? { boxShadow: `0 0 12px ${accent}55` }
-                : {
-                    boxShadow: [
-                      `0 0 8px ${accent}40`,
-                      `0 0 22px ${accent}90`,
-                      `0 0 8px ${accent}40`,
-                    ],
-                  }
-            }
-            transition={
-              reducedMotion
-                ? undefined
-                : { duration: 2.4, repeat: Infinity, ease: "easeInOut" }
-            }
           >
-            <motion.span
-              aria-hidden="true"
-              className="flex"
-              animate={reducedMotion ? undefined : { rotate: [0, 0, 12, -12, 0, 0] }}
-              transition={
-                reducedMotion
-                  ? undefined
-                  : { duration: 4.8, repeat: Infinity, ease: "easeInOut" }
-              }
-            >
-              <Share2 size={14} />
-            </motion.span>
+            <Share2 size={14} aria-hidden="true" />
             {shared ? "Copied!" : "Share"}
-          </motion.button>
+          </button>
         </div>
         <div className="flex items-center gap-2" aria-hidden="true">
           {albums.map((a, i) => (
