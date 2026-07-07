@@ -128,9 +128,9 @@ function ElectricArcs({ accent, reducedMotion }: { accent: string; reducedMotion
  *  crawl outward at a random angle. */
 const SPILL_BOX = 400;
 const SPILL_CENTER = SPILL_BOX / 2;
-const SPILL_START_R = 78; // just inside the cover edge at both breakpoints
-const SPILL_COUNT = 7;
-const SPILL_REROLL_MS = 3400;
+const SPILL_START_R = 74; // just inside the cover edge at both breakpoints
+const SPILL_COUNT = 10;
+const SPILL_REROLL_MS = 3200;
 
 type SpillBolt = {
   id: number;
@@ -145,13 +145,13 @@ let spillBoltId = 0;
 
 function makeSpillBolt(): SpillBolt {
   const angle = Math.random() * Math.PI * 2;
-  const length = 34 + Math.random() * 86; // random size per bolt
+  const length = 60 + Math.random() * 120; // random size per bolt, reaching well past the cover
   const segments = 3 + Math.floor(Math.random() * 3);
   let d = "";
   for (let i = 0; i <= segments; i++) {
     const r = SPILL_START_R + (length * i) / segments;
     // Perpendicular jitter gives each segment its jagged lightning kink.
-    const offset = i === 0 ? 0 : (Math.random() - 0.5) * 26;
+    const offset = i === 0 ? 0 : (Math.random() - 0.5) * 34;
     const x = SPILL_CENTER + Math.cos(angle) * r + Math.cos(angle + Math.PI / 2) * offset;
     const y = SPILL_CENTER + Math.sin(angle) * r + Math.sin(angle + Math.PI / 2) * offset;
     d += `${i === 0 ? "M" : " L"}${x.toFixed(1)} ${y.toFixed(1)}`;
@@ -159,18 +159,20 @@ function makeSpillBolt(): SpillBolt {
   return {
     id: spillBoltId++,
     d,
-    width: 1.4 + Math.random() * 2.2,
-    duration: 1.7 + Math.random() * 1.6, // slow eased flicker — never strobes
-    delay: Math.random() * 1.4,
-    peak: 0.45 + Math.random() * 0.5,
+    width: 2.6 + Math.random() * 3.2,
+    duration: 1.6 + Math.random() * 1.5, // slow eased flicker — never strobes
+    delay: Math.random() * 1.3,
+    peak: 0.7 + Math.random() * 0.3,
   };
 }
 
 /** Electrical bolts spilling out from behind the floating album cover. Every
  *  bolt gets a random angle, length, width, and flicker timing, and the whole
- *  set re-rolls every few seconds so size and location keep changing. Bolts
- *  are generated client-side only (Math.random would break hydration) and
- *  skipped entirely under reduced motion. */
+ *  set re-rolls every few seconds so size and location keep changing. Each
+ *  bolt is drawn twice — a wide accent-tinted glow plus a thin white-hot core
+ *  — so it reads as real lightning rather than a faint line. Bolts are
+ *  generated client-side only (Math.random would break hydration) and skipped
+ *  entirely under reduced motion. */
 function CoverEnergySpill({
   accent,
   reducedMotion,
@@ -195,26 +197,40 @@ function CoverEnergySpill({
       viewBox={`0 0 ${SPILL_BOX} ${SPILL_BOX}`}
       aria-hidden="true"
       className="pointer-events-none absolute h-full w-full"
-      style={{ filter: `drop-shadow(0 0 5px ${accent})`, opacity: 0.8 }}
+      style={{ filter: `drop-shadow(0 0 6px ${accent}) drop-shadow(0 0 14px ${accent})` }}
     >
       {bolts.map((bolt) => (
-        <motion.path
+        <motion.g
           key={bolt.id}
-          d={bolt.d}
-          fill="none"
-          stroke={accent}
-          strokeWidth={bolt.width}
-          strokeLinecap="round"
-          strokeLinejoin="round"
           initial={{ opacity: 0 }}
-          animate={{ opacity: [0, bolt.peak, 0.12, bolt.peak * 0.8, 0] }}
+          animate={{ opacity: [0, bolt.peak, 0.15, bolt.peak * 0.85, 0] }}
           transition={{
             duration: bolt.duration,
             delay: bolt.delay,
             repeat: Infinity,
             ease: "easeInOut",
           }}
-        />
+        >
+          {/* Accent glow pass */}
+          <path
+            d={bolt.d}
+            fill="none"
+            stroke={accent}
+            strokeWidth={bolt.width}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          {/* White-hot core pass */}
+          <path
+            d={bolt.d}
+            fill="none"
+            stroke="#ffffff"
+            strokeOpacity={0.85}
+            strokeWidth={Math.max(0.8, bolt.width * 0.4)}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </motion.g>
       ))}
     </svg>
   );
