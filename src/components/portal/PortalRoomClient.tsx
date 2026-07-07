@@ -328,8 +328,10 @@ export function PortalRoomClient({ albums }: Props) {
       {/* Album title, anchored above the CTA row with room for the platform's
           shiny orb detail beneath it, well below the vortex disc. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-[20%] z-20 flex justify-center px-8 text-center md:bottom-[24%] md:px-16">
+        {/* Padding is em-based against the title's own type size so the
+            plaque scales with the words instead of sitting on fixed offsets. */}
         <motion.div
-          className="max-w-[85%] rounded-2xl border px-16 py-4 backdrop-blur-md md:max-w-none md:px-28 md:py-6"
+          className="max-w-[92%] rounded-2xl border px-[2.6em] py-[0.85em] text-2xl backdrop-blur-md md:max-w-none md:text-4xl"
           style={{
             borderColor: `${accent}99`,
             background: "rgba(9,15,14,0.6)",
@@ -352,7 +354,7 @@ export function PortalRoomClient({ albums }: Props) {
           }
         >
           <h1
-            className="font-[family-name:var(--font-bungee)] text-2xl leading-tight tracking-tight md:text-4xl"
+            className="font-[family-name:var(--font-bungee)] text-[length:inherit] leading-tight tracking-tight"
             style={{
               color: accent,
               textShadow: `0 0 10px ${accent}aa, 0 0 24px ${accent}88, 0 0 44px ${accent}44, 0 2px 8px rgba(0,0,0,0.7)`,
@@ -374,7 +376,7 @@ export function PortalRoomClient({ albums }: Props) {
           <button
             type="button"
             onClick={enterPortal}
-            className="pointer-events-auto flex min-h-11 items-center gap-2 rounded-lg px-5 py-2.5 text-[11px] font-bold tracking-[0.06em] uppercase transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
+            className="pointer-events-auto flex min-h-11 items-center gap-2 rounded-lg px-9 py-3 text-[11px] font-bold tracking-[0.06em] uppercase transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
             style={{
               background: accent,
               color: "#003733",
@@ -387,7 +389,7 @@ export function PortalRoomClient({ albums }: Props) {
             type="button"
             onClick={sharePortal}
             aria-label={`Share the ${album.title} portal`}
-            className="pointer-events-auto flex min-h-11 items-center gap-2 rounded-lg border px-4 py-2.5 text-[11px] font-semibold tracking-[0.06em] uppercase backdrop-blur-md transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
+            className="pointer-events-auto flex min-h-11 items-center gap-2 rounded-lg border px-7 py-3 text-[11px] font-semibold tracking-[0.06em] uppercase backdrop-blur-md transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
             style={{
               borderColor: `${accent}99`,
               color: accent,
