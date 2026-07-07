@@ -329,9 +329,11 @@ export function PortalRoomClient({ albums }: Props) {
           shiny orb detail beneath it, well below the vortex disc. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-[20%] z-20 flex justify-center px-8 text-center md:bottom-[24%] md:px-16">
         {/* Padding is em-based against the title's own type size so the
-            plaque scales with the words instead of sitting on fixed offsets. */}
+            plaque scales with the words instead of sitting on fixed offsets.
+            Generous em values keep the box clearly larger than the words at
+            both breakpoints. */}
         <motion.div
-          className="max-w-[92%] rounded-2xl border px-[2.6em] py-[0.85em] text-2xl backdrop-blur-md md:max-w-none md:text-4xl"
+          className="max-w-[92%] rounded-2xl border px-[3.6em] py-[1.15em] text-2xl backdrop-blur-md md:max-w-none md:text-4xl"
           style={{
             borderColor: `${accent}99`,
             background: "rgba(9,15,14,0.6)",
@@ -370,13 +372,14 @@ export function PortalRoomClient({ albums }: Props) {
           stays inside the viewport without scrolling on short screens. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-[6%] z-20 flex flex-col items-center gap-2.5 px-8 text-center md:bottom-[8%] md:px-16">
         {/* CTA pills mirror the album-page action buttons (flat accent fill +
-            outline pill, 0.06em tracking) at a smaller footprint; min-h-11
-            keeps the 44px touch target. */}
+            outline pill, 0.06em tracking) at a smaller footprint. A shared
+            min-width makes both pills read as substantial, evenly-sized
+            buttons; min-h-11 keeps the 44px ADA touch target. */}
         <div className="flex items-center justify-center gap-3">
           <button
             type="button"
             onClick={enterPortal}
-            className="pointer-events-auto flex min-h-11 items-center gap-2 rounded-lg px-9 py-3 text-[11px] font-bold tracking-[0.06em] uppercase transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
+            className="pointer-events-auto flex min-h-11 min-w-[176px] items-center justify-center gap-2 rounded-lg px-8 py-3.5 text-xs font-bold tracking-[0.06em] uppercase transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
             style={{
               background: accent,
               color: "#003733",
@@ -389,7 +392,7 @@ export function PortalRoomClient({ albums }: Props) {
             type="button"
             onClick={sharePortal}
             aria-label={`Share the ${album.title} portal`}
-            className="pointer-events-auto flex min-h-11 items-center gap-2 rounded-lg border px-7 py-3 text-[11px] font-semibold tracking-[0.06em] uppercase backdrop-blur-md transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
+            className="pointer-events-auto flex min-h-11 min-w-[140px] items-center justify-center gap-2 rounded-lg border px-8 py-3.5 text-xs font-semibold tracking-[0.06em] uppercase backdrop-blur-md transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
             style={{
               borderColor: `${accent}99`,
               color: accent,
@@ -397,7 +400,7 @@ export function PortalRoomClient({ albums }: Props) {
               boxShadow: `0 0 12px ${accent}33`,
             }}
           >
-            <Share2 size={14} aria-hidden="true" />
+            <Share2 size={16} aria-hidden="true" />
             {shared ? "Copied!" : "Share"}
           </button>
         </div>
