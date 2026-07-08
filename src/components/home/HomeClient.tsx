@@ -302,7 +302,7 @@ export function HomeClient({
               <div className="font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-[0.3em] text-[#ffabef] mb-3">
                 New Release
               </div>
-              <h1 className="font-[family-name:var(--font-bungee)] text-4xl md:text-6xl text-white leading-none mb-3 tracking-tight">
+              <h1 className="font-[family-name:var(--font-bungee)] text-4xl md:text-6xl text-[#dde4e2] leading-none mb-3 tracking-tight">
                 {latest.title}
               </h1>
               {latest.description && (

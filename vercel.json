@@ -1,6 +1,13 @@
 {
   "crons": [
     { "path": "/api/cron/security-check", "schedule": "0 9 * * *" },
-    { "path": "/api/cron/backup", "schedule": "0 3 * * *" }
+    { "path": "/api/cron/backup", "schedule": "0 3 * * *" },
+    { "path": "/api/cron/agents/ui-research", "schedule": "0 6 * * 1" },
+    { "path": "/api/cron/agents/ui-implementer", "schedule": "0 7 * * 1" },
+    { "path": "/api/cron/agents/quorvo-growth", "schedule": "0 8 * * 1" },
+    { "path": "/api/cron/agents/listener", "schedule": "0 4 * * *" },
+    { "path": "/api/cron/agents/similar-artists", "schedule": "30 4 * * *" },
+    { "path": "/api/cron/agents/link-populator", "schedule": "0 5 * * *" },
+    { "path": "/api/cron/agents/spotify-playlists", "schedule": "0 10 * * 5" }
   ]
 }

@@ -22,9 +22,15 @@ import type {
 } from "@/types/music";
 
 const ALBUM_COLUMNS =
-  "id, slug, title, description, release_date, cover_image, cover_videos, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, price, light_mode, portal_video_url, is_published";
+  "id, slug, title, description, release_date, cover_image, cover_videos, background_color, accent_color, spotify_url, apple_music_url, youtube_url, amazon_url, copyright, price, nb_price, light_mode, portal_video_url, is_published";
 const TRACK_COLUMNS =
-  "id, album_id, title, track_number, duration, price, audio_url, public_audio_id, features, is_published, credits, lyrics, has_lyrics";
+  "id, album_id, title, track_number, duration, price, nb_price, audio_url, public_audio_id, features, is_published, credits, lyrics, has_lyrics";
+// Playlist queue payload is serialized into every page's HTML (PlayerSeeder
+// props) and returned by /api/playlist — omit lyrics + credits, which can add
+// hundreds of KB across 500 tracks. LyricsModal lazy-fetches lyrics on open
+// via /api/tracks/[id]/lyrics; has_lyrics stays so the UI knows to offer it.
+const PLAYLIST_TRACK_COLUMNS =
+  "id, album_id, title, track_number, duration, price, audio_url, public_audio_id, features, is_published, has_lyrics";
 
 type AlbumRow = {
   id: string;
@@ -42,6 +48,7 @@ type AlbumRow = {
   amazon_url: string | null;
   copyright: string | null;
   price: number | null;
+  nb_price?: number | null;
   light_mode: boolean | null;
   portal_video_url?: string | null;
   is_published: boolean;
@@ -56,12 +63,14 @@ type TrackRow = {
   track_number: number | null;
   duration: string | null;
   price: number | string;
+  nb_price?: number | null;
   audio_url: string | null;
   public_audio_id: string | null;
   features: string[] | null;
   is_published: boolean;
-  credits: TrackCredits | null;
-  lyrics: string | null;
+  // Omitted by PLAYLIST_TRACK_COLUMNS (queue payload weight); present elsewhere.
+  credits?: TrackCredits | null;
+  lyrics?: string | null;
   has_lyrics: boolean | null;
   // Present only when the query includes an album join (playlist query).
   // PostgREST returns a many-to-one embed (tracks.album_id -> albums) as a
@@ -104,10 +113,11 @@ const mapTrack = (row: TrackRow): Track => {
     trackNumber: row.track_number ?? 0,
     duration: row.duration ?? "0:00",
     price: Number(row.price ?? 0),
+    nbPrice: row.nb_price != null ? Number(row.nb_price) : null,
     features: row.features ?? undefined,
     audioUrl: resolveAudioUrl(row),
     credits: row.credits ?? {},
-    lyrics: row.lyrics,
+    lyrics: row.lyrics ?? null,
     has_lyrics: !!row.has_lyrics,
     // Album metadata — only present when row includes an album join.
     albumCoverImage: album?.cover_image ?? undefined,
@@ -136,6 +146,7 @@ const mapAlbum = (row: AlbumRow, tracks: Track[] = []): Album => ({
   amazonUrl: row.amazon_url ?? undefined,
   copyright: row.copyright ?? undefined,
   price: row.price ?? 9.99,
+  nbPrice: row.nb_price != null ? Number(row.nb_price) : null,
   lightMode: row.light_mode ?? false,
   portalVideoUrl: row.portal_video_url ?? undefined,
   tracks,
@@ -338,7 +349,7 @@ export const getPlaylistTracks = unstable_cache(
       );
       const { data: trackData, error: trackError } = await supabase
         .from("tracks")
-        .select(`${TRACK_COLUMNS}, albums(id, slug, title, cover_image, bg_color:background_color, accent_color)`)
+        .select(`${PLAYLIST_TRACK_COLUMNS}, albums(id, slug, title, cover_image, bg_color:background_color, accent_color)`)
         .in("id", orderedIds)
         .eq("is_published", true)
         .or("audio_url.not.is.null,public_audio_id.not.is.null");
@@ -365,7 +376,7 @@ export const getPlaylistTracks = unstable_cache(
     // queue even if audio_url was somehow left null.
     const { data, error } = await supabase
       .from("tracks")
-      .select(`${TRACK_COLUMNS}, albums(id, slug, title, cover_image, bg_color:background_color, accent_color)`)
+      .select(`${PLAYLIST_TRACK_COLUMNS}, albums(id, slug, title, cover_image, bg_color:background_color, accent_color)`)
       .eq("is_published", true)
       .or("audio_url.not.is.null,public_audio_id.not.is.null")
       .limit(PLAYLIST_MAX);

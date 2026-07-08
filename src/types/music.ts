@@ -17,6 +17,8 @@ export type Album = {
   album_type?: 'album' | 'ep' | 'single';
   copyright?: string;
   price?: number;
+  /** Price in Nano Bucks (internal currency). Null/undefined = not redeemable. */
+  nbPrice?: number | null;
   /** When true, the album detail page renders with a light theme. */
   lightMode?: boolean;
   /** Vertical intro video (from the album media gallery) played as a pop-up
@@ -46,6 +48,8 @@ export type Track = {
   trackNumber: number;
   duration: string;
   price: number;
+  /** Price in Nano Bucks (internal currency). Null/undefined = not redeemable. */
+  nbPrice?: number | null;
   features?: string[];
   audioUrl?: string;
   credits: TrackCredits;

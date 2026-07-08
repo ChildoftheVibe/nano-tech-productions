@@ -14,6 +14,7 @@ export type Album = {
   amazon_url: string | null;
   copyright: string | null;
   price: number;
+  nb_price: number | null;
   is_published: boolean;
   album_type?: 'album' | 'ep' | 'single';
   light_mode: boolean;
@@ -34,6 +35,7 @@ export type Track = {
   track_number: number | null;
   duration: string | null;
   price: number;
+  nb_price: number | null;
   audio_url: string | null;
   public_audio_id: string | null;
   vault_audio_id: string | null;

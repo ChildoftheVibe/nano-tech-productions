@@ -9,6 +9,7 @@ import { chamberAsset, vortexAsset, type PortalAlbum } from "@/lib/portalData";
 import { usePlayer } from "@/context/PlayerContext";
 import { usePlayerStore } from "@/store/playerStore";
 import { PortalChamber } from "./PortalChamber";
+import { PortalGameGate } from "./PortalGameGate";
 
 const STORAGE_KEY = "ntv-portal-index";
 const FLY_MS = 850;
@@ -22,6 +23,7 @@ export function PortalRoomClient({ albums }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
   const [index, setIndex] = useState(0);
   const [flying, setFlying] = useState(false);
+  const [showGate, setShowGate] = useState(false);
   const [shared, setShared] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const showVideoRef = useRef(false);
@@ -106,16 +108,23 @@ export function PortalRoomClient({ albums }: Props) {
     [count],
   );
 
-  // Fly-through animation, then route to the album page.
+  // Fly-through animation, then the portal challenge (a random arcade game
+  // that pays Nano Bucks) blocks the doorway; finishing or skipping it routes
+  // to the album page.
   const beginFly = useCallback(() => {
     if (flyingRef.current || !album) return;
     flyingRef.current = true;
     setFlying(true);
     window.setTimeout(
-      () => router.push(`/album/${album.slug}`),
+      () => setShowGate(true),
       reducedMotion ? FLY_MS_REDUCED : FLY_MS,
     );
-  }, [album, reducedMotion, router]);
+  }, [album, reducedMotion]);
+
+  const finishGate = useCallback(() => {
+    if (!album) return;
+    router.push(`/album/${album.slug}`);
+  }, [album, router]);
 
   const enterPortal = useCallback(() => {
     if (flyingRef.current || showVideoRef.current || !album) return;
@@ -493,6 +502,19 @@ export function PortalRoomClient({ albums }: Props) {
             style={{
               background: `radial-gradient(circle at center, ${album.accentColor} 0%, ${album.bgColor} 55%, #090f0e 100%)`,
             }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Portal challenge: random arcade game over the energy fill. */}
+      <AnimatePresence>
+        {showGate && (
+          <PortalGameGate
+            key="gate"
+            accent={album.accentColor}
+            albumTitle={album.title}
+            onDone={finishGate}
+            reducedMotion={reducedMotion}
           />
         )}
       </AnimatePresence>

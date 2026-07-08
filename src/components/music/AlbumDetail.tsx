@@ -7,6 +7,7 @@ import { TrackRow } from "@/components/music/TrackRow";
 import { AlbumCoverCarousel } from "@/components/music/AlbumCoverCarousel";
 import { MaybeArtistLink, MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
 import { AlbumMediaGallery, type GalleryItem } from "@/components/music/AlbumMediaGallery";
+import { RedeemButton } from "@/components/games/RedeemButton";
 import { getAlbumCover } from "@/lib/albumCover";
 import { getAlbumTheme } from "@/lib/albumTheme";
 import { usePlayerStore } from "@/store/playerStore";
@@ -349,6 +350,17 @@ export function AlbumDetail({
               <ShoppingBag size={14} />
               Buy · ${albumPrice.toFixed(2)}
             </button>
+
+            {/* Redeem with Nano Bucks — shown when the admin set an NB price */}
+            {album.nbPrice != null && album.nbPrice > 0 && (
+              <RedeemButton
+                kind="album"
+                id={album.id}
+                nbPrice={album.nbPrice}
+                name={album.title}
+                accent={accent}
+              />
+            )}
 
             {/* Credits — only shown when credits exist */}
             {hasAnyCredits && (

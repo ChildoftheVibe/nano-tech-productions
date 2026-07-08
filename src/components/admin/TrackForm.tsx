@@ -85,6 +85,7 @@ type FormState = {
   track_number: string;
   duration: string;
   price: string;
+  nb_price: string;
   audio_url: string;
   public_audio_id: string;
   vault_audio_id: string;
@@ -104,6 +105,7 @@ function emptyForm(): FormState {
     track_number: "",
     duration: "",
     price: "1.00",
+    nb_price: "",
     audio_url: "",
     public_audio_id: "",
     vault_audio_id: "",
@@ -124,6 +126,7 @@ function fromTrack(t: Track): FormState {
     track_number: t.track_number?.toString() ?? "",
     duration: t.duration ?? "",
     price: t.price.toString(),
+    nb_price: t.nb_price != null ? String(t.nb_price) : "",
     audio_url: t.audio_url ?? "",
     public_audio_id: t.public_audio_id ?? "",
     vault_audio_id: t.vault_audio_id ?? "",
@@ -277,6 +280,7 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
         track_number: form.track_number ? Number(form.track_number) : null,
         duration: form.duration || null,
         price: form.price ? Number(form.price) : 1,
+        nb_price: form.nb_price ? Number(form.nb_price) : null,
         audio_url: form.audio_url || null,
         public_audio_id: form.public_audio_id || null,
         vault_audio_id: form.vault_audio_id || null,
@@ -378,6 +382,21 @@ export function TrackForm({ initial, albums, onSaved, onCancel }: Props) {
           min="0"
           value={form.price}
           onChange={(e) => set("price", e.target.value)}
+          className="w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-[#3DD6C8]"
+        />
+      </label>
+
+      <label className="block">
+        <span className="mb-1 block text-sm text-white/70">
+          Price (Nano Bucks) — leave blank to disable NB redemption
+        </span>
+        <input
+          type="number"
+          step="1"
+          min="1"
+          placeholder="e.g. 100"
+          value={form.nb_price}
+          onChange={(e) => set("nb_price", e.target.value)}
           className="w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-[#3DD6C8]"
         />
       </label>

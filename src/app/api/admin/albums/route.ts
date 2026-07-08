@@ -20,6 +20,7 @@ const ALBUM_FIELDS = [
   "amazon_url",
   "copyright",
   "price",
+  "nb_price",
   "light_mode",
   "is_published",
 ] as const;
@@ -34,6 +35,9 @@ function pickAlbumInput(body: unknown): AlbumInput {
       if (key === "price") {
         const n = Number(val);
         (out as Record<string, unknown>)[key] = isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : null;
+      } else if (key === "nb_price") {
+        const n = Number(val);
+        (out as Record<string, unknown>)[key] = isFinite(n) && n > 0 ? Math.round(n) : null;
       } else {
         (out as Record<string, unknown>)[key] = val === "" ? null : val;
       }

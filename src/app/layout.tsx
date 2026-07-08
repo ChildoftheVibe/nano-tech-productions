@@ -18,7 +18,7 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { AnalyticsProvider } from "@/providers/AnalyticsProvider";
 import { RouteChangeFocus } from "@/components/layout/RouteChangeFocus";
 import { SentryErrorBoundary } from "@/components/ui/SentryErrorBoundary";
-import { getAlbums, getPlaylistTracks, getActiveIntroVideo } from "@/lib/queries";
+import { getPlaylistTracks, getActiveIntroVideo } from "@/lib/queries";
 import { PlayerSeeder } from "@/components/layout/PlayerSeeder";
 import { IntroVideoOverlay } from "@/components/layout/IntroVideoOverlay";
 import InstallPromptBanner from '@/components/layout/InstallPromptBanner'
@@ -78,12 +78,10 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const [{ albums: sidebarAlbums }, { tracks: playlistTracks, isAdminCurated }, introVideo] =
-    await Promise.all([
-      getAlbums({ page: 1, limit: 50 }),
-      getPlaylistTracks(),
-      getActiveIntroVideo(),
-    ]);
+  const [{ tracks: playlistTracks, isAdminCurated }, introVideo] = await Promise.all([
+    getPlaylistTracks(),
+    getActiveIntroVideo(),
+  ]);
 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${bungee.variable} h-full antialiased`}>
@@ -110,7 +108,7 @@ export default async function RootLayout({
                   off-screen. dvh tracks the actual visible viewport. */}
               <div className="app-shell" style={{ display: "flex", flexDirection: "column" }}>
                 <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-                  <Sidebar initialAlbums={sidebarAlbums} />
+                  <Sidebar />
                   <main
                     id="main-content"
                     tabIndex={-1}

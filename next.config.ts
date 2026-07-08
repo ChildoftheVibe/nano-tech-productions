@@ -149,6 +149,12 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        source: "/api/tracks/:id/lyrics",
+        headers: [
+          { key: "Cache-Control", value: "public, s-maxage=300, stale-while-revalidate=60" },
+        ],
+      },
+      {
         source: "/api/instrumentals",
         headers: [
           { key: "Cache-Control", value: "public, s-maxage=300, stale-while-revalidate=60" },

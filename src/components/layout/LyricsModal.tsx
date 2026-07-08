@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
 
 const SECTION_LINE = /^\s*\[[^\]]+\]\s*$/;
+
+// Playlist-seeded queue tracks omit lyrics to keep the page payload small
+// (see PLAYLIST_TRACK_COLUMNS in queries.ts); fetched lyrics are cached here
+// per track id for the life of the session.
+const lyricsCache = new Map<string, string | null>();
 
 function renderLyrics(lyrics: string) {
   return lyrics.split("\n").map((line, i) => {
@@ -41,6 +46,9 @@ export function LyricsModal() {
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const currentAlbum = usePlayerStore((s) => s.currentAlbum);
 
+  const [fetchedLyrics, setFetchedLyrics] = useState<string | null>(null);
+  const [loadingLyrics, setLoadingLyrics] = useState(false);
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -61,6 +69,41 @@ export function LyricsModal() {
   useEffect(() => {
     if (open && currentTrack && !currentTrack.has_lyrics) close();
   }, [open, currentTrack, close]);
+
+  // Queue tracks seeded from the playlist ship without lyrics text (payload
+  // weight) — fetch on demand the first time the modal opens for them.
+  useEffect(() => {
+    if (!open || !currentTrack) return;
+    const { id, lyrics, has_lyrics } = currentTrack;
+    if (lyrics != null || !has_lyrics) {
+      setFetchedLyrics(null);
+      setLoadingLyrics(false);
+      return;
+    }
+    if (lyricsCache.has(id)) {
+      setFetchedLyrics(lyricsCache.get(id) ?? null);
+      setLoadingLyrics(false);
+      return;
+    }
+    let cancelled = false;
+    setFetchedLyrics(null);
+    setLoadingLyrics(true);
+    fetch(`/api/tracks/${id}/lyrics`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { lyrics?: string | null } | null) => {
+        if (cancelled) return;
+        const text = data?.lyrics ?? null;
+        lyricsCache.set(id, text);
+        setFetchedLyrics(text);
+        setLoadingLyrics(false);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadingLyrics(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, currentTrack]);
 
   // Lock body scroll while open.
   useEffect(() => {
@@ -167,13 +210,20 @@ export function LyricsModal() {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {currentTrack.lyrics && currentTrack.lyrics.trim().length > 0 ? (
-                    renderLyrics(currentTrack.lyrics)
-                  ) : (
-                    <p className="font-mono text-sm text-white/50">
-                      No lyrics available for this track.
-                    </p>
-                  )}
+                  {(() => {
+                    const lyrics = currentTrack.lyrics ?? fetchedLyrics;
+                    if (lyrics && lyrics.trim().length > 0) return renderLyrics(lyrics);
+                    if (loadingLyrics) {
+                      return (
+                        <p className="font-mono text-sm text-white/50">Loading lyrics…</p>
+                      );
+                    }
+                    return (
+                      <p className="font-mono text-sm text-white/50">
+                        No lyrics available for this track.
+                      </p>
+                    );
+                  })()}
                 </motion.div>
               </AnimatePresence>
             </div>

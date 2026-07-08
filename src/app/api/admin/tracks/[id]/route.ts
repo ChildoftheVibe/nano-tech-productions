@@ -18,6 +18,7 @@ const TRACK_FIELDS = [
   "track_number",
   "duration",
   "price",
+  "nb_price",
   "audio_url",
   "public_audio_id",
   "vault_audio_id",
@@ -38,7 +39,12 @@ function pickTrackInput(body: unknown): TrackInput {
   for (const key of TRACK_FIELDS) {
     if (key in src) {
       const val = src[key];
-      (out as Record<string, unknown>)[key] = val === "" ? null : val;
+      if (key === "nb_price") {
+        const n = Number(val);
+        (out as Record<string, unknown>)[key] = isFinite(n) && n > 0 ? Math.round(n) : null;
+      } else {
+        (out as Record<string, unknown>)[key] = val === "" ? null : val;
+      }
     }
   }
   return out;

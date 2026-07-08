@@ -50,6 +50,7 @@ function emptyForm(): Record<string, string | boolean> {
     amazon_url: "",
     copyright: "© Nano Tech Productions. All rights reserved.",
     price: "9.99",
+    nb_price: "",
     album_type: 'album',
     light_mode: false,
     is_published: false,
@@ -71,6 +72,7 @@ function fromAlbum(a: Album): Record<string, string | boolean> {
     amazon_url: a.amazon_url ?? "",
     copyright: a.copyright ?? "",
     price: String(a.price ?? "9.99"),
+    nb_price: a.nb_price != null ? String(a.nb_price) : "",
     album_type: a.album_type ?? 'album',
     light_mode: a.light_mode ?? false,
     is_published: a.is_published,
@@ -230,6 +232,21 @@ export function AlbumForm({ initial, onSaved, onCancel }: Props) {
             className="w-full rounded border border-white/20 bg-transparent py-2 pl-7 pr-3 outline-none focus:border-[#3DD6C8]"
           />
         </div>
+      </label>
+
+      <label className="block">
+        <span className="mb-1 block text-sm text-white/70">
+          Album price (Nano Bucks) — leave blank to disable NB redemption
+        </span>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          placeholder="e.g. 500"
+          value={String(form.nb_price ?? "")}
+          onChange={(e) => set("nb_price", e.target.value)}
+          className="w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-[#3DD6C8]"
+        />
       </label>
 
       <label className="block">

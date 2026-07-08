@@ -6,6 +6,7 @@ import { usePlayerStore } from "@/store/playerStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { useCheckoutStore, trackCheckoutItem } from "@/store/checkoutStore";
 import { MaybeArtistLinkList } from "@/components/artist/MaybeArtistLink";
+import { RedeemButton } from "@/components/games/RedeemButton";
 import { getAlbumTheme, type AlbumTheme } from "@/lib/albumTheme";
 import type { Album, Track, TrackCredits } from "@/types/music";
 
@@ -248,6 +249,18 @@ export function TrackRow({ track, album, artistSlugsByName = {}, theme }: Props)
                 <ShoppingCart size={15} style={{ color: accent, flexShrink: 0 }} />
                 Buy · ${track.price.toFixed(2)}
               </button>
+              {track.nbPrice != null && track.nbPrice > 0 && (
+                <div style={{ color: t.textPrimary }}>
+                  <RedeemButton
+                    kind="track"
+                    id={track.id}
+                    nbPrice={track.nbPrice}
+                    name={track.title}
+                    accent={accent}
+                    compact
+                  />
+                </div>
+              )}
               <button
                 onClick={handleShare}
                 className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--album-hover)]"

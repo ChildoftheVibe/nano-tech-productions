@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { SearchBar } from "@/components/search/SearchBar";
+import { NanoBucksBadge } from "@/components/games/NanoBucksBadge";
 import { usePlayerStore } from "@/store/playerStore";
 
 export function TopBar() {
@@ -81,6 +82,7 @@ export function TopBar() {
           </motion.button>
         )}
         <SearchBar mode="navigate" />
+        <NanoBucksBadge />
         {/* Avatar / profile pill */}
         <div
           className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"

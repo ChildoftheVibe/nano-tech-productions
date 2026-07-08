@@ -26,7 +26,8 @@ export type VortexName =
   | "pink"
   | "purple"
   | "red"
-  | "white";
+  | "white"
+  | "yellow";
 
 /** Vortex energy overlay asset for a portal color. */
 export const vortexAsset = (v: VortexName) => `/portals/vortex-${v}.webp`;
@@ -41,6 +42,7 @@ export const chamberAsset = (v: VortexName) =>
 const VORTEX_HUES: Array<{ name: VortexName; hue: number }> = [
   { name: "red", hue: 0 },
   { name: "orange", hue: 30 },
+  { name: "yellow", hue: 55 },
   { name: "green", hue: 120 },
   { name: "blue", hue: 215 },
   { name: "purple", hue: 275 },

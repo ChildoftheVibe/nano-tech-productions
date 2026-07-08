@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Library, Search, Users, Volume2, Star, Download, X, ChevronLeft, type LucideIcon } from "lucide-react";
-import type { Album } from "@/types/music";
+import { Home, Library, Search, Users, Volume2, Star, Download, X, ChevronLeft, Dices, type LucideIcon } from "lucide-react";
 import { usePlayerStore } from "@/store/playerStore";
 import { useUiStore } from "@/store/uiStore";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
@@ -16,17 +15,14 @@ const primaryNav = [
   { href: "/sounds", label: "Sounds", icon: Volume2 },
   { href: "/search", label: "Search", icon: Search },
   { href: "/artists", label: "Artists", icon: Users },
+  { href: "/games", label: "Nano Tech Games", icon: Dices },
 ];
 
 const secondaryNav = [
   { href: "/fan-club/login", label: "Nano Techians", icon: Star },
 ];
 
-type Props = {
-  initialAlbums: Album[];
-};
-
-export function Sidebar({ initialAlbums: _ }: Props) {
+export function Sidebar() {
   const pathname = usePathname();
   const currentAlbum = usePlayerStore((s) => s.currentAlbum);
   const accentColor =
