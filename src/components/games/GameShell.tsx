@@ -116,19 +116,34 @@ export function StakeControls({
   const bump = (delta: number) =>
     setStake(Math.min(cap, Math.max(min, stake + delta)));
   const btn =
-    "flex h-9 w-9 items-center justify-center rounded-lg border border-[rgba(255,255,255,0.12)] bg-[#242b2a] text-[#dde4e2] transition-colors hover:border-[#62f3e4] disabled:opacity-40";
+    "flex h-11 w-11 items-center justify-center rounded-lg border border-[rgba(255,255,255,0.12)] bg-[#242b2a] text-[#dde4e2] transition-colors hover:border-[#62f3e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1a17] disabled:opacity-40";
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[11px] tracking-wide text-[#bbcac6] uppercase">Bet</span>
-      <button type="button" className={btn} onClick={() => bump(-5)} disabled={disabled} aria-label="Decrease bet">
-        <Minus size={14} />
+    <div className="flex items-center gap-2" role="group" aria-label="Bet amount">
+      <span className="text-[11px] tracking-wide text-[#bbcac6] uppercase" aria-hidden="true">Bet</span>
+      <button
+        type="button"
+        className={btn}
+        onClick={() => bump(-5)}
+        disabled={disabled || stake <= min}
+        aria-label={`Decrease bet, currently ${stake} Nano Bucks`}
+      >
+        <Minus size={16} aria-hidden="true" />
       </button>
-      <span className="min-w-16 rounded-lg bg-[#242b2a] px-3 py-1.5 text-center text-sm font-bold tabular-nums text-[#62f3e4]">
+      <span
+        className="min-w-16 rounded-lg bg-[#242b2a] px-3 py-2.5 text-center text-sm font-bold tabular-nums text-[#62f3e4]"
+        aria-live="polite"
+      >
         {stake} NB
       </span>
-      <button type="button" className={btn} onClick={() => bump(5)} disabled={disabled} aria-label="Increase bet">
-        <Plus size={14} />
+      <button
+        type="button"
+        className={btn}
+        onClick={() => bump(5)}
+        disabled={disabled || stake >= cap}
+        aria-label={`Increase bet, currently ${stake} Nano Bucks`}
+      >
+        <Plus size={16} aria-hidden="true" />
       </button>
     </div>
   );
@@ -147,7 +162,7 @@ export function TableButton({
   variant?: "primary" | "outline";
 }) {
   const base =
-    "min-h-11 rounded-lg px-5 py-2.5 text-xs font-bold tracking-[0.06em] uppercase transition-transform hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white";
+    "min-h-11 min-w-[88px] rounded-lg px-5 py-2.5 text-xs font-bold tracking-[0.06em] uppercase transition-transform hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1a17]";
   return (
     <button
       type="button"

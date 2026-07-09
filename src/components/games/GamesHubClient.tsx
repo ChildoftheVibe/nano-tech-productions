@@ -121,7 +121,7 @@ export function GamesHubClient() {
       try {
         const res = await settleGame(arcadeSession, { won });
         setArcadeMsg(
-          res.payout > 0 ? `+${res.payout} NB earned!` : "Daily arcade cap reached — no NB this round.",
+          res.payout > 0 ? `+${res.payout} NB earned!` : "Daily arcade cap reached. No NB this round.",
         );
       } catch {
         setArcadeMsg("");
@@ -218,13 +218,13 @@ export function GamesHubClient() {
         {/* eslint-disable-next-line @next/next/no-img-element -- local static art */}
         <img
           src={HUB_HERO_ART}
-          alt="Nano Tech Games — play, win, unlock the vault"
+          alt="Nano Tech Games. Play, win, unlock the vault."
           className="animate-drift w-full object-cover"
         />
         <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-between gap-3 bg-gradient-to-t from-[#090f0e] via-[#090f0e]/70 to-transparent px-5 pt-10 pb-4">
           <p className="max-w-md text-xs text-[#bbcac6] sm:text-sm">
             Win <span className="font-bold text-[#62f3e4]">Nano Bucks</span> at the tables and in
-            the arcade, then spend them on downloads. NB never converts to cash — it only unlocks
+            the arcade, then spend them on downloads. NB never converts to cash; it only unlocks
             music.
           </p>
           <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -261,7 +261,7 @@ export function GamesHubClient() {
         <Gamepad2 size={18} className="text-[#ffabef]" aria-hidden="true" /> Arcade Cabinet
       </h2>
       <p className="mb-3 text-xs text-[#b3b3b3]">
-        Free to play — win 25 NB, finish 5 NB (up to 12 rewards a day). These are the same
+        Free to play: win 25 NB, finish 5 NB (up to 12 rewards a day). These are the same
         challenges guarding the album portals.
       </p>
       <div className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -282,7 +282,7 @@ export function GamesHubClient() {
       </h2>
       <div className="flex max-w-md flex-col gap-2 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#1a2120] p-4">
         <p className="text-xs text-[#b3b3b3]">
-          Share NB with a friend — ask for their wallet code (shown above their tables).
+          Share NB with a friend. Ask for their wallet code (shown above their tables).
         </p>
         <div className="flex flex-wrap gap-2">
           <input

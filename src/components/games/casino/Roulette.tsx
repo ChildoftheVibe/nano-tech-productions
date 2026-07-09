@@ -29,10 +29,10 @@ const betWins = (bet: Bet, n: number): number => {
 };
 
 const betLabel = (bet: Bet): string =>
-  bet.kind === "dozen" ? `${bet.dozen * 12 + 1}–${bet.dozen * 12 + 12}`
+  bet.kind === "dozen" ? `${bet.dozen * 12 + 1}-${bet.dozen * 12 + 12}`
   : bet.kind === "straight" ? `#${bet.n}`
-  : bet.kind === "low" ? "1–18"
-  : bet.kind === "high" ? "19–36"
+  : bet.kind === "low" ? "1-18"
+  : bet.kind === "high" ? "19-36"
   : bet.kind;
 
 export function Roulette() {
@@ -69,12 +69,13 @@ export function Roulette() {
         type="button"
         disabled={round.phase !== "idle"}
         onClick={() => setBet(b)}
-        className={`min-h-9 rounded-lg border px-3 py-1.5 text-[11px] font-bold tracking-wide uppercase transition-colors ${
+        className={`min-h-11 rounded-lg border px-4 py-2 text-[11px] font-bold tracking-wide uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1a17] disabled:opacity-40 ${
           active
             ? "border-[#62f3e4] bg-[#62f3e4]/15 text-[#62f3e4]"
             : "border-[rgba(255,255,255,0.12)] text-[#dde4e2] hover:border-[#62f3e4]/60"
         }`}
         aria-pressed={active}
+        aria-label={`Bet on ${label}`}
       >
         {label}
       </button>
@@ -92,16 +93,16 @@ export function Roulette() {
           aria-live="polite"
           aria-label={result === null ? "Wheel idle" : `Ball on ${result}`}
         >
-          {result ?? "—"}
+          {result ?? "·"}
         </div>
 
-        <div className="flex max-w-sm flex-wrap justify-center gap-2">
+        <div className="flex max-w-sm flex-wrap justify-center gap-2" role="group" aria-label="Choose a bet">
           {chip({ kind: "red" }, "Red")}
           {chip({ kind: "black" }, "Black")}
           {chip({ kind: "odd" }, "Odd")}
           {chip({ kind: "even" }, "Even")}
-          {chip({ kind: "low" }, "1–18")}
-          {chip({ kind: "high" }, "19–36")}
+          {chip({ kind: "low" }, "1-18")}
+          {chip({ kind: "high" }, "19-36")}
           {chip({ kind: "dozen", dozen: 0 }, "1st 12")}
           {chip({ kind: "dozen", dozen: 1 }, "2nd 12")}
           {chip({ kind: "dozen", dozen: 2 }, "3rd 12")}
@@ -114,13 +115,14 @@ export function Roulette() {
                 type="number"
                 min={0}
                 max={36}
-                className="w-16 rounded-lg border border-[rgba(255,255,255,0.12)] bg-[#242b2a] px-2 py-1.5 text-center text-sm text-[#dde4e2]"
+                aria-label="Straight-up lucky number, 0 to 36"
+                className="h-11 w-16 rounded-lg border border-[rgba(255,255,255,0.12)] bg-[#242b2a] px-2 py-1.5 text-center text-sm text-[#dde4e2] placeholder:text-[#8a938f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1a17]"
                 onChange={(e) => {
                   const n = Number(e.target.value);
                   if (Number.isInteger(n) && n >= 0 && n <= 36) setBet({ kind: "straight", n });
                 }}
                 value={bet.kind === "straight" ? bet.n : ""}
-                placeholder="—"
+                placeholder="0-36"
               />
             </label>
             <StakeControls stake={round.stake} setStake={round.setStake} min={1} max={250} />

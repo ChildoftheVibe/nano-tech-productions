@@ -83,7 +83,7 @@ export function ThreeCardMonte() {
                 type="button"
                 onClick={() => pick(slot)}
                 disabled={phase !== "pick"}
-                className={`flex h-20 w-14 items-center justify-center rounded-lg border text-lg font-bold shadow-md transition-shadow ${
+                className={`flex h-20 w-14 items-center justify-center rounded-lg border text-lg font-bold shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1a17] ${
                   phase === "pick" ? "cursor-pointer hover:shadow-[0_0_16px_rgba(98,243,228,0.4)]" : ""
                 } ${
                   faceUp && isQueen

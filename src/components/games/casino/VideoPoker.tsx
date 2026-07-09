@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { GameShell, PlayingCard, ResultBanner, StakeControls, TableButton } from "../GameShell";
 import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
-import { evalFive, shuffledDeck, type Card } from "../engine/cards";
+import { cardLabel, evalFive, shuffledDeck, type Card } from "../engine/cards";
 
 /** 9/6 Jacks or Better video poker. Payouts are per-stake multipliers. */
 const PAYTABLE: Record<string, number> = {
@@ -77,11 +77,11 @@ export function VideoPoker() {
                   onClick={() =>
                     setHeld((h) => h.map((v, j) => (j === i ? !v : v)))
                   }
-                  className={`flex flex-col items-center gap-1 rounded-lg p-1 transition-transform ${
+                  className={`flex flex-col items-center gap-1 rounded-lg p-1 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1a17] disabled:cursor-default ${
                     held[i] && playing ? "-translate-y-2" : ""
                   }`}
                   aria-pressed={held[i]}
-                  aria-label={`${held[i] ? "Held" : "Hold"} card ${i + 1}`}
+                  aria-label={`${cardLabel(c)}. ${held[i] ? "Held, tap to release" : "Tap to hold"}`}
                 >
                   <PlayingCard card={c} />
                   <span
@@ -94,7 +94,7 @@ export function VideoPoker() {
                 </button>
               ))}
             </div>
-            {label && <p className="text-sm font-bold text-[#dde4e2]">{label}</p>}
+            {label && <p className="text-sm font-bold text-[#dde4e2]" aria-live="polite">{label}</p>}
           </div>
         )}
 

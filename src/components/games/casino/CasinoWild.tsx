@@ -5,7 +5,7 @@ import { GameShell, ResultBanner, StakeControls, TableButton } from "../GameShel
 import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
 
-/** Casino Wild — an original color-and-number shedding game with a casino
+/** Casino Wild, an original color-and-number shedding game with a casino
  *  betting layer: ante to sit, shed all 7 cards before the house. Winning
  *  pays 2×, plus a 0.75× bonus per card still in the house's hand (capped at
  *  8× total). Losing forfeits the ante. */
@@ -62,7 +62,7 @@ export function CasinoWild() {
     setTop(deck[flip]);
     setActiveColor(deck[flip].color as WColor);
     setPile(deck.slice(flip + 1).concat(deck.slice(14, flip)));
-    setNote("Your turn — match color or value.");
+    setNote("Your turn, match color or value.");
     setOver(false);
   }, [round]);
 
@@ -134,9 +134,9 @@ export function CasinoWild() {
         const [take, rest] = drawFrom(p, 2);
         setHand((mine) => mine.concat(take));
         setPile(rest);
-        setNote(`House plays +2 — you draw two. ${played ? "" : ""}`);
+        setNote(`House plays +2, you draw two. ${played ? "" : ""}`);
       } else if (played && played.value === "skip" && skips < 2) {
-        setNote("House plays skip — it goes again.");
+        setNote("House plays skip, it goes again.");
         window.setTimeout(
           () => houseTurnFn(t, color, h, p, myCount, skips + 1),
           650,
@@ -182,7 +182,7 @@ export function CasinoWild() {
         setPile(rest);
       }
       if (card.value === "skip") {
-        setNote("House skipped — go again.");
+        setNote("House skipped, go again.");
         return;
       }
       window.setTimeout(
@@ -244,11 +244,11 @@ export function CasinoWild() {
                       type="button"
                       onClick={() => play(i)}
                       disabled={!ok}
-                      className={`flex h-14 w-10 items-center justify-center rounded-lg border-2 bg-[#0d1a17] text-base font-bold transition-transform ${
+                      className={`flex h-14 w-11 items-center justify-center rounded-lg border-2 bg-[#0d1a17] text-base font-bold transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1a17] ${
                         ok ? "hover:-translate-y-1" : "opacity-40"
                       }`}
                       style={{ borderColor: COLOR_HEX[c.color], color: COLOR_HEX[c.color] }}
-                      aria-label={`${c.color} ${cardText(c)}${ok ? "" : " (unplayable)"}`}
+                      aria-label={`Play ${c.color} ${cardText(c)}${ok ? "" : ", not playable"}`}
                     >
                       {cardText(c)}
                     </button>

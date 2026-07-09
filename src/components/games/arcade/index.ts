@@ -36,7 +36,7 @@ export const ARCADE_COMPONENTS: Record<
   },
   minesweeper: {
     name: "Minesweeper",
-    instructions: "Open every safe square — 10 mines are hidden. Toggle flag mode to mark them.",
+    instructions: "Open every safe square. 6 mines are hidden; toggle flag mode to mark them.",
     Component: Minesweeper,
   },
   "tank-wars": {

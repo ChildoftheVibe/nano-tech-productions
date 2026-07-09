@@ -71,13 +71,13 @@ export function CasinoDominoes() {
       const my = pips(mine);
       const th = pips(theirs);
       if (my < th) {
-        setNote(`Blocked — you win on pips ${my} vs ${th}.`);
+        setNote(`Blocked, you win on pips ${my} vs ${th}.`);
         void round.finish(round.stake * 3, { blocked: true, my, th });
       } else if (my === th) {
-        setNote(`Blocked — dead heat at ${my}. Push.`);
+        setNote(`Blocked, dead heat at ${my}. Push.`);
         void round.finish(round.stake, { blocked: true, push: true });
       } else {
-        setNote(`Blocked — house wins on pips ${th} vs ${my}.`);
+        setNote(`Blocked, house wins on pips ${th} vs ${my}.`);
         void round.finish(0, { blocked: true, my, th });
       }
     },
@@ -149,7 +149,7 @@ export function CasinoDominoes() {
       // blocked for both.
       const houseCan = house.some((t) => canPlace(t, ends));
       if (houseCan) {
-        setNote("You're blocked — house plays.");
+        setNote("You're blocked, house plays.");
         window.setTimeout(() => houseTurn(line, house, yard, hand), 500);
       } else {
         settleBlocked(hand, house);
@@ -192,10 +192,10 @@ export function CasinoDominoes() {
                     type="button"
                     onClick={() => play(i)}
                     disabled={!ok}
-                    className={`rounded-lg border-2 bg-[#f4f1e8] px-2 py-2 font-mono text-xs font-bold text-[#1a1a1a] transition-transform ${
+                    className={`flex min-h-11 min-w-11 items-center justify-center rounded-lg border-2 bg-[#f4f1e8] px-2 py-2 font-mono text-xs font-bold text-[#1a1a1a] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1a17] ${
                       ok ? "border-[#62f3e4] hover:-translate-y-1" : "border-transparent opacity-40"
                     }`}
-                    aria-label={`Tile ${t[0]} ${t[1]}${ok ? "" : " (unplayable)"}`}
+                    aria-label={`Play tile ${t[0]} ${t[1]}${ok ? "" : ", not playable"}`}
                   >
                     {half(t[0])}|{half(t[1])}
                   </button>

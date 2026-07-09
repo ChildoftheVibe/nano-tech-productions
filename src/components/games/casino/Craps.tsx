@@ -6,7 +6,7 @@ import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
 
 /** Craps, pass-line only: 7/11 wins the come-out, 2/3/12 craps out, anything
- *  else sets the point — hit it before a 7 to win even money. */
+ *  else sets the point, hit it before a 7 to win even money. */
 
 const DIE = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
 
@@ -34,10 +34,10 @@ export function Craps() {
     setDice(d);
     if (point === null) {
       if (sum === 7 || sum === 11) {
-        setLog((l) => [...l, `Come-out ${sum} — natural!`]);
+        setLog((l) => [...l, `Come-out ${sum}, natural!`]);
         void round.finish(round.stake * 2, { comeOut: sum });
       } else if (sum === 2 || sum === 3 || sum === 12) {
-        setLog((l) => [...l, `Come-out ${sum} — craps.`]);
+        setLog((l) => [...l, `Come-out ${sum}, craps.`]);
         void round.finish(0, { comeOut: sum });
       } else {
         setPoint(sum);
@@ -45,13 +45,13 @@ export function Craps() {
       }
     } else {
       if (sum === point) {
-        setLog((l) => [...l, `Rolled ${sum} — point hit!`]);
+        setLog((l) => [...l, `Rolled ${sum}, point hit!`]);
         void round.finish(round.stake * 2, { point, hit: true });
       } else if (sum === 7) {
-        setLog((l) => [...l, `Rolled 7 — seven out.`]);
+        setLog((l) => [...l, `Rolled 7, seven out.`]);
         void round.finish(0, { point, sevenOut: true });
       } else {
-        setLog((l) => [...l, `Rolled ${sum} — roll again.`]);
+        setLog((l) => [...l, `Rolled ${sum}, roll again.`]);
       }
     }
   }, [point, round]);

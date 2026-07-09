@@ -41,7 +41,7 @@ export function RedeemButton({ kind, id, nbPrice, name, accent, compact }: Props
         setState("error");
         setMessage(
           data.error === "insufficient_funds"
-            ? `Need ${nbPrice.toLocaleString()} NB — play games to earn more`
+            ? `Need ${nbPrice.toLocaleString()} NB. Play games to earn more.`
             : String(data.error ?? "redeem failed").replace(/_/g, " "),
         );
         return;
@@ -62,7 +62,7 @@ export function RedeemButton({ kind, id, nbPrice, name, accent, compact }: Props
         }, i * 800);
       });
       setState("done");
-      setMessage(`Redeemed ${name} — download starting`);
+      setMessage(`Redeemed ${name}. Download starting.`);
     } catch {
       setState("error");
       setMessage("redeem failed");
