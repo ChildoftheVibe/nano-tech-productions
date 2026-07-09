@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { GameShell, ResultBanner, StakeControls, TableButton } from "../GameShell";
+import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
 
 /** Casino Dominoes: double-six block game vs the house, 7 tiles each.
@@ -163,7 +164,7 @@ export function CasinoDominoes() {
   const playable = hand.some((t) => canPlace(t, ends));
 
   return (
-    <GameShell title="Casino Dominoes" tagline="Double-six block · out pays 2× · pip win pays 3×">
+    <GameShell title="Casino Dominoes" tagline="Double-six block · out pays 2× · pip win pays 3×" art={GAME_ART["dominoes"]}>
       <div className="flex flex-col items-center gap-4">
         {hand.length > 0 && !over && (
           <>

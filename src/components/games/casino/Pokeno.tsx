@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { GameShell, ResultBanner, StakeControls, TableButton } from "../GameShell";
+import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
 import { cardLabel, isRed, shuffledDeck, type Card } from "../engine/cards";
 
@@ -67,7 +68,7 @@ export function Pokeno() {
   }, [round]);
 
   return (
-    <GameShell title="Pokeno" tagline="Cover a full line in 15 draws · lines pay 10×">
+    <GameShell title="Pokeno" tagline="Cover a full line in 15 draws · lines pay 10×" art={GAME_ART["pokeno"]}>
       <div className="flex flex-col items-center gap-4">
         {board.length > 0 && (
           <div className="grid grid-cols-5 gap-1" role="grid" aria-label="Pokeno board">

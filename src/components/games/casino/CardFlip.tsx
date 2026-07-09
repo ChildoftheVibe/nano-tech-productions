@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { GameShell, PlayingCard, ResultBanner, StakeControls, TableButton } from "../GameShell";
+import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
 import { shuffledDeck, type Card } from "../engine/cards";
 
@@ -32,7 +33,7 @@ export function CardFlip() {
   }, [round]);
 
   return (
-    <GameShell title="Card Flip Duel" tagline="High card wins · tie pushes">
+    <GameShell title="Card Flip Duel" tagline="High card wins · tie pushes" art={GAME_ART["card-flip"]}>
       <div className="flex flex-col items-center gap-5">
         <div className="flex items-center gap-8">
           <div className="flex flex-col items-center gap-2">

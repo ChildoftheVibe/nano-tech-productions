@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
 import { GameShell, ResultBanner, StakeControls, TableButton } from "../GameShell";
+import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
 
 /** 3-Card Monte: watch the queen, track her through the shuffle, pick her
@@ -68,7 +69,7 @@ export function ThreeCardMonte() {
   const faceUp = phase === "show" || phase === "reveal";
 
   return (
-    <GameShell title="3-Card Monte" tagline="Follow the queen · sharp eyes pay 2.5×">
+    <GameShell title="3-Card Monte" tagline="Follow the queen · sharp eyes pay 2.5×" art={GAME_ART["three-card-monte"]}>
       <div className="flex flex-col items-center gap-5">
         <div className="flex h-24 items-center gap-4">
           {[0, 1, 2].map((slot) => {

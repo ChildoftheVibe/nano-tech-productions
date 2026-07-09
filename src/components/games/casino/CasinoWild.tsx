@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { GameShell, ResultBanner, StakeControls, TableButton } from "../GameShell";
+import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
 
 /** Casino Wild — an original color-and-number shedding game with a casino
@@ -211,7 +212,7 @@ export function CasinoWild() {
   );
 
   return (
-    <GameShell title="Casino Wild" tagline="Shed all 7 first · every card the house holds pays a bonus">
+    <GameShell title="Casino Wild" tagline="Shed all 7 first · every card the house holds pays a bonus" art={GAME_ART["casino-wild"]}>
       <div className="flex flex-col items-center gap-4">
         {top && (
           <>

@@ -32,14 +32,17 @@ export function useGameUiConfig(): GameUiConfig {
   return config;
 }
 
-/** Shared chrome for every casino table: title bar, balance, felt surface. */
+/** Shared chrome for every casino table: title bar, balance, felt surface.
+ *  `art` (from GAME_ART) renders as an ambient backdrop behind the felt. */
 export function GameShell({
   title,
   tagline,
+  art,
   children,
 }: {
   title: string;
   tagline?: string;
+  art?: string;
   children: React.ReactNode;
 }) {
   const balance = useWalletStore((s) => s.balance);
@@ -76,12 +79,19 @@ export function GameShell({
         </div>
       </div>
       <div
-        className="flex-1 overflow-y-auto p-4"
+        className="relative flex-1 overflow-y-auto p-4"
         style={{
           background: `radial-gradient(ellipse at 50% 0%, ${felt} 0%, #090f0e 100%)`,
         }}
       >
-        {children}
+        {art && (
+          <div
+            className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-[0.12] blur-[3px]"
+            style={{ backgroundImage: `url(${art})` }}
+            aria-hidden="true"
+          />
+        )}
+        <div className="relative">{children}</div>
       </div>
     </div>
   );

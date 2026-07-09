@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GameShell, ResultBanner, StakeControls, TableButton } from "../GameShell";
+import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
 
 /** Nano Slots: 3 weighted reels. Three portals pay 100×. */
@@ -77,7 +78,7 @@ export function Slots() {
   }, [round]);
 
   return (
-    <GameShell title="Nano Slots" tagline="Three portals pay 100× · pairs pay too">
+    <GameShell title="Nano Slots" tagline="Three portals pay 100× · pairs pay too" art={GAME_ART["slots"]}>
       <div className="flex flex-col items-center gap-5">
         <div className="flex gap-3" aria-live="polite" aria-label={`Reels: ${reels.join(" ")}`}>
           {reels.map((r, i) => (

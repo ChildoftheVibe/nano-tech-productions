@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { GameShell, PlayingCard, ResultBanner, StakeControls, TableButton } from "../GameShell";
+import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
 import { evalFive, shuffledDeck, type Card } from "../engine/cards";
 
@@ -63,7 +64,7 @@ export function VideoPoker() {
   const playing = round.phase === "playing" && !drawn;
 
   return (
-    <GameShell title="Video Poker" tagline="9/6 Jacks or Better · royal pays 250×">
+    <GameShell title="Video Poker" tagline="9/6 Jacks or Better · royal pays 250×" art={GAME_ART["video-poker"]}>
       <div className="flex flex-col items-center gap-5">
         {hand.length > 0 && (
           <div className="flex flex-col items-center gap-2">

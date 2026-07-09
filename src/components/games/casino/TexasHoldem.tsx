@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { GameShell, PlayingCard, ResultBanner, StakeControls, TableButton } from "../GameShell";
+import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
 import { evalBest, shuffledDeck, type Card } from "../engine/cards";
 
@@ -51,7 +52,7 @@ export function TexasHoldem() {
   const playing = round.phase === "playing" && !showdown;
 
   return (
-    <GameShell title="Texas Hold'em" tagline="Heads-up vs the house · call to see the board">
+    <GameShell title="Texas Hold'em" tagline="Heads-up vs the house · call to see the board" art={GAME_ART["holdem"]}>
       <div className="flex flex-col items-center gap-4">
         {house.length > 0 && (
           <div className="flex flex-col items-center gap-1.5">

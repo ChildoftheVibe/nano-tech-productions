@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { GameShell, ResultBanner, StakeControls, TableButton } from "../GameShell";
+import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
 
 /** European roulette (single zero). One bet per spin. */
@@ -83,7 +84,7 @@ export function Roulette() {
   const color = result === null ? "#bbcac6" : result === 0 ? "#7dd87d" : REDS.has(result) ? "#ff8a8a" : "#dde4e2";
 
   return (
-    <GameShell title="Roulette" tagline="European wheel · straight-up pays 35:1">
+    <GameShell title="Roulette" tagline="European wheel · straight-up pays 35:1" art={GAME_ART["roulette"]}>
       <div className="flex flex-col items-center gap-5">
         <div
           className="flex h-24 w-24 items-center justify-center rounded-full border-4 font-[family-name:var(--font-bungee)] text-3xl"

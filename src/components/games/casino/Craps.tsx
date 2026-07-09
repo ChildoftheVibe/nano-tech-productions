@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { GameShell, ResultBanner, StakeControls, TableButton } from "../GameShell";
+import { GAME_ART } from "../art";
 import { useCasinoRound } from "../useCasinoRound";
 
 /** Craps, pass-line only: 7/11 wins the come-out, 2/3/12 craps out, anything
@@ -63,7 +64,7 @@ export function Craps() {
   }, [round]);
 
   return (
-    <GameShell title="Craps" tagline="Pass line · point pays even money">
+    <GameShell title="Craps" tagline="Pass line · point pays even money" art={GAME_ART["craps"]}>
       <div className="flex flex-col items-center gap-5">
         <div className="flex items-center gap-4" aria-live="polite">
           {(dice ?? [0, 0]).map((d, i) => (

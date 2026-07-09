@@ -1,27 +1,73 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Coins, Gamepad2, Send } from "lucide-react";
 import { CASINO_COMPONENTS } from "@/components/games/casino";
 import { ARCADE_COMPONENTS } from "@/components/games/arcade";
+import { GAME_ART, HUB_HERO_ART } from "@/components/games/art";
 import { settleGame, startGame } from "@/components/games/gameApi";
 import { useWalletStore } from "@/store/walletStore";
 
 /** Nano Tech Games hub: casino floor + arcade cabinet + wallet tools. */
 
-const CASINO_META: { id: string; name: string; tagline: string; icon: string }[] = [
-  { id: "blackjack", name: "Blackjack", tagline: "Hit 21 · blackjack pays 3:2", icon: "🂡" },
-  { id: "roulette", name: "Roulette", tagline: "Straight-up pays 35:1", icon: "🎡" },
-  { id: "craps", name: "Craps", tagline: "Ride the pass line", icon: "🎲" },
-  { id: "holdem", name: "Texas Hold'em", tagline: "Heads-up vs the house", icon: "🃏" },
-  { id: "slots", name: "Nano Slots", tagline: "Three portals pay 100×", icon: "🎰" },
-  { id: "pokeno", name: "Pokeno", tagline: "Poker meets bingo", icon: "🀫" },
-  { id: "casino-wild", name: "Casino Wild", tagline: "Shed cards, stack bonuses", icon: "🌈" },
-  { id: "dominoes", name: "Casino Dominoes", tagline: "Block the house", icon: "🁫" },
-  { id: "video-poker", name: "Video Poker", tagline: "9/6 Jacks or Better", icon: "🖥️" },
-  { id: "card-flip", name: "Card Flip Duel", tagline: "High card takes it", icon: "⚔️" },
-  { id: "three-card-monte", name: "3-Card Monte", tagline: "Follow the queen", icon: "👁️" },
+const CASINO_META: { id: string; name: string; tagline: string }[] = [
+  { id: "blackjack", name: "Blackjack", tagline: "Hit 21 · blackjack pays 3:2" },
+  { id: "roulette", name: "Roulette", tagline: "Straight-up pays 35:1" },
+  { id: "craps", name: "Craps", tagline: "Ride the pass line" },
+  { id: "holdem", name: "Texas Hold'em", tagline: "Heads-up vs the house" },
+  { id: "slots", name: "Nano Slots", tagline: "Three portals pay 100×" },
+  { id: "pokeno", name: "Pokeno", tagline: "Poker meets bingo" },
+  { id: "casino-wild", name: "Casino Wild", tagline: "Shed cards, stack bonuses" },
+  { id: "dominoes", name: "Casino Dominoes", tagline: "Block the house" },
+  { id: "video-poker", name: "Video Poker", tagline: "9/6 Jacks or Better" },
+  { id: "card-flip", name: "Card Flip Duel", tagline: "High card takes it" },
+  { id: "three-card-monte", name: "3-Card Monte", tagline: "Follow the queen" },
 ];
+
+/** Art-backed game tile with hover lift + glow. */
+function GameTile({
+  id,
+  name,
+  tagline,
+  index,
+  onOpen,
+}: {
+  id: string;
+  name: string;
+  tagline: string;
+  index: number;
+  onOpen: () => void;
+}) {
+  return (
+    <motion.button
+      type="button"
+      onClick={onOpen}
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(index * 0.05, 0.6), duration: 0.4, ease: "easeOut" }}
+      whileHover={{ y: -6, scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
+      className="group relative overflow-hidden rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#1a2120] text-left transition-shadow hover:border-[#62f3e4]/60 hover:shadow-[0_0_28px_rgba(98,243,228,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
+      aria-label={`Play ${name}`}
+    >
+      <div className="relative aspect-[4/3] w-full overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element -- local static art, already webp-optimized */}
+        <img
+          src={GAME_ART[id]}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.07]"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b1110] via-transparent to-transparent opacity-70" />
+      </div>
+      <div className="flex flex-col gap-0.5 px-3 pt-2 pb-3">
+        <span className="text-sm font-bold text-[#dde4e2]">{name}</span>
+        <span className="text-[11px] text-[#b3b3b3]">{tagline}</span>
+      </div>
+    </motion.button>
+  );
+}
 
 export function GamesHubClient() {
   const [active, setActive] = useState<string | null>(null);
@@ -101,64 +147,96 @@ export function GamesHubClient() {
         >
           <ArrowLeft size={14} aria-hidden="true" /> All games
         </button>
-        {ActiveCasino && <ActiveCasino />}
-        {activeArcade && (
-          <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#1a2120] p-5">
-            <h2 className="mb-1 font-[family-name:var(--font-bungee)] text-base tracking-tight text-[#62f3e4]">
-              {activeArcade.name}
-            </h2>
-            <p className="mb-4 text-xs text-[#bbcac6]">{activeArcade.instructions}</p>
-            <activeArcade.Component onFinish={finishArcade} />
-            {arcadeMsg && (
-              <p className="mt-3 text-center text-sm font-bold text-[#62f3e4]" role="status">
-                {arcadeMsg}
-              </p>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={active ?? arcadeActive ?? "table"}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3 }}
+          >
+            {ActiveCasino && <ActiveCasino />}
+            {activeArcade && arcadeActive && (
+              <div className="relative overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#1a2120] p-5">
+                {/* Ambient art backdrop for the arcade cabinet */}
+                <div
+                  className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-[0.14] blur-sm"
+                  style={{ backgroundImage: `url(${GAME_ART[arcadeActive]})` }}
+                  aria-hidden="true"
+                />
+                <div className="relative">
+                  <h2 className="mb-1 font-[family-name:var(--font-bungee)] text-base tracking-tight text-[#62f3e4]">
+                    {activeArcade.name}
+                  </h2>
+                  <p className="mb-4 text-xs text-[#bbcac6]">{activeArcade.instructions}</p>
+                  <activeArcade.Component onFinish={finishArcade} />
+                  {arcadeMsg && (
+                    <motion.p
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="mt-3 text-center text-sm font-bold text-[#62f3e4]"
+                      role="status"
+                    >
+                      {arcadeMsg}
+                    </motion.p>
+                  )}
+                </div>
+              </div>
             )}
-          </div>
-        )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <header className="mb-8 flex flex-col gap-2">
-        <h1 className="font-[family-name:var(--font-bungee)] text-3xl tracking-tight text-[#62f3e4]">
-          Nano Tech Games
-        </h1>
-        <p className="max-w-xl text-sm text-[#bbcac6]">
-          Win <span className="font-bold text-[#62f3e4]">Nano Bucks</span> at the tables and in the
-          arcade, then spend them on album and track downloads. Nano Bucks never convert to cash —
-          they only unlock music.
-        </p>
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
-          <span className="flex items-center gap-1.5 rounded-full border border-[#62f3e4]/40 px-4 py-1.5 font-bold text-[#62f3e4]">
-            <Coins size={15} aria-hidden="true" />
-            {balance === null ? "…" : balance.toLocaleString()} NB
-          </span>
-          {walletCode && (
-            <span className="rounded-full border border-[rgba(255,255,255,0.12)] px-4 py-1.5 font-mono text-xs text-[#bbcac6]">
-              Wallet: {walletCode}
+      {/* Hero banner */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.985 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="relative mb-8 overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.08)] teal-glow"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element -- local static art */}
+        <img
+          src={HUB_HERO_ART}
+          alt="Nano Tech Games — play, win, unlock the vault"
+          className="animate-drift w-full object-cover"
+        />
+        <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-between gap-3 bg-gradient-to-t from-[#090f0e] via-[#090f0e]/70 to-transparent px-5 pt-10 pb-4">
+          <p className="max-w-md text-xs text-[#bbcac6] sm:text-sm">
+            Win <span className="font-bold text-[#62f3e4]">Nano Bucks</span> at the tables and in
+            the arcade, then spend them on downloads. NB never converts to cash — it only unlocks
+            music.
+          </p>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="flex items-center gap-1.5 rounded-full border border-[#62f3e4]/40 bg-[#090f0e]/70 px-4 py-1.5 font-bold text-[#62f3e4] backdrop-blur-sm">
+              <Coins size={15} aria-hidden="true" />
+              {balance === null ? "…" : balance.toLocaleString()} NB
             </span>
-          )}
+            {walletCode && (
+              <span className="rounded-full border border-[rgba(255,255,255,0.12)] bg-[#090f0e]/70 px-4 py-1.5 font-mono text-xs text-[#bbcac6] backdrop-blur-sm">
+                {walletCode}
+              </span>
+            )}
+          </div>
         </div>
-      </header>
+      </motion.div>
 
       <h2 className="mb-3 font-[family-name:var(--font-bungee)] text-lg tracking-tight text-[#dde4e2]">
         Casino Floor
       </h2>
       <div className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {CASINO_META.map((g) => (
-          <button
+        {CASINO_META.map((g, i) => (
+          <GameTile
             key={g.id}
-            type="button"
-            onClick={() => setActive(g.id)}
-            className="glass-card flex flex-col items-start gap-1.5 rounded-xl p-4 text-left"
-          >
-            <span className="text-2xl" aria-hidden="true">{g.icon}</span>
-            <span className="text-sm font-bold text-[#dde4e2]">{g.name}</span>
-            <span className="text-[11px] text-[#b3b3b3]">{g.tagline}</span>
-          </button>
+            id={g.id}
+            name={g.name}
+            tagline={g.tagline}
+            index={i}
+            onOpen={() => setActive(g.id)}
+          />
         ))}
       </div>
 
@@ -170,16 +248,15 @@ export function GamesHubClient() {
         challenges guarding the album portals.
       </p>
       <div className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {Object.entries(ARCADE_COMPONENTS).map(([id, g]) => (
-          <button
+        {Object.entries(ARCADE_COMPONENTS).map(([id, g], i) => (
+          <GameTile
             key={id}
-            type="button"
-            onClick={() => void openArcade(id)}
-            className="glass-card flex flex-col items-start gap-1 rounded-xl p-4 text-left"
-          >
-            <span className="text-sm font-bold text-[#dde4e2]">{g.name}</span>
-            <span className="text-[10px] text-[#b3b3b3]">Free · win 25 NB</span>
-          </button>
+            id={id}
+            name={g.name}
+            tagline="Free · win 25 NB"
+            index={i}
+            onOpen={() => void openArcade(id)}
+          />
         ))}
       </div>
 

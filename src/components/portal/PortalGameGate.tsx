@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Coins } from "lucide-react";
 import { ARCADE_COMPONENTS, randomArcadeId } from "@/components/games/arcade";
+import { GAME_ART } from "@/components/games/art";
 import { settleGame, startGame } from "@/components/games/gameApi";
 import { ARCADE_PLAY_REWARD, ARCADE_WIN_REWARD } from "@/lib/nanoBucksShared";
 
@@ -96,6 +97,31 @@ export function PortalGameGate({ accent, albumTitle, onDone, reducedMotion }: Pr
 
         {phase === "intro" && (
           <>
+            <motion.img
+              src={GAME_ART[gameId]}
+              alt={`${game.name} game art`}
+              className="w-full max-w-[300px] rounded-xl border"
+              style={{ borderColor: `${accent}55`, boxShadow: `0 0 30px ${accent}33` }}
+              initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.92 }}
+              animate={
+                reducedMotion
+                  ? { opacity: 1 }
+                  : {
+                      opacity: 1,
+                      scale: 1,
+                      boxShadow: [
+                        `0 0 18px ${accent}33`,
+                        `0 0 34px ${accent}66`,
+                        `0 0 18px ${accent}33`,
+                      ],
+                    }
+              }
+              transition={
+                reducedMotion
+                  ? { duration: 0.2 }
+                  : { duration: 2.2, repeat: Infinity, ease: "easeInOut" }
+              }
+            />
             <p className="text-center text-sm text-[#dde4e2]">
               The <span className="font-bold">{albumTitle}</span> portal summons{" "}
               <span className="font-bold" style={{ color: accent }}>{game.name}</span>.
