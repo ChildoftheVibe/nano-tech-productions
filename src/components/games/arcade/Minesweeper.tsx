@@ -5,8 +5,11 @@ import { Bomb, Flag } from "lucide-react";
 
 export type ArcadeProps = { onFinish: (won: boolean) => void };
 
-const SIZE = 9;
-const MINES = 10;
+// Tuned for a high win rate: a 7×7 board with 6 mines (~12% density on a small
+// grid means far fewer 50/50 guesses than the classic 9×9) plus a guaranteed
+// safe, zero-adjacent first click via flood-fill below.
+const SIZE = 7;
+const MINES = 6;
 
 type Cell = { mine: boolean; adj: number; open: boolean; flag: boolean };
 
@@ -14,10 +17,13 @@ function buildBoard(safeIdx: number): Cell[] {
   const cells: Cell[] = Array.from({ length: SIZE * SIZE }, () => ({
     mine: false, adj: 0, open: false, flag: false,
   }));
+  // Keep the first click AND its neighbours mine-free so the opening click
+  // always flood-fills a zero region — no first-move deaths, no blind guess.
+  const safeZone = new Set([safeIdx, ...neighbors(safeIdx)]);
   let placed = 0;
   while (placed < MINES) {
     const i = Math.floor(Math.random() * cells.length);
-    if (i === safeIdx || cells[i].mine) continue;
+    if (safeZone.has(i) || cells[i].mine) continue;
     cells[i].mine = true;
     placed++;
   }
@@ -107,7 +113,9 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
         <button
           type="button"
           onClick={() => setFlagMode((f) => !f)}
-          className={`min-h-9 rounded-lg border px-3 py-1 text-[11px] font-bold tracking-wide uppercase transition-colors ${
+          aria-pressed={flagMode}
+          aria-label={flagMode ? "Flag mode on. Tap to switch to digging." : "Dig mode on. Tap to switch to flagging."}
+          className={`min-h-11 rounded-lg border px-4 py-1 text-[11px] font-bold tracking-wide uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2120] ${
             flagMode
               ? "border-[#ffabef] text-[#ffabef]"
               : "border-[rgba(255,255,255,0.15)] text-[#dde4e2]"
@@ -138,7 +146,7 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
                   setCells(next);
                 }
               }}
-              className={`flex aspect-square w-8 items-center justify-center rounded text-xs font-bold transition-colors sm:w-9 ${
+              className={`flex aspect-square w-11 items-center justify-center rounded text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#62f3e4] ${
                 open
                   ? "bg-[#0d1a17]"
                   : "bg-[#2f3635] hover:bg-[#3a4241] active:bg-[#243230]"
@@ -157,11 +165,13 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
           );
         })}
       </div>
-      {status !== "live" && (
-        <p className="text-sm font-bold" style={{ color: status === "won" ? "#62f3e4" : "#ff8a8a" }}>
-          {status === "won" ? "Grid cleared!" : "Boom — mine hit."}
-        </p>
-      )}
+      <p
+        aria-live="assertive"
+        className="min-h-5 text-sm font-bold"
+        style={{ color: status === "won" ? "#62f3e4" : status === "lost" ? "#ff8a8a" : "transparent" }}
+      >
+        {status === "won" ? "Grid cleared!" : status === "lost" ? "Boom, mine hit." : " "}
+      </p>
     </div>
   );
 }

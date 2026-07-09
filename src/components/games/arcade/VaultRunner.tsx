@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ArcadeProps } from "./Minesweeper";
+import { ArcadeStatus, HoldButton, PadButton } from "./ArcadeControls";
 
 /** Side-scrolling platformer stage (original, classic run-and-jump spirit):
  *  run right, clear gaps and spikes, touch the portal flag to win. */
@@ -9,7 +10,9 @@ import type { ArcadeProps } from "./Minesweeper";
 const W = 320;
 const H = 260;
 const GROUND = 210;
-const LEVEL_END = 2400;
+// Tuned easy: a shorter run with widely-spaced, smaller obstacles (see the
+// level generator) so reaching the portal flag is the likely outcome.
+const LEVEL_END = 1600;
 
 type Rect = { x: number; w: number };
 
@@ -33,11 +36,13 @@ export function VaultRunner({ onFinish }: ArcadeProps) {
     // Deterministic-ish level: gaps and spikes spaced along the run.
     const gaps: Rect[] = [];
     const spikes: Rect[] = [];
-    let x = 350;
+    let x = 380;
     while (x < LEVEL_END - 300) {
-      if (Math.random() < 0.5) gaps.push({ x, w: 60 + Math.random() * 40 });
+      // Smaller gaps (clearable with one jump) and single spike clusters,
+      // spaced far enough apart to line up each jump comfortably.
+      if (Math.random() < 0.5) gaps.push({ x, w: 40 + Math.random() * 22 });
       else spikes.push({ x, w: 34 });
-      x += 220 + Math.random() * 160;
+      x += 300 + Math.random() * 190;
     }
 
     const s = { px: 40, py: GROUND, vx: 0, vy: 0, grounded: true, over: false };
@@ -53,7 +58,7 @@ export function VaultRunner({ onFinish }: ArcadeProps) {
         else if (input.current.left) s.vx = Math.max(-2.4, s.vx - accel);
         else s.vx *= 0.85;
         if (input.current.jump && s.grounded) {
-          s.vy = -9.2;
+          s.vy = -9.9;
           s.grounded = false;
         }
         input.current.jump = false;
@@ -148,34 +153,27 @@ export function VaultRunner({ onFinish }: ArcadeProps) {
     };
   }, [end]);
 
-  const hold = (key: "left" | "right") => ({
-    onPointerDown: () => (input.current[key] = true),
-    onPointerUp: () => (input.current[key] = false),
-    onPointerLeave: () => (input.current[key] = false),
-  });
-  const pad =
-    "flex h-11 w-16 touch-none items-center justify-center rounded-lg border border-[rgba(255,255,255,0.15)] bg-[#242b2a] text-lg text-[#dde4e2] active:bg-[#2f3635] select-none";
-
   return (
     <div className="flex flex-col items-center gap-3">
-      <p className="text-xs text-[#bbcac6]">Reach the portal flag — dodge gaps and spikes</p>
+      <ArcadeStatus>Reach the portal flag. Dodge gaps and spikes.</ArcadeStatus>
       <canvas
         ref={canvasRef}
         width={W}
         height={H}
         className="w-full max-w-[320px] rounded-lg border border-[rgba(255,255,255,0.1)]"
+        role="img"
         aria-label="Vault Runner stage"
       />
       {status === "live" ? (
-        <div className="flex gap-2" aria-label="Touch controls">
-          <button type="button" className={pad} {...hold("left")} aria-label="Move left">◀</button>
-          <button type="button" className={pad} onClick={() => (input.current.jump = true)} aria-label="Jump">⤒</button>
-          <button type="button" className={pad} {...hold("right")} aria-label="Move right">▶</button>
+        <div className="flex gap-2" role="group" aria-label="Touch controls">
+          <HoldButton label="Move left" onHoldChange={(h) => (input.current.left = h)}>◀</HoldButton>
+          <PadButton label="Jump" onPress={() => (input.current.jump = true)}>⤒</PadButton>
+          <HoldButton label="Move right" onHoldChange={(h) => (input.current.right = h)}>▶</HoldButton>
         </div>
       ) : (
-        <p className="text-sm font-bold" style={{ color: status === "won" ? "#62f3e4" : "#ff8a8a" }}>
+        <ArcadeStatus tone={status === "won" ? "win" : "lose"}>
           {status === "won" ? "Stage complete!" : "Wiped out."}
-        </p>
+        </ArcadeStatus>
       )}
     </div>
   );

@@ -37,6 +37,9 @@ export function PortalRoomClient({ albums }: Props) {
 
   const count = albums.length;
   const album = albums[Math.min(index, count - 1)];
+  // When the challenge gate or intro video overlays the chamber, the chamber's
+  // own controls must not be tabbable or tappable.
+  const chromeInert = showGate || showVideo;
 
   // Reduced-motion preference + restore the previously focused portal so the
   // back button returns the visitor to the same doorway.
@@ -123,8 +126,13 @@ export function PortalRoomClient({ albums }: Props) {
 
   const finishGate = useCallback(() => {
     if (!album) return;
-    router.push(`/album/${album.slug}`);
-  }, [album, router]);
+    // Hard document navigation into the album. Leaving the immersive portal
+    // room is a full context switch, and a soft router.push can be dropped mid
+    // transition while the gate's AnimatePresence exit is running (the symptom:
+    // "Enter" appears to do nothing until a manual refresh). A document
+    // navigation always commits and lands on the freshly-rendered album page.
+    window.location.assign(`/album/${album.slug}`);
+  }, [album]);
 
   const enterPortal = useCallback(() => {
     if (flyingRef.current || showVideoRef.current || !album) return;
@@ -300,12 +308,19 @@ export function PortalRoomClient({ albums }: Props) {
         ))}
       </div>
 
-      {/* Tap/click the portal itself to fly through. */}
+      {/* Tap/click the portal itself to fly through. While the challenge gate
+          or intro video is open it is inert (and hidden from assistive tech) so
+          a stray tap can never land on it instead of the gate, and its label
+          doesn't duplicate the gate's "Enter" button. */}
       <button
         type="button"
         onClick={enterPortal}
         aria-label={`Enter ${album.title}`}
-        className="absolute top-1/2 left-1/2 z-20 h-[min(60vw,50vh)] w-[min(60vw,50vh)] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
+        aria-hidden={chromeInert}
+        tabIndex={chromeInert ? -1 : 0}
+        className={`absolute top-1/2 left-1/2 z-20 h-[min(60vw,50vh)] w-[min(60vw,50vh)] -translate-x-1/2 -translate-y-1/2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] ${
+          chromeInert ? "pointer-events-none" : "cursor-pointer"
+        }`}
       />
 
       {/* Navigation arrows (desktop + mobile). Desktop inset is wider than
@@ -317,7 +332,9 @@ export function PortalRoomClient({ albums }: Props) {
           className={arrowClass}
           style={arrowStyle}
           onClick={() => step(-1)}
-          disabled={index === 0}
+          disabled={chromeInert || index === 0}
+          aria-hidden={chromeInert}
+          tabIndex={chromeInert ? -1 : 0}
           aria-label="Previous album portal"
         >
           <ChevronLeft size={26} aria-hidden="true" />
@@ -327,7 +344,9 @@ export function PortalRoomClient({ albums }: Props) {
           className={arrowClass}
           style={arrowStyle}
           onClick={() => step(1)}
-          disabled={index === count - 1}
+          disabled={chromeInert || index === count - 1}
+          aria-hidden={chromeInert}
+          tabIndex={chromeInert ? -1 : 0}
           aria-label="Next album portal"
         >
           <ChevronRight size={26} aria-hidden="true" />
@@ -388,7 +407,11 @@ export function PortalRoomClient({ albums }: Props) {
           <button
             type="button"
             onClick={enterPortal}
-            className="pointer-events-auto flex min-h-11 min-w-[176px] items-center justify-center gap-2 rounded-lg px-8 py-3.5 text-xs font-bold tracking-[0.06em] uppercase transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e]"
+            aria-hidden={chromeInert}
+            tabIndex={chromeInert ? -1 : 0}
+            className={`flex min-h-11 min-w-[176px] items-center justify-center gap-2 rounded-lg px-8 py-3.5 text-xs font-bold tracking-[0.06em] uppercase transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#090f0e] ${
+              chromeInert ? "pointer-events-none" : "pointer-events-auto"
+            }`}
             style={{
               background: accent,
               color: "#003733",

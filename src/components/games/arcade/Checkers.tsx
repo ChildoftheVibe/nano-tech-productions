@@ -106,23 +106,19 @@ export function Checkers({ onFinish }: ArcadeProps) {
     }
   }, [board, turn, status, playerMoves, end]);
 
-  // AI turn: prefer captures, then king advances, else random.
+  // AI turn — deliberately beatable. Most turns it just plays a random legal
+  // move; only occasionally does it bother to take an available capture, and it
+  // never plans ahead or protects its pieces. This keeps the player winning
+  // more often than losing.
   useEffect(() => {
     if (turn !== "ai" || status !== "live") return;
     const t = window.setTimeout(() => {
       const options = allMoves(board, false);
       if (!options.length) return; // handled by the effect above
-      const captures = options.filter((m) => m.capture !== null);
-      // Avoid moves that let the player immediately capture back.
-      const safe = (pool: Move[]) =>
-        pool.filter((m) => {
-          const after = applyMove(board, m);
-          return !allMoves(after, true).some((r) => r.capture === m.to);
-        });
       const pick = (pool: Move[]) => pool[Math.floor(Math.random() * pool.length)];
-      const move =
-        (captures.length && pick(safe(captures).length ? safe(captures) : captures)) ||
-        pick(safe(options).length ? safe(options) : options);
+      const captures = options.filter((m) => m.capture !== null);
+      // Take a capture only ~35% of the time; otherwise move at random.
+      const move = captures.length && Math.random() < 0.35 ? pick(captures) : pick(options);
       setBoard((b) => applyMove(b, move));
       setTurn("player");
     }, 550);
@@ -152,9 +148,9 @@ export function Checkers({ onFinish }: ArcadeProps) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <p className="text-xs text-[#bbcac6]">
+      <p aria-live="polite" className="min-h-4 text-xs text-[#bbcac6]">
         {status === "live"
-          ? turn === "player" ? "Your move (teal)" : "Vault AI is thinking…"
+          ? turn === "player" ? "Your move. You are teal." : "Vault AI is thinking…"
           : ""}
       </p>
       <div
@@ -171,7 +167,7 @@ export function Checkers({ onFinish }: ArcadeProps) {
               type="button"
               onClick={() => tap(i)}
               disabled={!dark}
-              className={`flex aspect-square w-9 items-center justify-center sm:w-10 ${
+              className={`flex aspect-square w-11 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#dde4e2] ${
                 dark ? "bg-[#12403a]" : "bg-[#1a2120]"
               } ${selected === i ? "ring-2 ring-inset ring-[#62f3e4]" : ""} ${
                 isTarget ? "ring-2 ring-inset ring-[#ffabef]" : ""
@@ -184,7 +180,7 @@ export function Checkers({ onFinish }: ArcadeProps) {
             >
               {p && (
                 <span
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shadow-md sm:h-7 sm:w-7"
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold shadow-md"
                   style={{
                     background: p.player ? "#62f3e4" : "#ff8a8a",
                     color: "#090f0e",
@@ -200,11 +196,13 @@ export function Checkers({ onFinish }: ArcadeProps) {
           );
         })}
       </div>
-      {status !== "live" && (
-        <p className="text-sm font-bold" style={{ color: status === "won" ? "#62f3e4" : "#ff8a8a" }}>
-          {status === "won" ? "Board swept — you win!" : "The vault AI takes it."}
-        </p>
-      )}
+      <p
+        aria-live="assertive"
+        className="min-h-5 text-sm font-bold"
+        style={{ color: status === "won" ? "#62f3e4" : status === "lost" ? "#ff8a8a" : "transparent" }}
+      >
+        {status === "won" ? "Board swept, you win!" : status === "lost" ? "The vault AI takes it." : " "}
+      </p>
     </div>
   );
 }

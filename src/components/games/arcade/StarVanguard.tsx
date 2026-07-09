@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ArcadeProps } from "./Minesweeper";
+import { ArcadeStatus, HoldButton, PadButton } from "./ArcadeControls";
 
 /** Fixed-shooter wave defense (original, in the spirit of classic arcade
  *  shooters): destroy the whole alien formation to win. */
@@ -31,10 +32,12 @@ export function StarVanguard({ onFinish }: ArcadeProps) {
   const fireRef = useRef<() => void>(() => {});
 
   useEffect(() => {
+    // Tuned easy: a small 2×5 formation that advances slowly and fires
+    // infrequently, so a casual player clears the wave more often than not.
     const aliens: Alien[] = [];
-    for (let r = 0; r < 4; r++) {
-      for (let c = 0; c < 7; c++) {
-        aliens.push({ x: 30 + c * 38, y: 36 + r * 30, alive: true });
+    for (let r = 0; r < 2; r++) {
+      for (let c = 0; c < 5; c++) {
+        aliens.push({ x: 60 + c * 48, y: 44 + r * 34, alive: true });
       }
     }
     const s = {
@@ -42,7 +45,7 @@ export function StarVanguard({ onFinish }: ArcadeProps) {
       shots: [] as Shot[],
       enemyShots: [] as Shot[],
       dir: 1,
-      speed: 0.4,
+      speed: 0.28,
       lastEnemyFire: 0,
       over: false,
       lastShot: 0,
@@ -50,9 +53,9 @@ export function StarVanguard({ onFinish }: ArcadeProps) {
 
     fireRef.current = () => {
       const now = performance.now();
-      if (s.over || now - s.lastShot < 280) return;
+      if (s.over || now - s.lastShot < 200) return;
       s.lastShot = now;
-      s.shots.push({ x: s.px, y: H - 34, vy: -6 });
+      s.shots.push({ x: s.px, y: H - 34, vy: -7 });
     };
 
     let raf = 0;
@@ -72,11 +75,11 @@ export function StarVanguard({ onFinish }: ArcadeProps) {
           s.dir = 1;
           alive.forEach((a) => (a.y += 12));
         }
-        const speed = s.speed + (1 - alive.length / aliens.length) * 1.2;
+        const speed = s.speed + (1 - alive.length / aliens.length) * 0.6;
         alive.forEach((a) => (a.x += s.dir * speed));
 
         // Enemy fire.
-        if (alive.length && t - s.lastEnemyFire > 900) {
+        if (alive.length && t - s.lastEnemyFire > 1500) {
           s.lastEnemyFire = t;
           const shooter = alive[Math.floor(Math.random() * alive.length)];
           s.enemyShots.push({ x: shooter.x, y: shooter.y + 10, vy: 3 });
@@ -164,34 +167,27 @@ export function StarVanguard({ onFinish }: ArcadeProps) {
     };
   }, [end]);
 
-  const hold = (key: "left" | "right") => ({
-    onPointerDown: () => (input.current[key] = true),
-    onPointerUp: () => (input.current[key] = false),
-    onPointerLeave: () => (input.current[key] = false),
-  });
-  const pad =
-    "flex h-11 w-16 touch-none items-center justify-center rounded-lg border border-[rgba(255,255,255,0.15)] bg-[#242b2a] text-lg text-[#dde4e2] active:bg-[#2f3635] select-none";
-
   return (
     <div className="flex flex-col items-center gap-3">
-      <p className="text-xs text-[#bbcac6]">Destroy the formation before it lands</p>
+      <ArcadeStatus>Destroy the formation before it lands.</ArcadeStatus>
       <canvas
         ref={canvasRef}
         width={W}
         height={H}
         className="w-full max-w-[320px] rounded-lg border border-[rgba(255,255,255,0.1)]"
+        role="img"
         aria-label="Star Vanguard playfield"
       />
       {status === "live" ? (
-        <div className="flex gap-2" aria-label="Touch controls">
-          <button type="button" className={pad} {...hold("left")} aria-label="Move left">◀</button>
-          <button type="button" className={pad} onClick={() => fireRef.current()} aria-label="Fire">✦</button>
-          <button type="button" className={pad} {...hold("right")} aria-label="Move right">▶</button>
+        <div className="flex gap-2" role="group" aria-label="Touch controls">
+          <HoldButton label="Move left" onHoldChange={(h) => (input.current.left = h)}>◀</HoldButton>
+          <PadButton label="Fire" onPress={() => fireRef.current()}>✦</PadButton>
+          <HoldButton label="Move right" onHoldChange={(h) => (input.current.right = h)}>▶</HoldButton>
         </div>
       ) : (
-        <p className="text-sm font-bold" style={{ color: status === "won" ? "#62f3e4" : "#ff8a8a" }}>
+        <ArcadeStatus tone={status === "won" ? "win" : "lose"}>
           {status === "won" ? "Wave cleared!" : "Ship down."}
-        </p>
+        </ArcadeStatus>
       )}
     </div>
   );

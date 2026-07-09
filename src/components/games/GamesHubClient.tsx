@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, Coins, Gamepad2, Send } from "lucide-react";
 import { CASINO_COMPONENTS } from "@/components/games/casino";
 import { ARCADE_COMPONENTS } from "@/components/games/arcade";
@@ -39,15 +39,16 @@ function GameTile({
   index: number;
   onOpen: () => void;
 }) {
+  const reduce = useReducedMotion();
   return (
     <motion.button
       type="button"
       onClick={onOpen}
-      initial={{ opacity: 0, y: 18 }}
+      initial={reduce ? false : { opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * 0.05, 0.6), duration: 0.4, ease: "easeOut" }}
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.97 }}
+      transition={reduce ? { duration: 0 } : { delay: Math.min(index * 0.05, 0.6), duration: 0.4, ease: "easeOut" }}
+      whileHover={reduce ? undefined : { y: -6, scale: 1.02 }}
+      whileTap={reduce ? undefined : { scale: 0.97 }}
       className="group relative overflow-hidden rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#1a2120] text-left transition-shadow hover:border-[#62f3e4]/60 hover:shadow-[0_0_28px_rgba(98,243,228,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
       aria-label={`Play ${name}`}
     >
@@ -90,7 +91,21 @@ export function GamesHubClient() {
   const ActiveCasino = active ? CASINO_COMPONENTS[active] : null;
   const activeArcade = arcadeActive ? ARCADE_COMPONENTS[arcadeActive] : null;
 
+  // Jump the viewport to the top so the opened game is framed in the window
+  // rather than wherever the grid was scrolled to.
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
+  };
+
+  const openCasino = (id: string) => {
+    scrollToTop();
+    setActive(id);
+  };
+
   const openArcade = async (id: string) => {
+    scrollToTop();
     setArcadeActive(id);
     setArcadeMsg("");
     try {
@@ -135,7 +150,7 @@ export function GamesHubClient() {
 
   if (ActiveCasino || activeArcade) {
     return (
-      <div className="mx-auto flex min-h-[70vh] max-w-2xl flex-col gap-4 px-4 py-6">
+      <div className="mx-auto flex min-h-[calc(100dvh-7rem)] max-w-2xl flex-col gap-4 px-4 py-6">
         <button
           type="button"
           onClick={() => {
@@ -143,10 +158,11 @@ export function GamesHubClient() {
             setActive(null);
             setArcadeActive(null);
           }}
-          className="flex w-fit items-center gap-1.5 text-xs font-semibold tracking-wide text-[#bbcac6] uppercase transition-colors hover:text-[#62f3e4]"
+          className="flex w-fit items-center gap-1.5 rounded text-xs font-semibold tracking-wide text-[#bbcac6] uppercase transition-colors hover:text-[#62f3e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
         >
           <ArrowLeft size={14} aria-hidden="true" /> All games
         </button>
+        {/* Center the opened game vertically in the remaining viewport. */}
         <AnimatePresence mode="wait">
           <motion.div
             key={active ?? arcadeActive ?? "table"}
@@ -154,6 +170,7 @@ export function GamesHubClient() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.3 }}
+            className="flex flex-1 flex-col justify-center"
           >
             {ActiveCasino && <ActiveCasino />}
             {activeArcade && arcadeActive && (
@@ -235,7 +252,7 @@ export function GamesHubClient() {
             name={g.name}
             tagline={g.tagline}
             index={i}
-            onOpen={() => setActive(g.id)}
+            onOpen={() => openCasino(g.id)}
           />
         ))}
       </div>

@@ -46,7 +46,10 @@ export function TankWars({ onFinish }: ArcadeProps) {
       playerX: 30 + Math.random() * 40,
       enemyX: W - 70 + Math.random() * 40,
       shell: null,
-      enemyErr: 30,
+      // Tuned easy: the enemy starts with a wide aiming error and only sharpens
+      // slowly (see the decay on miss below), so the player usually lands a hit
+      // first.
+      enemyErr: 46,
     };
     return world.current;
   }, []);
@@ -97,7 +100,7 @@ export function TankWars({ onFinish }: ArcadeProps) {
         }
         if (sh.x < -20 || sh.x > W + 20 || sh.y > groundY(sh.x)) {
           // Miss — crater near-miss learning for the AI.
-          if (from === "enemy") w.enemyErr = Math.max(6, w.enemyErr * 0.55);
+          if (from === "enemy") w.enemyErr = Math.max(20, w.enemyErr * 0.82);
           w.shell = null;
           setWind(Math.round((Math.random() - 0.5) * 40));
           if (from === "player") {
@@ -179,18 +182,19 @@ export function TankWars({ onFinish }: ArcadeProps) {
   }, [angle, wind, ensureWorld]);
 
   const slider =
-    "h-2 w-full cursor-pointer appearance-none rounded-full bg-[#2f3635] accent-[#62f3e4]";
+    "h-2 w-full cursor-pointer appearance-none rounded-full bg-[#2f3635] accent-[#62f3e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1a17]";
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <p className="text-xs text-[#bbcac6]">
-        {turn === "player" ? "Your shot — set angle and power" : turn === "enemy" ? "Enemy is aiming…" : "Shell away…"}
+      <p aria-live="polite" className="text-xs text-[#bbcac6]">
+        {turn === "player" ? "Your shot. Set angle and power." : turn === "enemy" ? "Enemy is aiming…" : "Shell away…"}
       </p>
       <canvas
         ref={canvasRef}
         width={W}
         height={H}
         className="w-full max-w-[340px] rounded-lg border border-[rgba(255,255,255,0.1)]"
+        role="img"
         aria-label="Tank Wars battlefield"
       />
       {status === "live" ? (
@@ -199,6 +203,7 @@ export function TankWars({ onFinish }: ArcadeProps) {
             <span className="w-12">Angle</span>
             <input
               type="range" min={15} max={85} value={angle}
+              aria-label="Barrel angle in degrees"
               onChange={(e) => setAngle(Number(e.target.value))}
               className={slider} disabled={turn !== "player"}
             />
@@ -208,6 +213,7 @@ export function TankWars({ onFinish }: ArcadeProps) {
             <span className="w-12">Power</span>
             <input
               type="range" min={30} max={95} value={power}
+              aria-label="Shot power"
               onChange={(e) => setPower(Number(e.target.value))}
               className={slider} disabled={turn !== "player"}
             />
@@ -217,14 +223,14 @@ export function TankWars({ onFinish }: ArcadeProps) {
             type="button"
             onClick={() => fire("player", angle, power)}
             disabled={turn !== "player"}
-            className="min-h-11 rounded-lg bg-[#62f3e4] px-5 py-2 text-xs font-bold tracking-[0.06em] text-[#003733] uppercase transition-transform hover:scale-[1.02] disabled:opacity-40"
+            className="min-h-11 rounded-lg bg-[#62f3e4] px-5 py-2 text-xs font-bold tracking-[0.06em] text-[#003733] uppercase transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-40"
           >
             Fire
           </button>
         </div>
       ) : (
-        <p className="text-sm font-bold" style={{ color: status === "won" ? "#62f3e4" : "#ff8a8a" }}>
-          {status === "won" ? "Direct hit — enemy destroyed!" : "Your tank is smoked."}
+        <p aria-live="assertive" className="text-sm font-bold" style={{ color: status === "won" ? "#62f3e4" : "#ff8a8a" }}>
+          {status === "won" ? "Direct hit, enemy destroyed!" : "Your tank is smoked."}
         </p>
       )}
     </div>

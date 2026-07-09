@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ArcadeProps } from "./Minesweeper";
+import { ArcadeStatus, PadButton } from "./ArcadeControls";
 
 /** Falling-block puzzle: clear TARGET_LINES to win. Original implementation
  *  (not Tetris™) with the classic seven tetromino shapes. */
@@ -9,7 +10,9 @@ import type { ArcadeProps } from "./Minesweeper";
 const COLS = 10;
 const ROWS = 18;
 const CELL = 22;
-const TARGET_LINES = 10;
+// Tuned easy: only 4 lines to win, and the fall starts slow and ramps gently
+// (see dropMs below) so a casual player reaches the target before topping out.
+const TARGET_LINES = 4;
 
 const SHAPES: number[][][] = [
   [[1, 1, 1, 1]],                    // I
@@ -36,7 +39,7 @@ export function TetraVault({ onFinish }: ArcadeProps) {
     piece: null as Piece | null,
     lines: 0,
     over: false,
-    dropMs: 600,
+    dropMs: 780,
     lastDrop: 0,
   });
   const finishedRef = useRef(false);
@@ -95,7 +98,7 @@ export function TetraVault({ onFinish }: ArcadeProps) {
     while (s.grid.length < ROWS) s.grid.unshift(Array<string | null>(COLS).fill(null));
     if (cleared) {
       s.lines += cleared;
-      s.dropMs = Math.max(220, 600 - s.lines * 30);
+      s.dropMs = Math.max(460, 780 - s.lines * 25);
       setLines(s.lines);
       if (s.lines >= TARGET_LINES) {
         end(true);
@@ -180,33 +183,31 @@ export function TetraVault({ onFinish }: ArcadeProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [move, hardDrop]);
 
-  const pad =
-    "flex h-11 w-14 items-center justify-center rounded-lg border border-[rgba(255,255,255,0.15)] bg-[#242b2a] text-lg text-[#dde4e2] active:bg-[#2f3635]";
-
   return (
     <div className="flex flex-col items-center gap-3">
-      <p className="text-xs text-[#bbcac6]">
-        Clear <span className="font-bold text-[#62f3e4]">{TARGET_LINES}</span> lines —{" "}
-        <span className="font-bold text-[#dde4e2] tabular-nums">{lines}</span> so far
-      </p>
+      <ArcadeStatus>
+        Clear <span className="font-bold text-[#62f3e4]">{TARGET_LINES}</span> lines.{" "}
+        <span className="font-bold text-[#dde4e2] tabular-nums">{lines}</span> cleared so far.
+      </ArcadeStatus>
       <canvas
         ref={canvasRef}
         width={COLS * CELL}
         height={ROWS * CELL}
         className="rounded-lg border border-[rgba(255,255,255,0.1)]"
-        aria-label="Tetra Vault board"
+        role="img"
+        aria-label={`Tetra Vault board, ${lines} of ${TARGET_LINES} lines cleared`}
       />
       {status === "live" ? (
-        <div className="flex gap-2" aria-label="Touch controls">
-          <button type="button" className={pad} onClick={() => move(-1, 0)} aria-label="Left">◀</button>
-          <button type="button" className={pad} onClick={() => move(0, 0, true)} aria-label="Rotate">⟳</button>
-          <button type="button" className={pad} onClick={() => move(1, 0)} aria-label="Right">▶</button>
-          <button type="button" className={pad} onClick={hardDrop} aria-label="Drop">▼</button>
+        <div className="flex gap-2" role="group" aria-label="Touch controls">
+          <PadButton label="Move left" onPress={() => move(-1, 0)}>◀</PadButton>
+          <PadButton label="Rotate piece" onPress={() => move(0, 0, true)}>⟳</PadButton>
+          <PadButton label="Move right" onPress={() => move(1, 0)}>▶</PadButton>
+          <PadButton label="Hard drop" onPress={hardDrop}>▼</PadButton>
         </div>
       ) : (
-        <p className="text-sm font-bold" style={{ color: status === "won" ? "#62f3e4" : "#ff8a8a" }}>
+        <ArcadeStatus tone={status === "won" ? "win" : "lose"}>
           {status === "won" ? "Vault breached!" : "Stack topped out."}
-        </p>
+        </ArcadeStatus>
       )}
     </div>
   );
