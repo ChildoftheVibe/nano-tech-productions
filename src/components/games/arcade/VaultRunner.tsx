@@ -230,15 +230,17 @@ function Scene({ input, level, onEnd, onJump, onLand, onDie, paused, reducedMoti
 
   return (
     <>
-      <ambientLight intensity={0.65} />
-      <directionalLight position={[4, 6, 5]} intensity={1.15} color="#ffffff" />
+      {/* Bright, flat lighting: three.js's physically-correct light units need
+          much higher intensities than the pre-r155 default model. */}
+      <ambientLight intensity={1.8} />
+      <directionalLight position={[4, 6, 5]} intensity={3.5} color="#ffffff" />
       <fog attach="fog" args={[PALETTE.base, 8, 30]} />
 
       {/* Distant low-poly skyline for cheap parallax depth. */}
       {Array.from({ length: 10 }, (_, i) => (
         <mesh key={i} position={[i * 6 - 6, -0.6, -9 - (i % 3) * 2]}>
           <coneGeometry args={[1.4, 2.4 + (i % 3), 4]} />
-          <meshStandardMaterial color={PALETTE.felt} flatShading emissive={PALETTE.teal} emissiveIntensity={0.06} />
+          <meshStandardMaterial color={PALETTE.felt} flatShading emissive={PALETTE.teal} emissiveIntensity={0.15} />
         </mesh>
       ))}
 
@@ -247,11 +249,11 @@ function Scene({ input, level, onEnd, onJump, onLand, onDie, paused, reducedMoti
         <group key={i} position={[worldX(seg.x) + worldX(seg.w) / 2, -0.06, 0]}>
           <mesh receiveShadow>
             <boxGeometry args={[Math.max(0.01, worldX(seg.w)), 0.5, 2]} />
-            <meshStandardMaterial color={PALETTE.felt} flatShading roughness={0.8} />
+            <meshStandardMaterial color={PALETTE.felt} flatShading roughness={0.8} emissive={PALETTE.felt} emissiveIntensity={0.5} />
           </mesh>
           <mesh position={[0, 0.25, 0]}>
             <boxGeometry args={[Math.max(0.01, worldX(seg.w)), 0.02, 2]} />
-            <meshStandardMaterial color={PALETTE.teal} emissive={PALETTE.teal} emissiveIntensity={0.6} />
+            <meshStandardMaterial color={PALETTE.teal} emissive={PALETTE.teal} emissiveIntensity={1.4} />
           </mesh>
         </group>
       ))}
@@ -260,7 +262,7 @@ function Scene({ input, level, onEnd, onJump, onLand, onDie, paused, reducedMoti
       {level.spikes.map((sp, i) => (
         <mesh key={i} position={[worldX(sp.x + sp.w / 2), 0.06, 0]}>
           <coneGeometry args={[worldX(sp.w) / 1.6, 0.35, 4]} />
-          <meshStandardMaterial color={PALETTE.coral} flatShading roughness={0.4} emissive={PALETTE.coral} emissiveIntensity={0.2} />
+          <meshStandardMaterial color={PALETTE.coral} flatShading roughness={0.4} emissive={PALETTE.coral} emissiveIntensity={0.6} />
         </mesh>
       ))}
 
@@ -268,11 +270,11 @@ function Scene({ input, level, onEnd, onJump, onLand, onDie, paused, reducedMoti
       <group position={[worldX(LEVEL_END), 0.2, 0]}>
         <mesh position={[0, 0.75, 0]}>
           <cylinderGeometry args={[0.03, 0.03, 1.5, 6]} />
-          <meshStandardMaterial color={PALETTE.pink} flatShading />
+          <meshStandardMaterial color={PALETTE.pink} flatShading emissive={PALETTE.pink} emissiveIntensity={0.4} />
         </mesh>
         <mesh position={[0, 1.55, 0]}>
           <icosahedronGeometry args={[0.22, 0]} />
-          <meshStandardMaterial color={PALETTE.pink} flatShading emissive={PALETTE.pink} emissiveIntensity={0.6} />
+          <meshStandardMaterial color={PALETTE.pink} flatShading emissive={PALETTE.pink} emissiveIntensity={1.2} />
         </mesh>
       </group>
 
@@ -280,11 +282,11 @@ function Scene({ input, level, onEnd, onJump, onLand, onDie, paused, reducedMoti
       <group ref={playerRef}>
         <mesh position={[0, 0.14, 0]}>
           <boxGeometry args={[0.32, 0.4, 0.28]} />
-          <meshStandardMaterial color={PALETTE.teal} flatShading roughness={0.5} emissive={PALETTE.teal} emissiveIntensity={0.3} />
+          <meshStandardMaterial color={PALETTE.teal} flatShading roughness={0.5} emissive={PALETTE.teal} emissiveIntensity={0.9} />
         </mesh>
         <mesh position={[0, 0.42, 0.02]}>
           <boxGeometry args={[0.22, 0.22, 0.24]} />
-          <meshStandardMaterial color={PALETTE.gold} flatShading roughness={0.5} />
+          <meshStandardMaterial color={PALETTE.gold} flatShading roughness={0.5} emissive={PALETTE.gold} emissiveIntensity={0.6} />
         </mesh>
       </group>
 
@@ -359,6 +361,7 @@ export function VaultRunner({ onFinish }: ArcadeProps) {
       >
         <Canvas
           dpr={1}
+          flat
           gl={{ antialias: false, alpha: false }}
           camera={{ position: [-2, 2.5, 5], fov: 58 }}
           frameloop={status === "live" ? "always" : "never"}

@@ -306,9 +306,13 @@ function Scene({ input, fireRef, onEnd, onShoot, onHit, onExplode, paused, reduc
 
   return (
     <>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[3, 5, 4]} intensity={1.2} color="#ffffff" />
-      <pointLight position={[0, 0, Z_NEAR + 1]} intensity={0.4} color={PALETTE.teal} />
+      {/* Bright, flat lighting: three.js's physically-correct light units need
+          much higher intensities than the pre-r155 default model, and point
+          lights fall off with the inverse square of distance, so these are
+          calibrated well above what "feels right" for legacy lighting. */}
+      <ambientLight intensity={1.8} />
+      <directionalLight position={[3, 5, 4]} intensity={3.5} color="#ffffff" />
+      <pointLight position={[0, 1, Z_NEAR + 1]} intensity={40} distance={20} color={PALETTE.teal} />
 
       <points ref={starsRef}>
         <bufferGeometry>
@@ -321,11 +325,11 @@ function Scene({ input, fireRef, onEnd, onShoot, onHit, onExplode, paused, reduc
       <group ref={playerRef}>
         <mesh rotation={[Math.PI / 2, 0, Math.PI]} castShadow>
           <coneGeometry args={[0.32, 0.7, 4]} />
-          <meshStandardMaterial color={PALETTE.teal} flatShading roughness={0.5} emissive={PALETTE.teal} emissiveIntensity={0.35} />
+          <meshStandardMaterial color={PALETTE.teal} flatShading roughness={0.5} emissive={PALETTE.teal} emissiveIntensity={0.9} />
         </mesh>
         <mesh position={[0, -0.05, 0.15]}>
           <boxGeometry args={[0.9, 0.06, 0.35]} />
-          <meshStandardMaterial color={PALETTE.gold} flatShading roughness={0.6} />
+          <meshStandardMaterial color={PALETTE.gold} flatShading roughness={0.6} emissive={PALETTE.gold} emissiveIntensity={0.4} />
         </mesh>
       </group>
 
@@ -334,7 +338,7 @@ function Scene({ input, fireRef, onEnd, onShoot, onHit, onExplode, paused, reduc
         <group key={i} ref={(el) => { alienRefs.current[i] = el; }}>
           <mesh scale={[1, 0.55, 1.3]} rotation={[0, Math.PI / 4, 0]}>
             <octahedronGeometry args={[0.34, 0]} />
-            <meshStandardMaterial color={PALETTE.pink} flatShading roughness={0.45} emissive={PALETTE.pink} emissiveIntensity={0.25} />
+            <meshStandardMaterial color={PALETTE.pink} flatShading roughness={0.45} emissive={PALETTE.pink} emissiveIntensity={0.7} />
           </mesh>
         </group>
       ))}
@@ -421,6 +425,7 @@ export function StarVanguard({ onFinish }: ArcadeProps) {
       >
         <Canvas
           dpr={1}
+          flat
           gl={{ antialias: false, alpha: false }}
           camera={{ position: [0, 0.4, 9.5], fov: 55 }}
           frameloop={status === "live" ? "always" : "never"}
