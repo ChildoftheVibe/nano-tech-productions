@@ -205,7 +205,7 @@ export function GamesHubClient() {
           >
             {ActiveCasino && <ActiveCasino />}
             {activeArcade && arcadeActive && (
-              <div className="relative overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#1a2120] p-5">
+              <div className="relative overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#1a2120] p-6 sm:p-8">
                 {/* Ambient art backdrop for the arcade cabinet */}
                 <div
                   className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-[0.14] blur-sm"

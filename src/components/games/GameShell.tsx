@@ -83,7 +83,7 @@ export function GameShell({
         </div>
       </div>
       <div
-        className="relative flex-1 overflow-y-auto p-4"
+        className="relative flex-1 overflow-y-auto p-6 sm:p-8"
         style={{
           background: `radial-gradient(ellipse at 50% 0%, ${felt} 0%, #090f0e 100%)`,
         }}
