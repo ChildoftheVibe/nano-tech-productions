@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Coins, Minus, Plus } from "lucide-react";
 import { useWalletStore } from "@/store/walletStore";
+import { useGameKeyboardLock } from "@/store/gameFocusStore";
 import { cardLabel, isRed, type Card } from "./engine/cards";
 
 /** Theme overrides written by the ui-implementer agent (game_ui_config). */
@@ -50,6 +51,9 @@ export function GameShell({
   const ui = useGameUiConfig();
   const accent = ui.accent ?? "#62f3e4";
   const felt = ui.felt ?? "#0d1a17";
+
+  // Hold the keyboard so media shortcuts don't fire while a table is open.
+  useGameKeyboardLock();
 
   useEffect(() => {
     void refresh();

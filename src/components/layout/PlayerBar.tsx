@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { getDownloadToken, saveDownloadToken } from '@/lib/downloadTokens'
 import { usePlayerStore } from "@/store/playerStore";
+import { isGameFocused } from "@/store/gameFocusStore";
 import { usePlayer } from "@/context/PlayerContext";
 import { getAlbumCover } from "@/lib/albumCover";
 import { usePathname } from 'next/navigation'
@@ -137,6 +138,9 @@ export function PlayerBar() {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (shouldIgnore(e.target)) return;
+      // A game surface (arcade cabinet, casino table, or portal challenge) owns
+      // the keyboard while open, so playing never pauses or seeks the music.
+      if (isGameFocused()) return;
       if (!currentTrack) return;
       if (e.key === " " || e.code === "Space") {
         e.preventDefault();

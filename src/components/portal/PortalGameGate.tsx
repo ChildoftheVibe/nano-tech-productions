@@ -6,6 +6,7 @@ import { Coins } from "lucide-react";
 import { ARCADE_COMPONENTS, randomArcadeId } from "@/components/games/arcade";
 import { GAME_ART } from "@/components/games/art";
 import { settleGame, startGame } from "@/components/games/gameApi";
+import { useGameKeyboardLock } from "@/store/gameFocusStore";
 import { ARCADE_PLAY_REWARD, ARCADE_WIN_REWARD } from "@/lib/nanoBucksShared";
 
 type Props = {
@@ -31,6 +32,9 @@ export function PortalGameGate({ accent, albumTitle, onDone, reducedMotion }: Pr
   const sessionRef = useRef<string | null>(null);
   const doneRef = useRef(false);
   const game = ARCADE_COMPONENTS[gameId];
+
+  // Hold the keyboard so arrow/space keys drive the game, not the music player.
+  useGameKeyboardLock(phase === "playing");
 
   const begin = useCallback(async () => {
     setPhase("playing");
