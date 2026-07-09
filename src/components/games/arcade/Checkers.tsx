@@ -2,18 +2,41 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ArcadeProps } from "./Minesweeper";
+import { MuteToggle } from "./retro64";
+import {
+  PALETTE,
+  Particles,
+  bevelRect,
+  radialSphere,
+  shade,
+  useRetroLoop,
+  useSfx,
+  withAlpha,
+} from "./retro64";
 
 /** Checkers vs the vault AI. Capture all AI pieces (or stall it) to win.
  *  Simplified rules: captures optional, single jumps only, kings move both
- *  directions. */
+ *  directions.
+ *
+ *  Rendering split: the interactive board stays a DOM `role="grid"` of
+ *  `<button>` cells (WCAG hit targets, aria-labels, focus rings) so input and
+ *  screen-reader semantics are untouched; a Canvas2D layer sits behind it and
+ *  paints the chunky beveled squares, shaded pieces, king shine, and capture
+ *  particle pops. The DOM buttons render no visible fill of their own — the
+ *  canvas is the single source of visual truth, the buttons are pure hit
+ *  targets + a11y. */
 
 type Piece = { player: boolean; king: boolean };
 type Board = (Piece | null)[]; // 64 squares, row-major; player moves up (−8).
 
 type Move = { from: number; to: number; capture: number | null };
 
+const SIZE = 8;
+const CELL = 44; // matches the DOM grid's w-11 (44px) cells exactly.
+
 const row = (i: number) => Math.floor(i / 8);
 const col = (i: number) => i % 8;
+const centerOf = (i: number) => ({ x: col(i) * CELL + CELL / 2, y: row(i) * CELL + CELL / 2 });
 
 function initialBoard(): Board {
   const b: Board = Array(64).fill(null);
@@ -76,15 +99,20 @@ export function Checkers({ onFinish }: ArcadeProps) {
   const [turn, setTurn] = useState<"player" | "ai">("player");
   const [status, setStatus] = useState<"live" | "won" | "lost">("live");
   const finishedRef = useRef(false);
+  const sfx = useSfx();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particles = useRef(new Particles());
+  const glowPhase = useRef(0);
 
   const end = useCallback(
     (won: boolean) => {
       if (finishedRef.current) return;
       finishedRef.current = true;
       setStatus(won ? "won" : "lost");
+      sfx.play(won ? "win" : "lose");
       onFinish(won);
     },
-    [onFinish],
+    [onFinish, sfx],
   );
 
   const playerMoves = useMemo(
@@ -119,11 +147,18 @@ export function Checkers({ onFinish }: ArcadeProps) {
       const captures = options.filter((m) => m.capture !== null);
       // Take a capture only ~35% of the time; otherwise move at random.
       const move = captures.length && Math.random() < 0.35 ? pick(captures) : pick(options);
+      if (move.capture !== null) {
+        const { x, y } = centerOf(move.capture);
+        particles.current.burst(x, y, { count: 14, color: [PALETTE.coral, PALETTE.gold], speed: 100, life: 0.45, gravity: 80 });
+        sfx.play("hit");
+      } else {
+        sfx.play("place");
+      }
       setBoard((b) => applyMove(b, move));
       setTurn("player");
     }, 550);
     return () => window.clearTimeout(t);
-  }, [turn, board, status]);
+  }, [turn, board, status, sfx]);
 
   const tap = (i: number) => {
     if (turn !== "player" || status !== "live") return;
@@ -135,6 +170,13 @@ export function Checkers({ onFinish }: ArcadeProps) {
     if (selected !== null) {
       const move = playerMoves.find((m) => m.from === selected && m.to === i);
       if (move) {
+        if (move.capture !== null) {
+          const { x, y } = centerOf(move.capture);
+          particles.current.burst(x, y, { count: 16, color: [PALETTE.teal, PALETTE.gold], speed: 110, life: 0.45, gravity: 80 });
+          sfx.play("hit");
+        } else {
+          sfx.play("place");
+        }
         setBoard((b) => applyMove(b, move));
         setSelected(null);
         setTurn("ai");
@@ -146,6 +188,71 @@ export function Checkers({ onFinish }: ArcadeProps) {
     ? playerMoves.filter((m) => m.from === selected).map((m) => m.to)
     : [];
 
+  // Canvas layer: beveled board, shaded pieces, king shine, capture particles.
+  useRetroLoop((dt) => {
+    glowPhase.current += dt * 3;
+    particles.current.update(dt);
+
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+    const w = SIZE * CELL;
+    const h = SIZE * CELL;
+    ctx.clearRect(0, 0, w, h);
+
+    for (let i = 0; i < 64; i++) {
+      const dark = (row(i) + col(i)) % 2 === 1;
+      const x = col(i) * CELL;
+      const y = row(i) * CELL;
+      bevelRect(ctx, x + 1, y + 1, CELL - 2, CELL - 2, dark ? "#12403a" : "#1a2120", { bevel: 4, radius: 2 });
+    }
+
+    if (selected !== null) {
+      const { x, y } = centerOf(selected);
+      ctx.save();
+      ctx.shadowColor = PALETTE.teal;
+      ctx.shadowBlur = 14;
+      ctx.strokeStyle = withAlpha(PALETTE.teal, 0.8);
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x - CELL / 2 + 3, y - CELL / 2 + 3, CELL - 6, CELL - 6);
+      ctx.restore();
+    }
+    for (const t of targets) {
+      const { x, y } = centerOf(t);
+      const pulse = 3 + Math.sin(glowPhase.current + t) * 2;
+      ctx.save();
+      ctx.shadowColor = PALETTE.pink;
+      ctx.shadowBlur = 10 + pulse;
+      ctx.fillStyle = withAlpha(PALETTE.pink, 0.55);
+      ctx.beginPath();
+      ctx.arc(x, y, 6 + pulse * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    board.forEach((p, i) => {
+      if (!p) return;
+      const { x, y } = centerOf(i);
+      const color = p.player ? PALETTE.teal : PALETTE.coral;
+      if (p.king) {
+        ctx.save();
+        ctx.shadowColor = PALETTE.gold;
+        ctx.shadowBlur = 12 + Math.sin(glowPhase.current * 1.6 + i) * 4;
+        radialSphere(ctx, x, y, 15, color, { rim: PALETTE.gold });
+        ctx.restore();
+        // Crown shine glyph.
+        ctx.fillStyle = shade(PALETTE.gold, 0.4);
+        ctx.font = "bold 12px monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("♛", x, y + 1);
+      } else {
+        radialSphere(ctx, x, y, 15, color);
+      }
+    });
+
+    particles.current.draw(ctx);
+  });
+
   return (
     <div className="flex flex-col items-center gap-3">
       <p aria-live="polite" className="min-h-4 text-xs text-[#bbcac6]">
@@ -154,55 +261,53 @@ export function Checkers({ onFinish }: ArcadeProps) {
           : ""}
       </p>
       <div
-        className="grid grid-cols-8 overflow-hidden rounded-lg border border-[rgba(255,255,255,0.1)]"
-        role="grid"
-        aria-label="Checkers board"
+        className="relative overflow-hidden rounded-lg border border-[rgba(255,255,255,0.1)]"
+        style={{ width: SIZE * CELL, height: SIZE * CELL }}
       >
-        {board.map((p, i) => {
-          const dark = (row(i) + col(i)) % 2 === 1;
-          const isTarget = targets.includes(i);
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => tap(i)}
-              disabled={!dark}
-              className={`flex aspect-square w-11 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#dde4e2] ${
-                dark ? "bg-[#12403a]" : "bg-[#1a2120]"
-              } ${selected === i ? "ring-2 ring-inset ring-[#62f3e4]" : ""} ${
-                isTarget ? "ring-2 ring-inset ring-[#ffabef]" : ""
-              }`}
-              aria-label={
-                p
-                  ? `${p.player ? "Your" : "AI"} ${p.king ? "king" : "piece"}`
-                  : isTarget ? "Move here" : "Empty square"
-              }
-            >
-              {p && (
-                <span
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold shadow-md"
-                  style={{
-                    background: p.player ? "#62f3e4" : "#ff8a8a",
-                    color: "#090f0e",
-                  }}
-                >
-                  {p.king ? "♛" : ""}
-                </span>
-              )}
-              {!p && isTarget && (
-                <span className="h-2 w-2 rounded-full bg-[#ffabef]" />
-              )}
-            </button>
-          );
-        })}
+        <canvas
+          ref={canvasRef}
+          width={SIZE * CELL}
+          height={SIZE * CELL}
+          className="pointer-events-none absolute inset-0 z-0"
+          aria-hidden="true"
+        />
+        <div
+          className="relative z-10 grid grid-cols-8"
+          role="grid"
+          aria-label="Checkers board"
+        >
+          {board.map((p, i) => {
+            const dark = (row(i) + col(i)) % 2 === 1;
+            const isTarget = targets.includes(i);
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => tap(i)}
+                disabled={!dark}
+                className={`flex aspect-square w-11 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#dde4e2] ${
+                  selected === i ? "ring-2 ring-inset ring-[#62f3e4]" : ""
+                } ${isTarget ? "ring-2 ring-inset ring-[#ffabef]" : ""}`}
+                aria-label={
+                  p
+                    ? `${p.player ? "Your" : "AI"} ${p.king ? "king" : "piece"}`
+                    : isTarget ? "Move here" : "Empty square"
+                }
+              />
+            );
+          })}
+        </div>
       </div>
-      <p
-        aria-live="assertive"
-        className="min-h-5 text-sm font-bold"
-        style={{ color: status === "won" ? "#62f3e4" : status === "lost" ? "#ff8a8a" : "transparent" }}
-      >
-        {status === "won" ? "Board swept, you win!" : status === "lost" ? "The vault AI takes it." : " "}
-      </p>
+      <div className="flex items-center gap-2">
+        <p
+          aria-live="assertive"
+          className="min-h-5 text-sm font-bold"
+          style={{ color: status === "won" ? "#62f3e4" : status === "lost" ? "#ff8a8a" : "transparent" }}
+        >
+          {status === "won" ? "Board swept, you win!" : status === "lost" ? "The vault AI takes it." : " "}
+        </p>
+        <MuteToggle />
+      </div>
     </div>
   );
 }

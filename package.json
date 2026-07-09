@@ -15,6 +15,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.102.0",
     "@paypal/react-paypal-js": "^9.2.0",
+    "@react-three/fiber": "^9.6.1",
     "@sentry/nextjs": "^10.53.1",
     "@serwist/next": "^9.5.11",
     "@simplewebauthn/browser": "^13.3.0",
@@ -43,6 +44,7 @@
     "serwist": "^9.5.11",
     "sharp": "^0.34.5",
     "tailwind-merge": "^3.5.0",
+    "three": "^0.185.1",
     "uuid": "^14.0.0",
     "vercel": "^54.2.0",
     "zustand": "^5.0.13"
@@ -58,6 +60,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-simple-maps": "^3.0.6",
+    "@types/three": "^0.185.1",
     "@types/uuid": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",

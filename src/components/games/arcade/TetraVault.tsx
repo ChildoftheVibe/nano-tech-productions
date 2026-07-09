@@ -1,11 +1,26 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import type { ArcadeProps } from "./Minesweeper";
 import { ArcadeStatus, PadButton } from "./ArcadeControls";
+import {
+  PALETTE,
+  Particles,
+  RetroFrame,
+  Shake,
+  MuteToggle,
+  applyShake,
+  bevelRect,
+  scanlineOverlay,
+  useRetroLoop,
+  useSfx,
+  vignette,
+} from "./retro64";
 
 /** Falling-block puzzle: clear TARGET_LINES to win. Original implementation
- *  (not Tetris™) with the classic seven tetromino shapes. */
+ *  (not Tetris™) with the classic seven tetromino shapes, rendered as chunky
+ *  N64-style beveled blocks. */
 
 const COLS = 10;
 const ROWS = 18;
@@ -41,8 +56,13 @@ export function TetraVault({ onFinish }: ArcadeProps) {
     over: false,
     dropMs: 780,
     lastDrop: 0,
+    glow: 0, // active-piece pulse phase
   });
   const finishedRef = useRef(false);
+  const sfx = useSfx();
+  const particles = useRef(new Particles());
+  const shake = useRef(new Shake());
+  const bgGradient = useRef<CanvasGradient | null>(null);
 
   const end = useCallback(
     (won: boolean) => {
@@ -50,9 +70,10 @@ export function TetraVault({ onFinish }: ArcadeProps) {
       finishedRef.current = true;
       state.current.over = true;
       setStatus(won ? "won" : "lost");
+      sfx.play(won ? "win" : "lose");
       onFinish(won);
     },
-    [onFinish],
+    [onFinish, sfx],
   );
 
   const collides = (p: Piece, grid: (string | null)[][]) => {
@@ -78,6 +99,15 @@ export function TetraVault({ onFinish }: ArcadeProps) {
       color: COLORS[i],
     };
     if (collides({ ...piece, y: 0 }, state.current.grid)) {
+      // Top-out burst at the vault's ceiling.
+      particles.current.burst(Math.round((COLS * CELL) / 2), CELL, {
+        count: 24,
+        color: [PALETTE.coral, PALETTE.gold],
+        speed: 130,
+        life: 0.6,
+        gravity: 140,
+      });
+      shake.current.trigger(6, 0.35);
       end(false);
       return;
     }
@@ -93,6 +123,10 @@ export function TetraVault({ onFinish }: ArcadeProps) {
         if (p.shape[r][c] && p.y + r >= 0) s.grid[p.y + r][p.x + c] = p.color;
       }
     }
+    const clearedRows: number[] = [];
+    s.grid.forEach((row, y) => {
+      if (row.every((cell) => cell)) clearedRows.push(y);
+    });
     s.grid = s.grid.filter((row) => row.some((cell) => !cell));
     const cleared = ROWS - s.grid.length;
     while (s.grid.length < ROWS) s.grid.unshift(Array<string | null>(COLS).fill(null));
@@ -100,13 +134,29 @@ export function TetraVault({ onFinish }: ArcadeProps) {
       s.lines += cleared;
       s.dropMs = Math.max(460, 780 - s.lines * 25);
       setLines(s.lines);
+      // Chunky particle burst across every cleared row.
+      for (const y of clearedRows) {
+        for (let x = 0; x < COLS; x += 2) {
+          particles.current.burst(x * CELL + CELL / 2, y * CELL + CELL / 2, {
+            count: 4,
+            color: [PALETTE.gold, PALETTE.teal, PALETTE.pink],
+            speed: 110,
+            life: 0.4,
+            gravity: 90,
+          });
+        }
+      }
+      shake.current.trigger(cleared >= 2 ? 5 : 3, 0.25);
+      sfx.play("clear");
       if (s.lines >= TARGET_LINES) {
         end(true);
         return;
       }
+    } else {
+      sfx.play("place");
     }
     spawn();
-  }, [end, spawn]);
+  }, [end, spawn, sfx]);
 
   const move = useCallback((dx: number, dy: number, rot = false) => {
     const s = state.current;
@@ -131,41 +181,78 @@ export function TetraVault({ onFinish }: ArcadeProps) {
     lock();
   }, [lock]);
 
-  // Game loop + render.
   useEffect(() => {
     spawn();
-    let raf = 0;
-    const draw = (t: number) => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount, same as before
+  }, []);
+
+  // Declared before useRetroLoop so it's unambiguously available inside the
+  // callback passed to it below.
+  const reducedMotion = !!useReducedMotion();
+
+  // Render + drop-timer loop. `elapsedMs` is the same rAF timestamp the
+  // original code used for the drop-timer comparison, so the fall-speed
+  // logic is untouched — only how we get the timestamp changed.
+  useRetroLoop(
+    (dt, elapsedMs) => {
       const s = state.current;
-      if (!s.over && t - s.lastDrop > s.dropMs) {
-        s.lastDrop = t;
+      if (!s.over && elapsedMs - s.lastDrop > s.dropMs) {
+        s.lastDrop = elapsedMs;
         move(0, 1);
       }
-      const ctx = canvasRef.current?.getContext("2d");
-      if (ctx) {
-        ctx.fillStyle = "#090f0e";
-        ctx.fillRect(0, 0, COLS * CELL, ROWS * CELL);
-        const cell = (x: number, y: number, color: string) => {
-          ctx.fillStyle = color;
-          ctx.fillRect(x * CELL + 1, y * CELL + 1, CELL - 2, CELL - 2);
-        };
-        s.grid.forEach((row, y) =>
-          row.forEach((c, x) => { if (c) cell(x, y, c); }),
-        );
-        const p = s.piece;
-        if (p) {
-          p.shape.forEach((row, r) =>
-            row.forEach((v, c) => {
-              if (v && p.y + r >= 0) cell(p.x + c, p.y + r, p.color);
-            }),
-          );
-        }
+      s.glow += dt * 4;
+      particles.current.update(dt);
+      shake.current.update(dt);
+
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext("2d");
+      if (!ctx || !canvas) return;
+      const w = COLS * CELL;
+      const h = ROWS * CELL;
+
+      if (!bgGradient.current) {
+        const g = ctx.createLinearGradient(0, 0, 0, h);
+        g.addColorStop(0, "#12211e");
+        g.addColorStop(1, PALETTE.base);
+        bgGradient.current = g;
       }
-      raf = requestAnimationFrame(draw);
-    };
-    raf = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(raf);
-  }, [move, spawn]);
+
+      ctx.save();
+      ctx.fillStyle = bgGradient.current;
+      ctx.fillRect(0, 0, w, h);
+
+      applyShake(ctx, shake.current);
+
+      s.grid.forEach((row, y) =>
+        row.forEach((c, x) => {
+          if (c) bevelRect(ctx, x * CELL + 1, y * CELL + 1, CELL - 2, CELL - 2, c, { radius: 3 });
+        }),
+      );
+
+      const p = s.piece;
+      if (p) {
+        const pulse = reducedMotion ? 8 : 8 + Math.sin(s.glow) * 4;
+        ctx.save();
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = pulse;
+        p.shape.forEach((row, r) =>
+          row.forEach((v, c) => {
+            if (v && p.y + r >= 0) {
+              bevelRect(ctx, (p.x + c) * CELL + 1, (p.y + r) * CELL + 1, CELL - 2, CELL - 2, p.color, { radius: 3 });
+            }
+          }),
+        );
+        ctx.restore();
+      }
+
+      particles.current.draw(ctx);
+      ctx.restore();
+
+      scanlineOverlay(ctx, w, h, { alpha: 0.05 });
+      vignette(ctx, w, h, { strength: 0.35 });
+    },
+    { paused: status !== "live" },
+  );
 
   // Keyboard.
   useEffect(() => {
@@ -187,22 +274,27 @@ export function TetraVault({ onFinish }: ArcadeProps) {
     <div className="flex flex-col items-center gap-3">
       <ArcadeStatus>
         Clear <span className="font-bold text-[#62f3e4]">{TARGET_LINES}</span> lines.{" "}
-        <span className="font-bold text-[#dde4e2] tabular-nums">{lines}</span> cleared so far.
+        <span className="font-[family-name:var(--font-arcade)] text-[10px] tracking-tight text-[#dde4e2]">
+          {lines}
+        </span>{" "}
+        cleared so far.
       </ArcadeStatus>
-      <canvas
-        ref={canvasRef}
-        width={COLS * CELL}
-        height={ROWS * CELL}
-        className="rounded-lg border border-[rgba(255,255,255,0.1)]"
-        role="img"
-        aria-label={`Tetra Vault board, ${lines} of ${TARGET_LINES} lines cleared`}
-      />
+      <RetroFrame accent={PALETTE.teal}>
+        <canvas
+          ref={canvasRef}
+          width={COLS * CELL}
+          height={ROWS * CELL}
+          role="img"
+          aria-label={`Tetra Vault board, ${lines} of ${TARGET_LINES} lines cleared`}
+        />
+      </RetroFrame>
       {status === "live" ? (
         <div className="flex gap-2" role="group" aria-label="Touch controls">
           <PadButton label="Move left" onPress={() => move(-1, 0)}>◀</PadButton>
           <PadButton label="Rotate piece" onPress={() => move(0, 0, true)}>⟳</PadButton>
           <PadButton label="Move right" onPress={() => move(1, 0)}>▶</PadButton>
           <PadButton label="Hard drop" onPress={hardDrop}>▼</PadButton>
+          <MuteToggle />
         </div>
       ) : (
         <ArcadeStatus tone={status === "won" ? "win" : "lose"}>

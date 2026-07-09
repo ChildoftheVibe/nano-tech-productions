@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { Bomb, Flag } from "lucide-react";
+import { MuteToggle, useSfx } from "./retro64";
 
 export type ArcadeProps = { onFinish: (won: boolean) => void };
 
@@ -55,6 +56,7 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
   const [cells, setCells] = useState<Cell[] | null>(null);
   const [status, setStatus] = useState<"live" | "won" | "lost">("live");
   const [flagMode, setFlagMode] = useState(false);
+  const sfx = useSfx();
 
   const flagsLeft = useMemo(
     () => MINES - (cells?.filter((c) => c.flag).length ?? 0),
@@ -64,9 +66,10 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
   const end = useCallback(
     (won: boolean) => {
       setStatus(won ? "won" : "lost");
+      sfx.play(won ? "win" : "lose");
       onFinish(won);
     },
-    [onFinish],
+    [onFinish, sfx],
   );
 
   const tap = (i: number) => {
@@ -79,7 +82,10 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
     const next = board.map((c) => ({ ...c }));
     const cell = next[i];
     if (flagMode) {
-      if (!cell.open) cell.flag = !cell.flag;
+      if (!cell.open) {
+        cell.flag = !cell.flag;
+        sfx.play("place");
+      }
       setCells(next);
       return;
     }
@@ -87,6 +93,7 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
     if (cell.mine) {
       next.forEach((c) => { if (c.mine) c.open = true; });
       setCells(next);
+      sfx.play("explode");
       end(false);
       return;
     }
@@ -100,6 +107,7 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
       cj.flag = false;
       if (cj.adj === 0) stack.push(...neighbors(j).filter((n) => !next[n].open));
     }
+    sfx.play("coin");
     setCells(next);
     if (next.every((c) => c.open || c.mine)) end(true);
   };
@@ -110,19 +118,22 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
         <span className="flex items-center gap-1">
           <Flag size={13} aria-hidden="true" /> {flagsLeft} left
         </span>
-        <button
-          type="button"
-          onClick={() => setFlagMode((f) => !f)}
-          aria-pressed={flagMode}
-          aria-label={flagMode ? "Flag mode on. Tap to switch to digging." : "Dig mode on. Tap to switch to flagging."}
-          className={`min-h-11 rounded-lg border px-4 py-1 text-[11px] font-bold tracking-wide uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2120] ${
-            flagMode
-              ? "border-[#ffabef] text-[#ffabef]"
-              : "border-[rgba(255,255,255,0.15)] text-[#dde4e2]"
-          }`}
-        >
-          {flagMode ? "Flagging" : "Digging"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setFlagMode((f) => !f)}
+            aria-pressed={flagMode}
+            aria-label={flagMode ? "Flag mode on. Tap to switch to digging." : "Dig mode on. Tap to switch to flagging."}
+            className={`min-h-11 rounded-lg border px-4 py-1 text-[11px] font-bold tracking-wide uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2120] ${
+              flagMode
+                ? "border-[#ffabef] text-[#ffabef]"
+                : "border-[rgba(255,255,255,0.15)] text-[#dde4e2]"
+            }`}
+          >
+            {flagMode ? "Flagging" : "Digging"}
+          </button>
+          <MuteToggle />
+        </div>
       </div>
       <div
         className="grid touch-manipulation gap-1"
@@ -144,12 +155,11 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
                   const next = cells.map((x) => ({ ...x }));
                   next[i].flag = !next[i].flag;
                   setCells(next);
+                  sfx.play("place");
                 }
               }}
-              className={`flex aspect-square w-11 items-center justify-center rounded text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#62f3e4] ${
-                open
-                  ? "bg-[#0d1a17]"
-                  : "bg-[#2f3635] hover:bg-[#3a4241] active:bg-[#243230]"
+              className={`flex aspect-square w-11 items-center justify-center rounded text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#62f3e4] ${
+                open ? "tile-pressed" : "tile-raised"
               }`}
               style={open && c?.adj ? { color: NUM_COLORS[c.adj] } : undefined}
               aria-label={
@@ -158,9 +168,13 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
                   : c?.flag ? "Flagged" : "Hidden"
               }
             >
-              {open && c?.mine && <Bomb size={14} className="text-[#ff8a8a]" />}
+              {open && c?.mine && (
+                <Bomb key={`mine-${i}`} size={14} className="retro-pop text-[#ff8a8a]" />
+              )}
               {open && !c?.mine && (c?.adj || "")}
-              {!open && c?.flag && <Flag size={12} className="text-[#ffabef]" />}
+              {!open && c?.flag && (
+                <Flag key={`flag-${i}-${c.flag}`} size={12} className="retro-pop text-[#ffabef]" />
+              )}
             </button>
           );
         })}
@@ -170,7 +184,7 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
         className="min-h-5 text-sm font-bold"
         style={{ color: status === "won" ? "#62f3e4" : status === "lost" ? "#ff8a8a" : "transparent" }}
       >
-        {status === "won" ? "Grid cleared!" : status === "lost" ? "Boom, mine hit." : " "}
+        {status === "won" ? "Grid cleared!" : status === "lost" ? "Boom, mine hit." : " "}
       </p>
     </div>
   );

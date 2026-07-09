@@ -71,8 +71,14 @@ export function ArcadeStatus({
   return (
     <p
       aria-live={tone === "info" ? "polite" : "assertive"}
-      className={tone === "info" ? "text-xs" : "text-sm font-bold"}
-      style={{ color }}
+      className={
+        tone === "info"
+          ? "text-xs"
+          // Arcade HUD moment: the win/lose banner is the one place the 8-bit
+          // display font shows up, mirroring a classic "GAME OVER" screen.
+          : "font-[family-name:var(--font-arcade)] text-[11px] leading-relaxed tracking-tight"
+      }
+      style={{ color, textShadow: tone !== "info" ? `0 0 10px ${color}66` : undefined }}
     >
       {children}
     </p>

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
-import { Geist, Geist_Mono, Bungee } from "next/font/google";
+import { Geist, Geist_Mono, Bungee, Press_Start_2P } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "@/styles/globals.css";
@@ -27,6 +27,8 @@ import CosmicInterferenceBanner from '@/components/layout/CosmicInterferenceBann
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 const bungee = Bungee({ variable: "--font-bungee", subsets: ["latin"], weight: "400" });
+// Arcade HUD/score font only — never for body text. See src/components/games/arcade/.
+const pressStart2P = Press_Start_2P({ variable: "--font-arcade", subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.nanotechvibe.com"),
@@ -84,7 +86,7 @@ export default async function RootLayout({
   ]);
 
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${bungee.variable} h-full antialiased`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${bungee.variable} ${pressStart2P.variable} h-full antialiased`}>
       <head>
         <link rel="dns-prefetch" href="https://www.paypalobjects.com" />
         <link rel="dns-prefetch" href="https://www.paypal.com" />
