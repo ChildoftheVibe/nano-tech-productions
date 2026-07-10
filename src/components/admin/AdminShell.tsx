@@ -17,6 +17,7 @@ import {
   ImagePlay,
   Clapperboard,
   Mail,
+  WalletCards,
 } from "lucide-react";
 
 const NAV = [
@@ -26,6 +27,7 @@ const NAV = [
   { href: "/admin/tracks", label: "Tracks", icon: Music2 },
   { href: "/admin/sounds", label: "Sounds", icon: Volume2 },
   { href: "/admin/artists", label: "Artists", icon: Users },
+  { href: "/admin/accounts", label: "Accounts", icon: WalletCards },
   { href: "/admin/discounts", label: "Discounts", icon: Tag },
   { href: "/admin/orders", label: "Orders", icon: Receipt },
   { href: "/admin/playlist", label: "Playlist", icon: ListMusic },

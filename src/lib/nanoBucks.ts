@@ -161,6 +161,27 @@ export async function getOrCreateWallet(): Promise<Wallet> {
   return data as Wallet;
 }
 
+/**
+ * Attach an email (+ optional display name) to the current visitor's wallet
+ * — the "login" step gating casino play. Creates the wallet first if the
+ * visitor doesn't have one yet.
+ */
+export async function claimWallet(email: string, displayName?: string): Promise<Wallet> {
+  const wallet = await getOrCreateWallet();
+  const { data, error } = await supabaseAdmin
+    .from("wallets")
+    .update({
+      email,
+      display_name: displayName?.trim() || wallet.display_name,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", wallet.id)
+    .select(WALLET_COLUMNS)
+    .single();
+  if (error || !data) throw new Error("wallet_claim_failed");
+  return data as Wallet;
+}
+
 /** Atomic balance adjustment via the wallet_adjust RPC. Returns new balance. */
 export async function adjustBalance(
   walletId: string,

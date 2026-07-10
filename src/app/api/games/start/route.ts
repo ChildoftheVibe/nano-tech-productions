@@ -46,6 +46,9 @@ export async function POST(req: Request) {
     let stake = 0;
 
     if (game.mode === "casino") {
+      if (!wallet.email) {
+        return NextResponse.json({ error: "login_required" }, { status: 403, headers: noStore });
+      }
       stake = Math.round(Number(body.stake));
       if (
         !Number.isFinite(stake) ||

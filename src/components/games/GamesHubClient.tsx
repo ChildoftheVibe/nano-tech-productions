@@ -9,6 +9,9 @@ import { GAME_ART, HUB_HERO_ART } from "@/components/games/art";
 import { settleGame, startGame } from "@/components/games/gameApi";
 import { useWalletStore } from "@/store/walletStore";
 import { useGameKeyboardLock } from "@/store/gameFocusStore";
+import { GAME_GUIDES } from "@/components/games/guides";
+import { HowToPlayButton, HowToPlayPanels } from "@/components/games/HowToPlay";
+import { WalletLoginModal } from "@/components/games/WalletLoginModal";
 
 /** Nano Tech Games hub: casino floor + arcade cabinet + wallet tools. */
 
@@ -104,7 +107,12 @@ export function GamesHubClient() {
   const balance = useWalletStore((s) => s.balance);
   const walletCode = useWalletStore((s) => s.walletCode);
   const lifetimeEarned = useWalletStore((s) => s.lifetimeEarned);
+  const walletEmail = useWalletStore((s) => s.email);
   const refresh = useWalletStore((s) => s.refresh);
+
+  // Casino games require a claimed (logged-in) wallet; this holds the game
+  // id the visitor tried to open until the login modal succeeds.
+  const [pendingCasino, setPendingCasino] = useState<string | null>(null);
 
   // Transfer form.
   const [toCode, setToCode] = useState("");
@@ -131,6 +139,10 @@ export function GamesHubClient() {
   };
 
   const openCasino = (id: string) => {
+    if (!walletEmail) {
+      setPendingCasino(id);
+      return;
+    }
     scrollToTop();
     setActive(id);
   };
@@ -180,19 +192,25 @@ export function GamesHubClient() {
   };
 
   if (ActiveCasino || activeArcade) {
+    const guideId = active ?? arcadeActive;
+    const guide = guideId ? GAME_GUIDES[guideId] ?? null : null;
+    const accent = active ? "#62f3e4" : "#ffabef";
     return (
-      <div className="mx-auto flex min-h-[calc(100dvh-7rem)] max-w-2xl flex-col gap-4 px-4 py-6">
-        <button
-          type="button"
-          onClick={() => {
-            if (arcadeSession) void finishArcade(false);
-            setActive(null);
-            setArcadeActive(null);
-          }}
-          className="flex w-fit items-center gap-1.5 rounded text-xs font-semibold tracking-wide text-[#bbcac6] uppercase transition-colors hover:text-[#62f3e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
-        >
-          <ArrowLeft size={14} aria-hidden="true" /> All games
-        </button>
+      <div className="mx-auto flex min-h-[calc(100dvh-7rem)] max-w-3xl flex-col gap-4 px-4 py-6">
+        <div className="flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              if (arcadeSession) void finishArcade(false);
+              setActive(null);
+              setArcadeActive(null);
+            }}
+            className="flex w-fit items-center gap-1.5 rounded text-xs font-semibold tracking-wide text-[#bbcac6] uppercase transition-colors hover:text-[#62f3e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
+          >
+            <ArrowLeft size={14} aria-hidden="true" /> All games
+          </button>
+          <HowToPlayButton guide={guide} accent={accent} />
+        </div>
         {/* Center the opened game vertically in the remaining viewport. */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -231,6 +249,7 @@ export function GamesHubClient() {
                 </div>
               </div>
             )}
+            {guide && <HowToPlayPanels guide={guide} accent={accent} />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -413,6 +432,20 @@ export function GamesHubClient() {
           </div>
         </aside>
       </div>
+
+      {pendingCasino && (
+        <WalletLoginModal
+          onClose={() => setPendingCasino(null)}
+          onSuccess={() => {
+            const id = pendingCasino;
+            setPendingCasino(null);
+            if (id) {
+              scrollToTop();
+              setActive(id);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -28,6 +28,7 @@ export async function GET(req: Request) {
       {
         walletCode: wallet.wallet_code,
         displayName: wallet.display_name,
+        email: wallet.email,
         balance: wallet.balance,
         lifetimeEarned: wallet.lifetime_earned,
       },
