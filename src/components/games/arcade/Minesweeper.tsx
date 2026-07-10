@@ -3,8 +3,16 @@
 import { useCallback, useMemo, useState } from "react";
 import { Bomb, Flag } from "lucide-react";
 import { MuteToggle, useSfx } from "./retro64";
+import { ArcadeEndActions } from "./ArcadeControls";
 
-export type ArcadeProps = { onFinish: (won: boolean) => void };
+export type ArcadeProps = {
+  onFinish: (won: boolean) => void;
+  /** Arcade-menu only: replay this game with a fresh session. Absent when the
+   *  game is launched from a vault/album portal, so no end actions render. */
+  onPlayAgain?: () => void;
+  /** Arcade-menu only: return to the arcade grid. */
+  onReturn?: () => void;
+};
 
 // Tuned for a high win rate: a 7×7 board with 6 mines (~12% density on a small
 // grid means far fewer 50/50 guesses than the classic 9×9) plus a guaranteed
@@ -52,7 +60,7 @@ function neighbors(i: number): number[] {
 
 const NUM_COLORS = ["", "#62f3e4", "#7dd87d", "#ffabef", "#f0c674", "#ff8a8a", "#8abeb7", "#dde4e2", "#b3b3b3"];
 
-export function Minesweeper({ onFinish }: ArcadeProps) {
+export function Minesweeper({ onFinish, onPlayAgain, onReturn }: ArcadeProps) {
   const [cells, setCells] = useState<Cell[] | null>(null);
   const [status, setStatus] = useState<"live" | "won" | "lost">("live");
   const [flagMode, setFlagMode] = useState(false);
@@ -186,6 +194,9 @@ export function Minesweeper({ onFinish }: ArcadeProps) {
       >
         {status === "won" ? "Grid cleared!" : status === "lost" ? "Boom, mine hit." : " "}
       </p>
+      {status !== "live" && onPlayAgain && onReturn && (
+        <ArcadeEndActions onPlayAgain={onPlayAgain} onReturn={onReturn} />
+      )}
     </div>
   );
 }

@@ -1,10 +1,10 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { ArcadeProps } from "./Minesweeper";
-import { ArcadeStatus, HoldButton, PadButton } from "./ArcadeControls";
+import { ArcadeEndActions, ArcadeStatus, HoldButton, PadButton } from "./ArcadeControls";
 import { MuteToggle, PALETTE, useSfx } from "./retro64";
 
 /**
@@ -304,6 +304,19 @@ function Scene({ input, fireRef, onEnd, onShoot, onHit, onExplode, paused, reduc
     return arr;
   });
 
+  // Player ship art (transparent PNG, background removed via Photoshop). Loaded
+  // through Suspense; drawn on a camera-facing plane so the top-down sprite
+  // reads while still transforming with the ship in the 3D scene. Clone the
+  // loaded texture before tagging its colorSpace so we never mutate the shared
+  // loader cache entry.
+  const shipTexBase = useLoader(THREE.TextureLoader, "/games/star-fighter.png");
+  const shipTex = useMemo(() => {
+    const t = shipTexBase.clone();
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.needsUpdate = true;
+    return t;
+  }, [shipTexBase]);
+
   return (
     <>
       {/* Bright, flat lighting: three.js's physically-correct light units need
@@ -321,15 +334,13 @@ function Scene({ input, fireRef, onEnd, onShoot, onHit, onExplode, paused, reduc
         <pointsMaterial size={0.05} color="#ffffff" transparent opacity={0.75} sizeAttenuation />
       </points>
 
-      {/* Player ship: low-poly wedge. */}
+      {/* Player ship: background-removed top-down sprite on a plane, tilted
+          back so its top faces the elevated chase camera. The nose (+y in the
+          texture) points forward into the formation. */}
       <group ref={playerRef}>
-        <mesh rotation={[Math.PI / 2, 0, Math.PI]} castShadow>
-          <coneGeometry args={[0.32, 0.7, 4]} />
-          <meshStandardMaterial color={PALETTE.teal} flatShading roughness={0.5} emissive={PALETTE.teal} emissiveIntensity={0.9} />
-        </mesh>
-        <mesh position={[0, -0.05, 0.15]}>
-          <boxGeometry args={[0.9, 0.06, 0.35]} />
-          <meshStandardMaterial color={PALETTE.gold} flatShading roughness={0.6} emissive={PALETTE.gold} emissiveIntensity={0.4} />
+        <mesh rotation={[-0.6, 0, 0]}>
+          <planeGeometry args={[1.15, 1.15 * (637 / 743)]} />
+          <meshBasicMaterial map={shipTex} transparent alphaTest={0.5} toneMapped={false} />
         </mesh>
       </group>
 
@@ -372,7 +383,7 @@ function readReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-export function StarVanguard({ onFinish }: ArcadeProps) {
+export function StarVanguard({ onFinish, onPlayAgain, onReturn }: ArcadeProps) {
   const [status, setStatus] = useState<"live" | "won" | "lost">("live");
   const finishedRef = useRef(false);
   const input = useRef({ left: false, right: false });
@@ -453,9 +464,12 @@ export function StarVanguard({ onFinish }: ArcadeProps) {
           <MuteToggle />
         </div>
       ) : (
-        <ArcadeStatus tone={status === "won" ? "win" : "lose"}>
-          {status === "won" ? "Wave cleared!" : "Ship down."}
-        </ArcadeStatus>
+        <div className="flex flex-col items-center gap-3">
+          <ArcadeStatus tone={status === "won" ? "win" : "lose"}>
+            {status === "won" ? "Wave cleared!" : "Ship down."}
+          </ArcadeStatus>
+          {onPlayAgain && onReturn && <ArcadeEndActions onPlayAgain={onPlayAgain} onReturn={onReturn} />}
+        </div>
       )}
     </div>
   );

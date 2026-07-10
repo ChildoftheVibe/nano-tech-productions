@@ -59,6 +59,35 @@ export function HoldButton({
   );
 }
 
+/** Game-over actions shown ONLY when a game is launched from the arcade menu
+ *  (both callbacks present). Portals pass neither, so nothing renders there. */
+export function ArcadeEndActions({
+  onPlayAgain,
+  onReturn,
+}: {
+  onPlayAgain: () => void;
+  onReturn: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-2" role="group" aria-label="Game over actions">
+      <button
+        type="button"
+        onClick={onPlayAgain}
+        className="min-h-11 rounded-lg bg-[#62f3e4] px-5 py-2 text-xs font-bold tracking-[0.06em] text-[#003733] uppercase transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1a17]"
+      >
+        Play Again
+      </button>
+      <button
+        type="button"
+        onClick={onReturn}
+        className="min-h-11 rounded-lg border border-[rgba(255,255,255,0.15)] bg-[#242b2a] px-5 py-2 text-xs font-bold tracking-[0.06em] text-[#dde4e2] uppercase transition-colors hover:bg-[#2f3635] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1a17]"
+      >
+        Return to Arcade
+      </button>
+    </div>
+  );
+}
+
 /** Screen-reader status line + visible objective/result text. */
 export function ArcadeStatus({
   children,

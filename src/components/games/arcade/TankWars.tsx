@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ArcadeProps } from "./Minesweeper";
+import { ArcadeEndActions } from "./ArcadeControls";
 import { MuteToggle, RetroFrame } from "./retro64";
 import {
   PALETTE,
@@ -25,7 +26,7 @@ const H = 240;
 
 type Trail = { x: number; y: number; age: number };
 
-export function TankWars({ onFinish }: ArcadeProps) {
+export function TankWars({ onFinish, onPlayAgain, onReturn }: ArcadeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [angle, setAngle] = useState(55);
   const [power, setPower] = useState(60);
@@ -38,6 +39,16 @@ export function TankWars({ onFinish }: ArcadeProps) {
   const shake = useRef(new Shake());
   const trail = useRef<Trail[]>([]);
   const skyGradient = useRef<CanvasGradient | null>(null);
+
+  // Player tank art (transparent PNG, background removed via Photoshop). Drawn
+  // once loaded; the procedural hull is the fallback until then.
+  const tankSprite = useRef<HTMLImageElement | null>(null);
+  useEffect(() => {
+    const img = new Image();
+    img.src = "/games/tank-player.png";
+    img.onload = () => { tankSprite.current = img; };
+    return () => { img.onload = null; };
+  }, []);
 
   const world = useRef<{
     terrain: number[];
@@ -228,18 +239,28 @@ export function TankWars({ onFinish }: ArcadeProps) {
       w.terrain.forEach((y, x) => (x ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
       ctx.stroke();
 
-      // Tanks: chunky hull + shaded turret + barrel.
-      const tank = (x: number, color: string, flip: boolean) => {
+      // Tanks: chunky hull + shaded turret + barrel. The player uses the
+      // background-removed tank sprite when it has loaded; the enemy stays
+      // procedural (coral). A bright aiming barrel is overlaid on the player so
+      // the current angle still reads even over the sprite art.
+      const tank = (x: number, color: string, flip: boolean, sprite: boolean) => {
         const y = groundY(x);
-        const dark = shade(color, -0.35);
-        ctx.fillStyle = dark;
-        ctx.fillRect(x - 10, y - 6, 20, 8);
-        ctx.fillStyle = color;
-        ctx.fillRect(x - 10, y - 8, 20, 6);
-        ctx.fillStyle = shade(color, -0.2);
-        ctx.fillRect(x - 6, y - 14, 12, 7);
-        ctx.fillStyle = color;
-        ctx.fillRect(x - 6, y - 15, 12, 4);
+        const img = tankSprite.current;
+        if (sprite && img) {
+          const sw = 36;
+          const sh = sw * (img.height / img.width);
+          ctx.drawImage(img, x - sw / 2, y - sh + 3, sw, sh);
+        } else {
+          const dark = shade(color, -0.35);
+          ctx.fillStyle = dark;
+          ctx.fillRect(x - 10, y - 6, 20, 8);
+          ctx.fillStyle = color;
+          ctx.fillRect(x - 10, y - 8, 20, 6);
+          ctx.fillStyle = shade(color, -0.2);
+          ctx.fillRect(x - 6, y - 14, 12, 7);
+          ctx.fillStyle = color;
+          ctx.fillRect(x - 6, y - 15, 12, 4);
+        }
         ctx.strokeStyle = color;
         ctx.lineWidth = 2.5;
         ctx.beginPath();
@@ -248,8 +269,8 @@ export function TankWars({ onFinish }: ArcadeProps) {
         ctx.lineTo(x + (flip ? -1 : 1) * 14 * Math.cos(rad), y - 11 - 14 * Math.sin(rad));
         ctx.stroke();
       };
-      tank(w.playerX, PALETTE.teal, false);
-      tank(w.enemyX, PALETTE.coral, true);
+      tank(w.playerX, PALETTE.teal, false, true);
+      tank(w.enemyX, PALETTE.coral, true, false);
 
       // Shell + fading glow trail.
       trail.current.forEach((t) => {
@@ -343,9 +364,12 @@ export function TankWars({ onFinish }: ArcadeProps) {
           </div>
         </div>
       ) : (
-        <p aria-live="assertive" className="text-sm font-bold" style={{ color: status === "won" ? "#62f3e4" : "#ff8a8a" }}>
-          {status === "won" ? "Direct hit, enemy destroyed!" : "Your tank is smoked."}
-        </p>
+        <div className="flex flex-col items-center gap-3">
+          <p aria-live="assertive" className="text-sm font-bold" style={{ color: status === "won" ? "#62f3e4" : "#ff8a8a" }}>
+            {status === "won" ? "Direct hit, enemy destroyed!" : "Your tank is smoked."}
+          </p>
+          {onPlayAgain && onReturn && <ArcadeEndActions onPlayAgain={onPlayAgain} onReturn={onReturn} />}
+        </div>
       )}
     </div>
   );

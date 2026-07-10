@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, Coins, Gamepad2, Play, Send, Sparkles, TrendingUp, Wallet } from "lucide-react";
 import { CASINO_COMPONENTS } from "@/components/games/casino";
 import { ARCADE_COMPONENTS } from "@/components/games/arcade";
 import { GAME_ART, HUB_HERO_ART } from "@/components/games/art";
-import { settleGame, startGame } from "@/components/games/gameApi";
 import { useWalletStore } from "@/store/walletStore";
-import { useGameKeyboardLock } from "@/store/gameFocusStore";
 import { GAME_GUIDES } from "@/components/games/guides";
 import { HowToPlayButton, HowToPlayPanels } from "@/components/games/HowToPlay";
 import { WalletLoginModal } from "@/components/games/WalletLoginModal";
@@ -100,10 +99,8 @@ function GameTile({
 }
 
 export function GamesHubClient() {
+  const router = useRouter();
   const [active, setActive] = useState<string | null>(null);
-  const [arcadeActive, setArcadeActive] = useState<string | null>(null);
-  const [arcadeSession, setArcadeSession] = useState<string | null>(null);
-  const [arcadeMsg, setArcadeMsg] = useState("");
   const balance = useWalletStore((s) => s.balance);
   const walletCode = useWalletStore((s) => s.walletCode);
   const lifetimeEarned = useWalletStore((s) => s.lifetimeEarned);
@@ -119,16 +116,11 @@ export function GamesHubClient() {
   const [amount, setAmount] = useState("");
   const [transferMsg, setTransferMsg] = useState("");
 
-  // Lock media keys while an arcade cabinet is open (casino tables lock via
-  // their own GameShell).
-  useGameKeyboardLock(!!arcadeActive);
-
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
   const ActiveCasino = active ? CASINO_COMPONENTS[active] : null;
-  const activeArcade = arcadeActive ? ARCADE_COMPONENTS[arcadeActive] : null;
 
   // Jump the viewport to the top so the opened game is framed in the window
   // rather than wherever the grid was scrolled to.
@@ -145,32 +137,6 @@ export function GamesHubClient() {
     }
     scrollToTop();
     setActive(id);
-  };
-
-  const openArcade = async (id: string) => {
-    scrollToTop();
-    setArcadeActive(id);
-    setArcadeMsg("");
-    try {
-      const { sessionId } = await startGame(id, 0);
-      setArcadeSession(sessionId);
-    } catch {
-      setArcadeSession(null);
-    }
-  };
-
-  const finishArcade = async (won: boolean) => {
-    if (arcadeSession) {
-      try {
-        const res = await settleGame(arcadeSession, { won });
-        setArcadeMsg(
-          res.payout > 0 ? `+${res.payout} NB earned!` : "Daily arcade cap reached. No NB this round.",
-        );
-      } catch {
-        setArcadeMsg("");
-      }
-      setArcadeSession(null);
-    }
   };
 
   const sendTransfer = async () => {
@@ -191,20 +157,15 @@ export function GamesHubClient() {
     }
   };
 
-  if (ActiveCasino || activeArcade) {
-    const guideId = active ?? arcadeActive;
-    const guide = guideId ? GAME_GUIDES[guideId] ?? null : null;
-    const accent = active ? "#62f3e4" : "#ffabef";
+  if (ActiveCasino) {
+    const guide = active ? GAME_GUIDES[active] ?? null : null;
+    const accent = "#62f3e4";
     return (
       <div className="mx-auto flex min-h-[calc(100dvh-7rem)] max-w-3xl flex-col gap-4 px-4 py-6">
         <div className="flex items-center justify-between gap-3">
           <button
             type="button"
-            onClick={() => {
-              if (arcadeSession) void finishArcade(false);
-              setActive(null);
-              setArcadeActive(null);
-            }}
+            onClick={() => setActive(null)}
             className="flex w-fit items-center gap-1.5 rounded text-xs font-semibold tracking-wide text-[#bbcac6] uppercase transition-colors hover:text-[#62f3e4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#62f3e4]"
           >
             <ArrowLeft size={14} aria-hidden="true" /> All games
@@ -214,41 +175,14 @@ export function GamesHubClient() {
         {/* Center the opened game vertically in the remaining viewport. */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={active ?? arcadeActive ?? "table"}
+            key={active ?? "table"}
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.3 }}
             className="flex flex-1 flex-col justify-center"
           >
-            {ActiveCasino && <ActiveCasino />}
-            {activeArcade && arcadeActive && (
-              <div className="relative overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#1a2120] p-6 sm:p-8">
-                {/* Ambient art backdrop for the arcade cabinet */}
-                <div
-                  className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-[0.14] blur-sm"
-                  style={{ backgroundImage: `url(${GAME_ART[arcadeActive]})` }}
-                  aria-hidden="true"
-                />
-                <div className="relative">
-                  <h2 className="mb-1 font-[family-name:var(--font-bungee)] text-base tracking-tight text-[#62f3e4]">
-                    {activeArcade.name}
-                  </h2>
-                  <p className="mb-4 text-xs text-[#bbcac6]">{activeArcade.instructions}</p>
-                  <activeArcade.Component onFinish={finishArcade} />
-                  {arcadeMsg && (
-                    <motion.p
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="mt-3 text-center text-sm font-bold text-[#62f3e4]"
-                      role="status"
-                    >
-                      {arcadeMsg}
-                    </motion.p>
-                  )}
-                </div>
-              </div>
-            )}
+            <ActiveCasino />
             {guide && <HowToPlayPanels guide={guide} accent={accent} />}
           </motion.div>
         </AnimatePresence>
@@ -340,7 +274,8 @@ export function GamesHubClient() {
           </div>
           <p className="mb-3 text-xs text-ntv-muted">
             Free to play: win 25 NB, finish 5 NB (up to 12 rewards a day). These are the same
-            challenges guarding the album portals.
+            challenges guarding the album portals. Opens in the{" "}
+            <span className="font-semibold text-[#ffabef]">Neon Arcade</span>.
           </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {Object.entries(ARCADE_COMPONENTS).map(([id, g], i) => (
@@ -352,7 +287,7 @@ export function GamesHubClient() {
                 badge="FREE"
                 accent="#ffabef"
                 index={i}
-                onOpen={() => void openArcade(id)}
+                onOpen={() => router.push(`/arcade?game=${id}`)}
               />
             ))}
           </div>

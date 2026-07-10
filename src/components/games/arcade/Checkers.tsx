@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ArcadeProps } from "./Minesweeper";
+import { ArcadeEndActions } from "./ArcadeControls";
 import { MuteToggle } from "./retro64";
 import {
   PALETTE,
@@ -93,7 +94,7 @@ function applyMove(b: Board, m: Move): Board {
   return next;
 }
 
-export function Checkers({ onFinish }: ArcadeProps) {
+export function Checkers({ onFinish, onPlayAgain, onReturn }: ArcadeProps) {
   const [board, setBoard] = useState<Board>(initialBoard);
   const [selected, setSelected] = useState<number | null>(null);
   const [turn, setTurn] = useState<"player" | "ai">("player");
@@ -308,6 +309,9 @@ export function Checkers({ onFinish }: ArcadeProps) {
         </p>
         <MuteToggle />
       </div>
+      {status !== "live" && onPlayAgain && onReturn && (
+        <ArcadeEndActions onPlayAgain={onPlayAgain} onReturn={onReturn} />
+      )}
     </div>
   );
 }

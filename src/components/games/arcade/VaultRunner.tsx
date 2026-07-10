@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { ArcadeProps } from "./Minesweeper";
-import { ArcadeStatus, HoldButton, PadButton } from "./ArcadeControls";
+import { ArcadeEndActions, ArcadeStatus, HoldButton, PadButton } from "./ArcadeControls";
 import { MuteToggle, PALETTE, useSfx } from "./retro64";
 
 /**
@@ -38,9 +38,9 @@ function generateLevel(): Level {
   const spikes: Rect[] = [];
   let x = 380;
   while (x < LEVEL_END - 300) {
-    if (Math.random() < 0.5) gaps.push({ x, w: 40 + Math.random() * 22 });
-    else spikes.push({ x, w: 34 });
-    x += 300 + Math.random() * 190;
+    if (Math.random() < 0.5) gaps.push({ x, w: 52 + Math.random() * 26 });
+    else spikes.push({ x, w: 54 });
+    x += 320 + Math.random() * 190;
   }
   const edges = [...gaps].sort((a, b) => a.x - b.x);
   const groundSegments: Rect[] = [];
@@ -261,7 +261,7 @@ function Scene({ input, level, onEnd, onJump, onLand, onDie, paused, reducedMoti
       {/* Spikes. */}
       {level.spikes.map((sp, i) => (
         <mesh key={i} position={[worldX(sp.x + sp.w / 2), 0.06, 0]}>
-          <coneGeometry args={[worldX(sp.w) / 1.6, 0.35, 4]} />
+          <coneGeometry args={[worldX(sp.w) / 1.6, 0.6, 4]} />
           <meshStandardMaterial color={PALETTE.coral} flatShading roughness={0.4} emissive={PALETTE.coral} emissiveIntensity={0.6} />
         </mesh>
       ))}
@@ -304,7 +304,7 @@ function readReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-export function VaultRunner({ onFinish }: ArcadeProps) {
+export function VaultRunner({ onFinish, onPlayAgain, onReturn }: ArcadeProps) {
   const [status, setStatus] = useState<"live" | "won" | "lost">("live");
   const finishedRef = useRef(false);
   const input = useRef<InputState>({ left: false, right: false, jumpSeq: 0 });
@@ -389,9 +389,12 @@ export function VaultRunner({ onFinish }: ArcadeProps) {
           <MuteToggle />
         </div>
       ) : (
-        <ArcadeStatus tone={status === "won" ? "win" : "lose"}>
-          {status === "won" ? "Stage complete!" : "Wiped out."}
-        </ArcadeStatus>
+        <div className="flex flex-col items-center gap-3">
+          <ArcadeStatus tone={status === "won" ? "win" : "lose"}>
+            {status === "won" ? "Stage complete!" : "Wiped out."}
+          </ArcadeStatus>
+          {onPlayAgain && onReturn && <ArcadeEndActions onPlayAgain={onPlayAgain} onReturn={onReturn} />}
+        </div>
       )}
     </div>
   );

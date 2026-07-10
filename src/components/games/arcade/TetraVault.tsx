@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import type { ArcadeProps } from "./Minesweeper";
-import { ArcadeStatus, PadButton } from "./ArcadeControls";
+import { ArcadeEndActions, ArcadeStatus, PadButton } from "./ArcadeControls";
 import {
   PALETTE,
   Particles,
@@ -45,10 +45,16 @@ type Piece = { shape: number[][]; x: number; y: number; color: string };
 const rotate = (s: number[][]) =>
   s[0].map((_, c) => s.map((row) => row[c]).reverse());
 
-export function TetraVault({ onFinish }: ArcadeProps) {
+const randomShapeIndex = () => Math.floor(Math.random() * SHAPES.length);
+
+export function TetraVault({ onFinish, onPlayAgain, onReturn }: ArcadeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [lines, setLines] = useState(0);
   const [status, setStatus] = useState<"live" | "won" | "lost">("live");
+  // Pre-rolled next tetromino (shown in the NEXT preview). `nextRef` holds the
+  // authoritative value that spawn() consumes; `nextIdx` mirrors it for render.
+  const [nextIdx, setNextIdx] = useState(randomShapeIndex);
+  const nextRef = useRef(nextIdx);
   const state = useRef({
     grid: Array.from({ length: ROWS }, () => Array<string | null>(COLS).fill(null)),
     piece: null as Piece | null,
@@ -90,7 +96,10 @@ export function TetraVault({ onFinish }: ArcadeProps) {
   };
 
   const spawn = useCallback(() => {
-    const i = Math.floor(Math.random() * SHAPES.length);
+    // Consume the pre-rolled next piece, then roll a fresh one for the preview.
+    const i = nextRef.current;
+    nextRef.current = randomShapeIndex();
+    setNextIdx(nextRef.current);
     const shape = SHAPES[i];
     const piece: Piece = {
       shape,
@@ -279,15 +288,43 @@ export function TetraVault({ onFinish }: ArcadeProps) {
         </span>{" "}
         cleared so far.
       </ArcadeStatus>
-      <RetroFrame accent={PALETTE.teal}>
-        <canvas
-          ref={canvasRef}
-          width={COLS * CELL}
-          height={ROWS * CELL}
-          role="img"
-          aria-label={`Tetra Vault board, ${lines} of ${TARGET_LINES} lines cleared`}
-        />
-      </RetroFrame>
+      <div className="flex items-start gap-3">
+        <RetroFrame accent={PALETTE.teal}>
+          <canvas
+            ref={canvasRef}
+            width={COLS * CELL}
+            height={ROWS * CELL}
+            role="img"
+            aria-label={`Tetra Vault board, ${lines} of ${TARGET_LINES} lines cleared`}
+          />
+        </RetroFrame>
+        <div
+          className="flex flex-col items-center gap-1.5 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#12211e] px-3 py-2.5"
+          aria-label="Next piece preview"
+        >
+          <span className="font-[family-name:var(--font-arcade)] text-[9px] tracking-tight text-[#bbcac6]">
+            NEXT
+          </span>
+          <div
+            className="grid gap-[2px]"
+            style={{ gridTemplateColumns: `repeat(${SHAPES[nextIdx][0].length}, 12px)` }}
+          >
+            {SHAPES[nextIdx].flatMap((row, r) =>
+              row.map((v, c) => (
+                <span
+                  key={`${r}-${c}`}
+                  className="h-3 w-3 rounded-[2px]"
+                  style={
+                    v
+                      ? { background: COLORS[nextIdx], boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.25)` }
+                      : { background: "transparent" }
+                  }
+                />
+              )),
+            )}
+          </div>
+        </div>
+      </div>
       {status === "live" ? (
         <div className="flex gap-2" role="group" aria-label="Touch controls">
           <PadButton label="Move left" onPress={() => move(-1, 0)}>◀</PadButton>
@@ -297,9 +334,12 @@ export function TetraVault({ onFinish }: ArcadeProps) {
           <MuteToggle />
         </div>
       ) : (
-        <ArcadeStatus tone={status === "won" ? "win" : "lose"}>
-          {status === "won" ? "Vault breached!" : "Stack topped out."}
-        </ArcadeStatus>
+        <div className="flex flex-col items-center gap-3">
+          <ArcadeStatus tone={status === "won" ? "win" : "lose"}>
+            {status === "won" ? "Vault breached!" : "Stack topped out."}
+          </ArcadeStatus>
+          {onPlayAgain && onReturn && <ArcadeEndActions onPlayAgain={onPlayAgain} onReturn={onReturn} />}
+        </div>
       )}
     </div>
   );
