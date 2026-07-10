@@ -182,7 +182,14 @@ export default withSentryConfig(withSerwist(nextConfig), {
   silent: !process.env.SENTRY_AUTH_TOKEN,
   disableLogger: true,
   // Treeshake Sentry SDK logger statements in production.
-  reactComponentAnnotation: { enabled: true },
+  // Disabled: this plugin injects `data-sentry-*` attributes into every JSX
+  // element project-wide (only per-tag-name exclusion is possible, no
+  // path-based exclude). StarVanguard.tsx / VaultRunner.tsx render through
+  // @react-three/fiber's custom reconciler, where <mesh>/<group>/etc. are
+  // three.js objects, not DOM nodes — R3F throws trying to set the injected
+  // attribute, crashing the whole canvas. Missing even one R3F tag in an
+  // ignore list reproduces the crash, so the plugin is incompatible with R3F.
+  reactComponentAnnotation: { enabled: false },
   // Disable automatic instrumentation of server actions (we handle it manually).
   autoInstrumentServerFunctions: false,
 });
