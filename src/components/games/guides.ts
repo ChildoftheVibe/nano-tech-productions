@@ -233,17 +233,17 @@ export const GAME_GUIDES: Record<string, GameGuide> = {
     ],
   },
   dominoes: {
-    objective: "Be the first to play all 7 of your tiles, or win a blocked game on lowest pip count.",
+    objective: "Bet on your 3-tile hand's connection to a community domino, across two rounds.",
     howToPlay: [
-      "Ante and draw 7 tiles from a shuffled double-six set; the house also draws 7, and the rest sit in the boneyard.",
-      "Play a tile from your hand that matches either open end of the line (lead any tile if the line is empty).",
-      "If you have no playable tile, draw from the boneyard; if the boneyard is empty too, you pass.",
-      "Play continues until someone plays their last tile ('domino') or neither side can move (blocked game).",
+      "Place a main bet and an optional doubles side bet, then deal Round 1 — you're dealt 3 tiles from a shuffled double-six set plus one community tile.",
+      "The game finds your best hand tile that shares a side with the community tile; if their combined pips are a multiple of 5, the main bet pays out on that point total.",
+      "The doubles side bet pays out based on how many double tiles (0-0, 1-1, 2-2 …) appear across your hand and that round's community tile.",
+      "Bet again for Round 2 — the same hand faces a brand-new community tile drawn from the rest of the set, then both rounds pay out together.",
     ],
     tips: [
-      "Going out first (dominoing) pays 2× your stake.",
-      "If the game blocks (nobody can move), the side with the lower total pip count in hand wins and pays 3×; a tie pushes.",
-      "Try to unload your highest-pip tiles (doubles and 6s) early in case the game ends up blocked.",
+      "Bigger connections pay more: 5 points pays 2×, all the way up to 20 points paying 10×.",
+      "Landing all four of 3-3, 4-4, 5-5, and 6-6 across your hand and the community tile is a 'Maiden's Hand' — the biggest doubles payout in the game.",
+      "The doubles side bet is independent of the main bet — you can win one, both, or neither each round.",
     ],
   },
   "video-poker": {

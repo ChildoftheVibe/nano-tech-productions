@@ -60,7 +60,7 @@ export const CASINO_GAMES: GameDef[] = [
   { id: "slots", name: "Nano Slots", mode: "casino", minStake: 1, maxStake: 100, maxMultiplier: 100, tagline: "Line up three portals" },
   { id: "pokeno", name: "Pokeno", mode: "casino", minStake: 5, maxStake: 100, maxMultiplier: 25, tagline: "Poker hands on a bingo board" },
   { id: "casino-wild", name: "Casino Wild", mode: "casino", minStake: 5, maxStake: 200, maxMultiplier: 8, tagline: "Shed your hand — every card left in the house's hand pays" },
-  { id: "dominoes", name: "Casino Dominoes", mode: "casino", minStake: 5, maxStake: 200, maxMultiplier: 6, tagline: "Block the house, win the boneyard" },
+  { id: "dominoes", name: "Casino Dominoes", mode: "casino", minStake: 5, maxStake: 200, maxMultiplier: 40, tagline: "Connect the community tile, ride the doubles" },
   { id: "video-poker", name: "Video Poker", mode: "casino", minStake: 1, maxStake: 100, maxMultiplier: 250, tagline: "9/6 Jacks or Better" },
   { id: "card-flip", name: "Card Flip Duel", mode: "casino", minStake: 1, maxStake: 500, maxMultiplier: 2, tagline: "High card takes the pot" },
   { id: "three-card-monte", name: "3-Card Monte", mode: "casino", minStake: 5, maxStake: 200, maxMultiplier: 3, tagline: "Follow the queen" },
