@@ -42,9 +42,12 @@ src/
   app/
     admin/(protected)/     # Albums, Tracks, Artists, Sounds, Playlist, Discounts, Orders, Vault, Analytics
     admin/login/           # WebAuthn + password auth
+    arcade/                # Neon Arcade hub (ArcadePageClient)
+    games/                 # Games hub with casino & arcade catalogs
     api/
       admin/               # Protected admin APIs (CRUD, vault, Cloudinary, WebAuthn, audit)
       albums/ artists/ instrumentals/ playlist/ search/  # Public reads
+      games/               # Game session APIs (start, raise, settle, UI config)
       paypal/              # create-order + verify + webhook
       download/            # Token-gated MP3 + instrumental downloads
       discounts/validate/  # Discount code validation
@@ -52,8 +55,8 @@ src/
       analytics/           # event + geo endpoints
       cron/                # security-check, backup
     album/[id]/ artist/[slug]/ artists/ search/ sounds/ library/
-    layout.tsx             # Root layout (sidebar + player)
-    page.tsx               # Home page
+    layout.tsx             # Root layout (sidebar + player + game focus lock)
+    page.tsx               # Portal Room landing
     sw.ts                  # Service worker (Serwist)
   components/
     layout/                # Sidebar, TopBar, PlayerBar, MobileTabBar, FullScreenPlayer, LyricsModal
@@ -61,6 +64,40 @@ src/
     artist/                # ArtistCard, ArtistHero, ArtistDetailClient
     admin/                 # AlbumForm, TrackForm, InstrumentalForm, CloudinaryUploader, DiscountForm, AdminShell
     paypal/                # CheckoutHost, CheckoutModal
+    games/
+      ArcadePageClient.tsx # Neon Arcade hub UI (6 arcade games, replay flow)
+      GamesHubClient.tsx   # Games catalog (arcade + casino library)
+      HowToPlay.tsx        # In-app interactive game guides
+      WalletLoginModal.tsx # Email OTP wallet login (Nano Bucks account)
+      NanoBucksBadge.tsx   # Currency display widget
+      RedeemButton.tsx     # Redeem Nano Bucks to album library
+      GameShell.tsx        # Game container wrapper (frame, controls, replay UX)
+      ArcadeControls.tsx   # Keyboard + gamepad input handler for arcade games
+      ArcadeSkeleton.tsx   # Loading state skeleton
+      gameApi.ts           # Client game session API helpers
+      useCasinoRound.ts    # Hook for casino game round management
+      guides.ts            # How-to-play content per game (Markdown + metadata)
+      art.ts               # Game title card SVG, sprites, color themes
+      arcade/              # 6 arcade games (64-bit Retro-64 console engine)
+        TetraVault.tsx     # Tetris variant
+        VaultRunner.tsx    # Platformer (3D WebGL scene)
+        StarVanguard.tsx   # Top-down shooter (3D scene, replay support)
+        TankWars.tsx       # Turn-based tank battle
+        Checkers.tsx       # AI checkers game
+        Minesweeper.tsx    # Classic minesweeper
+        retro64/           # Shared 64-bit engine (physics, rendering, replay)
+      casino/              # Casino games library (PlayMoney mode, Nano Bucks entry)
+        Blackjack.tsx      # Card game
+        Roulette.tsx       # Wheel of fortune
+        Slots.tsx          # Slot machine
+        TexasHoldem.tsx    # Poker variant
+        CardFlip.tsx       # Memory matching
+        Pokeno.tsx         # Bingo + poker hybrid
+        CasinoDominoes.tsx # Dominoes
+        CasinoWild.tsx     # Keno variant
+        Craps.tsx          # Dice game
+        ThreeCardMonte.tsx # Card trick game
+        VideoPoker.tsx     # Video poker
     home/ ui/ search/ library/ sounds/
   lib/
     queries.ts             # Supabase DB queries
@@ -69,6 +106,7 @@ src/
     paypal.ts albumCover.ts cloudinary.ts discounts.ts
     analytics.ts audit.ts rateLimit.ts logger.ts email.tsx playlistSeed.ts
   store/                   # playerStore, checkoutStore, previewStore (Zustand)
+    gameFocusStore.ts      # Keyboard lock while game surface is active
   context/PlayerContext.tsx # Audio element ref + player methods
   components/layout/PlayerSeeder.tsx # Server-side queue seed (client component, rendered in layout)
   types/music.ts           # Album, Track, Artist domain types
@@ -168,6 +206,15 @@ CRUD for albums/tracks/artists/instrumentals/discounts; WAV vault streaming (5mi
 18. **Album media admin** — `AlbumsManager` has a "Media" button per album row that fetches existing entries from `GET /api/admin/album-media?album_id=` and opens `AlbumMediaManager` inline. Upload via Cloudinary; drag-to-reorder; delete. Media stored in `album_media` table.
 19. **Portal Room landing (`/`)** — Immersive stargate-chamber landing experience built from pre-rendered art (no WebGL). `page.tsx` fetches published albums server-side, validates them through `toPortalAlbums()` (`src/lib/portalData.ts` — hex-color validation, cover via `getAlbumCover(cover, 1024)`, drops albums without covers, assigns each album a vortex plate via `nearestVortex(accentColor)` hue matching), and renders `PortalRoomClient` (`src/components/portal/`). **Assets** (`public/portals/`): `chamber-{blue,red,orange,green,purple,pink,mono}.webp` are 2048px widescreen chamber plates — the original 928×1152 "Portals" art generatively expanded to 2688×1152 with Adobe Firefly (exact original center composited back), then per-color variants produced with the Adobe Photoshop API: a locally built mask (full platform below the machinery horizon + blue-glow-selective band over the ring/dome) drives a masked HSL hue rotation so the platform's hue and light reflections match each portal's energy color (mono = desaturated, shared by gray/noir/white vortices). Sky/ring pixels are bit-identical across variants. All nine source plates share a pixel-identical background; only the vortex disc differs, so `vortex-{blue,gray,green,noir,orange,pink,purple,red,white}.webp` are 512px crops of just that disc, layered at exact plate coordinates in `PortalChamber.tsx` with an elliptical alpha feather baked into the webp at the disc edge (blue keeps the raw square crop since its chamber is the untouched original; CSS radial-gradient masks were removed — they size to farthest-corner and leaked the crop's blue rim). A `SpaceshipFlyby` layer drifts a tiny ship across the upper starfield on a slow loop (skipped under reduced motion). Asset paths come from `chamberAsset()`/`vortexAsset()` in `portalData.ts`. **Seamless transitions**: the chamber never moves — swiping crossfades the chamber plate (only its recolored bottom visibly changes), vortex energy, and floating album cover (framer-motion `AnimatePresence`), so portal-to-portal feels like the gateway retuning. Navigation: swipe (mobile, `@use-gesture/react`), arrows + ArrowLeft/Right keys + horizontal trackpad scroll (desktop); neighbor portal assets are pre-warmed with hidden `<img>`s. Tap/click the portal (or Enter Portal CTA) triggers a fly-through — the plate scales 5.5× into the vortex center (transform-origin at the vortex) under an accent-color energy fill — then routes to the existing `/album/[slug]` page; `prefers-reduced-motion` gets crossfades only. A11y: image layers are `aria-hidden`, `aria-live` announces "Title, portal N of M", 44px+ touch targets, visible focus rings. Active index persists in `?portal=` + sessionStorage so back-navigation restores the focused portal. Classic home (`HomeClient`) remains as the fallback when no album qualifies for a portal. PayPal, Supabase auth, and purchase APIs are untouched; no CSP changes were needed. **Mobile framing** (`isMobile` prop, `max-width: 767px` matchMedia in `PortalRoomClient`, mirrors the `reducedMotion` detection pattern): on narrow viewports the chamber plate is rendered at `MOBILE_ZOOM` (1.12×) and shifted up by `MOBILE_LIFT` (7.5% of section height) so the ring/vortex sit higher with more room below for the title/CTA/dots, and the album cover grows from 26%→29% of the plate. Both constants are bounded by the source art's fixed geometry — the stone arch's top edge sits only ~8.7% down the plate, and the platform must still reach the section's bottom edge — so a much larger lift isn't possible without either clipping the arch or exposing flat background. Desktop framing (`isMobile=false`) is unchanged.
 20. **Album light mode** — per-album `light_mode` flag (DB column, defaults `false`), toggled from the admin `AlbumForm`. Flows through `mapAlbum` → `Album.lightMode`. `AlbumDetail` + `TrackRow` read shared theme tokens from `getAlbumTheme(light)` (`src/lib/albumTheme.ts`) to swap surfaces/text/borders between dark (default) and light; the album's `accentColor` is unchanged in both. Root exposes `--album-hover` CSS vars for child hover states. Media viewers (`AlbumCoverCarousel`, `AlbumMediaGallery`) stay dark by design.
+21. **Neon Arcade & Casino Games** — Two game systems coexist:
+    - **Arcade Games** (6 free skill-based titles: TetraVault, VaultRunner, StarVanguard, TankWars, Checkers, Minesweeper) use a 64-bit Retro-64 console engine (`retro64/` in `src/components/games/arcade/`) that handles physics, collision, sprite rendering, and replay capture. VaultRunner + StarVanguard render 3D WebGL scenes (Three.js) with brightened lighting (fixed post-NOIR color shifts). All arcade games auto-save replay data (win/loss, final score, timestamp) to browser localStorage and can be rewatched via the replay flow (ArcadePageClient). Game sessions emit analytics events (play/win/loss) fire-and-forget. **Keyboard lock** (`gameFocusStore.ts`, `useGameKeyboardLock(active)`) prevents player-music shortcuts (Space, arrow keys, M-key) from hijacking arcade input while a game surface is mounted.
+    - **Casino Games** (11 PlayMoney simulation titles: Blackjack, Roulette, Slots, TexasHoldem, etc.) are stateless UI-driven games that manage bets and winnings client-side. Players authenticate via email OTP (`WalletLoginModal`, sent via Resend) to earn or spend Nano Bucks (fictional currency). Casino play is optional; no real money transactions.
+    - **Wallet system** (`WalletLoginModal`) uses email OTP for passwordless login → anonymous account tied to email + Nano Bucks balance. Nano Bucks persist in Supabase (`user_wallets` table inferred); earned from arcade wins, redeemed to unlock album library purchases (or left as score collectibles).
+    - **In-app guides** (`HowToPlay.tsx`, `guides.ts`) provide interactive markdown + screenshots per game, rendered on first-play or via the help icon.
+    - **Game shell wrapper** (`GameShell.tsx`) frames any arcade game: renders a title card, fullscreen toggle, pause menu (audio pauses too via PlayerContext), exit-to-hub button, and score/stats display. On game end, shows replay option + exit flow.
+    - **Replay flow** — arcade game outcomes (win/loss/score/frame buffer) saved to localStorage on end. Replay modal (`ArcadePageClient`) fetches stored replays, lists them by game + date, and allows playback at original frame rate (canvas redraw from captured frames).
+22. **Game analytics** — Arcade plays/wins/losses and casino rounds emit fire-and-forget POST to `/api/analytics/event` with `event_type: 'game_play'|'game_win'` + game slug + score/outcome. No blocking on analytics — emitted after game end.
+23. **Game focus keyboard lock** — `useGameKeyboardLock(active)` increments/decrements a Zustand counter (`gameFocusStore`) that tracks how many game surfaces are mounted. While `count > 0`, the player keyboard shortcuts (PlayerBar's Space, arrows, M-key) check `isGameFocused()` and are suppressed. Prevents music player from stealing arcade input. Multiple overlapping surfaces (e.g., portal gate + game behind) maintain a counter so lock releases only when all games unmount.
 
 ---
 
