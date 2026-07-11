@@ -8,5 +8,8 @@ export const metadata: Metadata = {
 };
 
 export default function GamesPage() {
-  return <GamesHubClient />;
+  // Preview deployments skip the casino wallet-login gate so testers can
+  // reach every game without an OTP round-trip; production is unaffected.
+  const isPreview = process.env.VERCEL_ENV === "preview";
+  return <GamesHubClient isPreview={isPreview} />;
 }

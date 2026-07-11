@@ -98,7 +98,7 @@ function GameTile({
   );
 }
 
-export function GamesHubClient() {
+export function GamesHubClient({ isPreview = false }: { isPreview?: boolean }) {
   const router = useRouter();
   const [active, setActive] = useState<string | null>(null);
   const balance = useWalletStore((s) => s.balance);
@@ -131,7 +131,7 @@ export function GamesHubClient() {
   };
 
   const openCasino = (id: string) => {
-    if (!walletEmail) {
+    if (!walletEmail && !isPreview) {
       setPendingCasino(id);
       return;
     }
