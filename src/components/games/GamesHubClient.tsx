@@ -104,7 +104,6 @@ export function GamesHubClient() {
   const balance = useWalletStore((s) => s.balance);
   const walletCode = useWalletStore((s) => s.walletCode);
   const lifetimeEarned = useWalletStore((s) => s.lifetimeEarned);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for the wallet-login gate re-enable
   const walletEmail = useWalletStore((s) => s.email);
   const refresh = useWalletStore((s) => s.refresh);
 
@@ -132,12 +131,10 @@ export function GamesHubClient() {
   };
 
   const openCasino = (id: string) => {
-    // TEMP: wallet-login gate disabled — re-enable by restoring the
-    // `if (!walletEmail)` check below.
-    // if (!walletEmail) {
-    //   setPendingCasino(id);
-    //   return;
-    // }
+    if (!walletEmail) {
+      setPendingCasino(id);
+      return;
+    }
     scrollToTop();
     setActive(id);
   };

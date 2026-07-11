@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getOrCreateWallet } from "@/lib/nanoBucks";
+import { getOrCreateWallet, claimWallet } from "@/lib/nanoBucks";
+import { isAdmin } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { clientIpFromHeaders } from "@/lib/audit";
 import { logError } from "@/lib/logger";
@@ -23,7 +24,17 @@ export async function GET(req: Request) {
   }
 
   try {
-    const wallet = await getOrCreateWallet();
+    let wallet = await getOrCreateWallet();
+
+    // Admin sessions skip the OTP flow entirely: their wallet is auto-claimed
+    // with ADMIN_EMAIL so the games hub treats them as logged in.
+    if (!wallet.email && (await isAdmin())) {
+      const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+      if (adminEmail) {
+        wallet = await claimWallet(adminEmail, "Admin");
+      }
+    }
+
     return NextResponse.json(
       {
         walletCode: wallet.wallet_code,
