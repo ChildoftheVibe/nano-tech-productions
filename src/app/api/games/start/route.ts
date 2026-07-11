@@ -46,7 +46,10 @@ export async function POST(req: Request) {
     let stake = 0;
 
     if (game.mode === "casino") {
-      if (!wallet.email) {
+      // Preview deployments skip the wallet-login requirement so testers can
+      // place bets without the OTP round-trip; production is unaffected.
+      const isPreview = process.env.VERCEL_ENV === "preview";
+      if (!wallet.email && !isPreview) {
         return NextResponse.json({ error: "login_required" }, { status: 403, headers: noStore });
       }
       stake = Math.round(Number(body.stake));
