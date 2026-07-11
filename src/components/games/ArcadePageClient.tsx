@@ -60,7 +60,7 @@ function ArcadeCard({
           className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b1110] via-transparent to-transparent" />
-        <span className="absolute left-3 top-3 rounded-full bg-[#ffabef] px-3 py-1 font-[family-name:var(--font-mono,monospace)] text-[10px] font-bold tracking-tight text-[#551450] uppercase">
+        <span className="absolute left-3 top-3 rounded-full bg-[#ffabef] px-3 py-1.5 font-[family-name:var(--font-mono,monospace)] text-[10px] font-bold tracking-tight text-[#551450] uppercase">
           Free
         </span>
         {/* Centered play spotlight on hover. */}
