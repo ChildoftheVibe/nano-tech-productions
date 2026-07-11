@@ -239,16 +239,10 @@ function ArcadePageInner() {
       <div className="pointer-events-none absolute -top-10 right-0 -z-10 h-[420px] w-[420px] rounded-full bg-[#62f3e4]/5 blur-[120px]" aria-hidden="true" />
       <div className="pointer-events-none absolute bottom-1/4 left-1/4 -z-10 h-[320px] w-[320px] rounded-full bg-[#ffabef]/5 blur-[100px]" aria-hidden="true" />
 
-      {/* Top strip: brand + nav rail + wallet chip */}
+      {/* Top strip: nav rail + wallet chip (page title lives once, in the hero below) */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <div>
-            <h1 className="font-[family-name:var(--font-bungee)] text-xl leading-none tracking-tight text-[#62f3e4]">
-              Neon Arcade
-            </h1>
-            <p className="mt-0.5 text-[10px] font-semibold tracking-[0.2em] text-[#ffabef] uppercase">VIP Lounge</p>
-          </div>
-          <nav className="ml-2 hidden items-center gap-1 sm:flex" aria-label="Games sections">
+          <nav className="hidden items-center gap-1 sm:flex" aria-label="Games sections">
             <Link href="/" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-on-surface-variant transition-colors hover:bg-[#242b2a] hover:text-[#62f3e4]">
               <Home size={14} aria-hidden="true" /> Home
             </Link>
@@ -276,12 +270,12 @@ function ArcadePageInner() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="mb-6 text-center sm:text-left"
       >
-        <h2 className="mb-2 font-[family-name:var(--font-bungee)] text-4xl leading-tight tracking-tight text-[#62f3e4] drop-shadow-[0_0_15px_rgba(98,243,228,0.5)] sm:text-5xl">
+        <h1 className="mb-2 font-[family-name:var(--font-bungee)] text-4xl leading-tight tracking-tight text-[#62f3e4] drop-shadow-[0_0_15px_rgba(98,243,228,0.5)] sm:text-5xl">
           Neon Arcade
-        </h2>
+        </h1>
         <p className="mx-auto max-w-2xl text-sm leading-relaxed text-on-surface-variant sm:mx-0">
           Free to play, skill-based, and electrified. Beat a cabinet to win{" "}
-          <span className="font-semibold text-[#62f3e4]">Nano Bucks</span> — then spend them on album and
+          <span className="font-semibold text-[#62f3e4]">Nano Bucks</span>, then spend them on album and
           track downloads across the Vault.
         </p>
       </motion.section>

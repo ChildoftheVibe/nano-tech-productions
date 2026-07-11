@@ -20,7 +20,7 @@ export const GAME_GUIDES: Record<string, GameGuide> = {
   checkers: {
     objective: "Capture every AI piece, or trap it so it has no legal move left.",
     howToPlay: [
-      "Tap one of your teal pieces to select it — legal destination squares light up pink.",
+      "Tap one of your teal pieces to select it. Legal destination squares light up pink.",
       "Tap a highlighted square to move. Landing on a diagonal jump over an adjacent enemy piece captures it.",
       "Reaching the far row crowns a piece king (♛), which can then move and capture in both directions.",
       "The vault AI replies after your move. Keep trading until it has no pieces or no legal moves.",
@@ -29,10 +29,10 @@ export const GAME_GUIDES: Record<string, GameGuide> = {
       { keys: "Tap / click", action: "Select a piece, then tap a lit square to move" },
     ],
     tips: [
-      "Only single jumps are in play — there's no forced multi-jump chain, so plan one capture at a time.",
-      "The vault AI only takes an available capture about a third of the time, and never plans ahead — force trades to press your advantage.",
+      "Only single jumps are in play. There's no forced multi-jump chain, so plan one capture at a time.",
+      "The vault AI only takes an available capture about a third of the time, and never plans ahead. Force trades to press your advantage.",
       "Kinging a back-row piece early opens up two-directional captures that the AI struggles to defend against.",
-      "Free to play — win 25 NB, or 5 NB just for finishing the game (daily cap applies).",
+      "Free to play: win 25 NB, or 5 NB just for finishing the game (daily cap applies).",
     ],
   },
   tetra: {
@@ -50,9 +50,9 @@ export const GAME_GUIDES: Record<string, GameGuide> = {
       { keys: "Space (or ▼ pad button)", action: "Hard-drop instantly" },
     ],
     tips: [
-      "Only 4 lines are needed to win — build flat and clear early rather than stacking tall.",
+      "Only 4 lines are needed to win: build flat and clear early rather than stacking tall.",
       "Hard-dropping (Space) is the fastest way to bank a placement once you're happy with the position.",
-      "Free to play — win 25 NB, or 5 NB just for finishing the game (daily cap applies).",
+      "Free to play: win 25 NB, or 5 NB just for finishing the game (daily cap applies).",
     ],
   },
   "vault-runner": {
@@ -68,9 +68,9 @@ export const GAME_GUIDES: Record<string, GameGuide> = {
       { keys: "▲ / Space (arrow or jump pad)", action: "Jump" },
     ],
     tips: [
-      "Obstacles are spaced generously — there's no need to sprint blind; time your jumps off the terrain edge.",
+      "Obstacles are spaced generously. There's no need to sprint blind; time your jumps off the terrain edge.",
       "Landing softens your momentum, so start slowing down before a gap you plan to jump.",
-      "Free to play — win 25 NB, or 5 NB just for finishing the game (daily cap applies).",
+      "Free to play: win 25 NB, or 5 NB just for finishing the game (daily cap applies).",
     ],
   },
   "star-vanguard": {
@@ -78,7 +78,7 @@ export const GAME_GUIDES: Record<string, GameGuide> = {
     howToPlay: [
       "Strafe left and right to line up under an alien, then fire straight up.",
       "The formation sweeps side to side and steps closer to you each time it hits the edge.",
-      "Aliens occasionally fire back — dodge their shots.",
+      "Aliens occasionally fire back, so dodge their shots.",
       "Clear every alien to win; getting hit or letting the formation land ends the run.",
     ],
     controls: [
@@ -87,8 +87,8 @@ export const GAME_GUIDES: Record<string, GameGuide> = {
     ],
     tips: [
       "The formation speeds up as fewer aliens remain, so don't waste early shots.",
-      "Enemy fire is infrequent early on — press the attack before the formation closes in.",
-      "Free to play — win 25 NB, or 5 NB just for finishing the game (daily cap applies).",
+      "Enemy fire is infrequent early on: press the attack before the formation closes in.",
+      "Free to play: win 25 NB, or 5 NB just for finishing the game (daily cap applies).",
     ],
   },
   minesweeper: {
@@ -104,17 +104,17 @@ export const GAME_GUIDES: Record<string, GameGuide> = {
       { keys: "Right-click", action: "Toggle a flag without switching modes (desktop)" },
     ],
     tips: [
-      "The very first square you open is always guaranteed mine-free along with its neighbors — open confidently.",
+      "The very first square you open is always guaranteed mine-free along with its neighbors, so open confidently.",
       "The board is a small 7×7 with only 6 mines, well below classic density, so fewer squares require a pure guess.",
       "Use numbers to deduce mine locations logically before flagging or opening nearby squares.",
-      "Free to play — win 25 NB, or 5 NB just for finishing the game (daily cap applies).",
+      "Free to play: win 25 NB, or 5 NB just for finishing the game (daily cap applies).",
     ],
   },
   "tank-wars": {
     objective: "Land a shell on the enemy tank before it lands one on you.",
     howToPlay: [
       "Set your barrel angle and shot power with the sliders.",
-      "Account for the wind readout at the top of the screen — it pushes shells sideways in flight.",
+      "Account for the wind readout at the top of the screen: it pushes shells sideways in flight.",
       "Fire; if you miss, the enemy tank takes its shot back at you with slowly improving accuracy.",
       "Whoever lands a direct hit first wins the duel.",
     ],
@@ -124,10 +124,10 @@ export const GAME_GUIDES: Record<string, GameGuide> = {
       { keys: "Fire button", action: "Launch the shell on your turn" },
     ],
     tips: [
-      "The enemy starts with a wide aiming error that only sharpens gradually after each of its misses — early shots from it are rarely accurate.",
+      "The enemy starts with a wide aiming error that only sharpens gradually after each of its misses. Early shots from it are rarely accurate.",
       "Wind reroll after every shot, so re-check the readout before each attempt rather than reusing your last angle/power.",
       "Higher power with a mid-range angle covers more distance; steeper angles are better for closing gaps in the terrain.",
-      "Free to play — win 25 NB, or 5 NB just for finishing the game (daily cap applies).",
+      "Free to play: win 25 NB, or 5 NB just for finishing the game (daily cap applies).",
     ],
   },
 
